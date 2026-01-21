@@ -1,0 +1,50 @@
+---
+import ServiceCard from '../components/ServiceCard.astro';
+
+interface Excursion {
+  id: string;
+  title: string;
+  image?: string;
+  shortDescription?: string;
+  details?: string;
+  priceFrom?: string;
+  duration?: string;
+  isActive: boolean;
+  isPopular?: boolean;
+}
+
+interface Props {
+  excursions: Excursion[];
+}
+
+const { excursions } = Astro.props;
+const activeExcursions = excursions.filter(e => e.isActive !== false);
+const popularExcursions = activeExcursions.filter(e => e.isPopular === true);
+const regularExcursions = activeExcursions.filter(e => !e.isPopular);
+---
+
+{activeExcursions.length > 0 && (
+  <section id="excursions" class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center mb-12 flex items-center justify-center gap-3 text-gray-800">
+        <i class="ri-map-2-line text-blue-600"></i> Все экскурсии
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+        {activeExcursions.map(excursion => (
+          <ServiceCard 
+            title={excursion.title}
+            image={excursion.image}
+            shortDescription={excursion.shortDescription}
+            details={excursion.details}
+            priceFrom={excursion.priceFrom}
+            duration={excursion.duration}
+            highlights={excursion.highlights}
+            schedule={excursion.schedule}
+            included={excursion.included}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+)}

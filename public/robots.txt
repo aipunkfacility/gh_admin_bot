@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://aipunkfacility.github.io/gh_static/sitemap.xml

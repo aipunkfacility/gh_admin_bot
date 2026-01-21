@@ -1,0 +1,141 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Hero from '../components/Hero.astro';
+import Popular from '../sections/Popular.astro';
+import Excursions from '../sections/Excursions.astro';
+import Services from '../sections/Services.astro';
+import Transport from '../sections/Transport.astro';
+import Accommodations from '../sections/Accommodations.astro';
+import Contacts from '../sections/Contacts.astro';
+import CurrencyRates from '../sections/CurrencyRates.astro';
+
+import { getCollection, getItem } from '../lib/data-store';
+
+// Загрузка данных
+const siteMeta = await getItem('site-meta.json', 'site-meta') || {};
+const excursions = (await getCollection('excursions.json')) || [];
+const transport = (await getCollection('transport-items.json')) || [];
+const accommodations = (await getCollection('accommodations.json')) || [];
+const services = (await getCollection('services.json')) || [];
+
+// Категории транспорта (с полем id для совместимости с TransportCard)
+const transportCategories = [
+    { id: 'standard', slug: 'standard', title: 'Стандарт', badgeTitle: 'Стандарт', isActive: true },
+    { id: 'comfort', slug: 'comfort', title: 'Комфорт', badgeTitle: 'Комфорт', isActive: true },
+    { id: 'maxi', slug: 'maxi', title: 'Макси-скутер', badgeTitle: 'Макси', isActive: true },
+    { id: 'moto', slug: 'moto', title: 'Мотоцикл', badgeTitle: 'Мото', isActive: true },
+    { id: 'car', slug: 'car', title: 'Авто', badgeTitle: 'Авто', isActive: true }
+];
+
+// Популярные элементы (все отмеченные как популярные)
+const popularItems = [
+    ...(excursions.filter(i => i.isPopular && i.isActive !== false)),
+    ...(transport.filter(i => i.isPopular && i.isActive !== false).map(i => ({...i, type: 'transport'}))),
+    ...(accommodations.filter(i => i.isPopular && i.isActive !== false)),
+    ...(services.filter(i => i.isPopular && i.isActive !== false)),
+];
+
+const activeExcursions = excursions.filter(i => i.isActive !== false);
+const activeTransport = transport.filter(i => i.isActive !== false);
+const activeAccommodations = accommodations.filter(i => i.isActive !== false);
+const activeServices = services.filter(i => i.isActive !== false);
+
+// Дефолтный порядок секций
+const defaultSections = [
+    { id: 'popular', enabled: true },
+    { id: 'excursions', enabled: true },
+    { id: 'transport', enabled: true },
+    { id: 'accommodations', enabled: true },
+    { id: 'services', enabled: true },
+    { id: 'contacts', enabled: true },
+];
+
+const sections = siteMeta.sections || defaultSections;
+
+// Функция для проверки видимости секции
+const isSectionEnabled = (id: string) => {
+    const section = sections.find((s: any) => s.id === id);
+    return section ? section.enabled : true;
+};
+
+// Получить порядок секции (индекс в массиве)
+const getSectionOrder = (id: string) => {
+    const index = sections.findIndex((s: any) => s.id === id);
+    return index === -1 ? 999 : index;
+};
+---
+
+<MainLayout 
+    title={siteMeta.mainTitle || "Green Hill Tours"} 
+    description={siteMeta.mainSubtitle || "Экскурсии и аренда транспорта в Муйне"}
+    sections={sections}
+>
+    <Hero 
+        mainTitle={siteMeta.mainTitle || "Green Hill Tours"}
+        mainSubtitle={siteMeta.mainSubtitle || "Лучшие экскурсии и аренда транспорта в Муйне"}
+    />
+
+    {/* Секции в порядке из настроек */}
+    {sections.map((section: any) => {
+        if (!section.enabled) return null;
+        
+        switch (section.id) {
+            case 'popular':
+                return popularItems.length > 0 && (
+                    <Popular items={popularItems} categories={transportCategories} />
+                );
+            case 'excursions':
+                return activeExcursions.length > 0 && (
+                    <Excursions excursions={activeExcursions} />
+                );
+            case 'transport':
+                return activeTransport.length > 0 && (
+                    <Transport categories={transportCategories} transportItems={activeTransport} />
+                );
+            case 'services':
+                return activeServices.length > 0 && (
+                    <Services services={activeServices} />
+                );
+            case 'accommodations':
+                return activeAccommodations.length > 0 && (
+                    <Accommodations accommodations={activeAccommodations} />
+                );
+            case 'contacts':
+                return <Contacts siteMeta={siteMeta} />;
+            case 'currency':
+                return <CurrencyRates />;
+            default:
+                return null;
+        }
+    })}
+</MainLayout>
+
+<script is:inline>
+// WhatsApp функция
+function openWhatsApp(message = '') {
+    const phone = '84123456789'; // Замените на реальный номер
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+}
+
+// Аккордеон для карточек услуг
+function toggleServiceAccordion(element) {
+    const isCurrentlyOpen = element.classList.contains('is-open');
+    
+    // Закрываем все открытые карточки
+    document.querySelectorAll('.service-card.is-open').forEach(card => {
+        card.classList.remove('is-open');
+        card.setAttribute('aria-expanded', 'false');
+    });
+    
+    // Если кликнутая карточка была закрыта, открываем её
+    if (!isCurrentlyOpen) {
+        element.classList.add('is-open');
+        element.setAttribute('aria-expanded', 'true');
+    }
+}
+
+// Делаем функции глобальными
+window.openWhatsApp = openWhatsApp;
+window.toggleServiceAccordion = toggleServiceAccordion;
+</script>

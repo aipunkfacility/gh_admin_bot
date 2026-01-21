@@ -1,0 +1,24 @@
+{
+  "name": "gh_static",
+  "type": "module",
+  "version": "2.0.0",
+  "description": "Green Hill Tours - Astro SSG website",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "bot:dev": "node scripts/poll.js"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.5.2",
+    "@fontsource/montserrat": "^5.2.8",
+    "@tailwindcss/vite": "^4.1.18",
+    "astro": "^5.16.9",
+    "dotenv": "^17.2.3",
+    "sortablejs": "^1.15.6",
+    "tailwindcss": "^4.1.18",
+    "telegraf": "^4.16.3",
+    "vite": "^6.0.0"
+  }
+}

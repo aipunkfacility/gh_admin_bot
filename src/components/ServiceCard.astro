@@ -1,0 +1,126 @@
+---
+import { formatServiceDetails } from '../js/utils.js';
+
+interface Props {
+  title: string;
+  image?: string;
+  shortDescription?: string;
+  details?: string;
+  priceFrom?: string;
+  duration?: string;
+  features?: string[];
+  included?: string[];
+  requirements?: string[];
+  schedule?: string;
+  highlights?: string[];
+}
+
+const { title, image, shortDescription, details, priceFrom, duration, features, included, requirements, schedule, highlights } = Astro.props;
+const formattedDetails = formatServiceDetails(details);
+const hasDetails = !!(formattedDetails || features?.length || included?.length || requirements?.length || schedule || highlights?.length);
+const message = `Хочу заказать: ${title}`;
+const safeMessage = message.replace(/'/g, "\\'");
+---
+
+<div 
+  class={`service-card bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition flex flex-col ${hasDetails ? 'is-clickable' : ''}`}
+  onclick={hasDetails ? "toggleServiceAccordion(this)" : null}
+  onkeydown={hasDetails ? "if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleServiceAccordion(this); }" : null}
+  role={hasDetails ? "button" : null}
+  tabindex={hasDetails ? "0" : null}
+  aria-expanded={hasDetails ? "false" : null}
+>
+  {image && (
+    <div class="aspect-video overflow-hidden border-b border-slate-100 flex-shrink-0 relative">
+      <img 
+        src={image} 
+        alt={title} 
+        width="600"
+        height="338"
+        class="w-full h-full object-cover object-center block hover:scale-105 transition-transform duration-700" 
+        loading="lazy"
+      />
+      {priceFrom && (
+        <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">
+           <i class="ri-price-tag-3-line text-orange-500 font-bold"></i>
+           <span class="text-xs font-black text-dark uppercase tracking-wider">{priceFrom}</span>
+        </div>
+      )}
+    </div>
+  )}
+  
+  <div class="bg-slate-50 p-5 border-b border-slate-100 flex-shrink-0 flex justify-between items-center gap-4">
+    <h3 class="text-xl font-bold text-dark leading-tight">{title}</h3>
+    {hasDetails && <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0"><i class="ri-arrow-down-s-line accordion-chevron text-xl text-primary transition-transform duration-300"></i></div>}
+  </div>
+  
+  <div class="p-6 flex flex-col flex-grow">
+
+    <p class="service-short-desc text-slate-800 font-medium whitespace-pre-wrap mb-3 leading-relaxed">{shortDescription}</p>
+
+    {hasDetails && (
+      <div class="service-details-container">
+        <div class="service-details-content space-y-6 text-sm text-slate-600">
+          
+          <div class="bg-orange-50/50 rounded-xl p-5 space-y-5">
+              {(schedule || duration) && (
+                 <div>
+                   <h4 class="font-bold flex items-center text-dark mb-2"><i class="ri-time-line text-blue-500 mr-2 text-lg"></i>Расписание / Время</h4>
+                   <p class="pl-7 opacity-90 font-medium">{schedule || duration}</p>
+                 </div>
+              )}
+
+              {highlights && highlights.length > 0 && (
+                 <div>
+                   <h4 class="font-bold flex items-center text-dark mb-2"><i class="ri-camera-lens-line text-purple-500 mr-2 text-lg"></i>Что увидим</h4>
+                   <ul class="pl-7 list-disc list-outside opacity-90 marker:text-purple-500 space-y-1">
+                      {highlights.map(item => <li>{item}</li>)}
+                   </ul>
+                 </div>
+              )}
+
+              {features && features.length > 0 && (
+                 <div>
+                   <h4 class="font-bold flex items-center text-dark mb-2"><i class="ri-star-smile-line text-amber-500 mr-2 text-lg"></i>Особенности</h4>
+                   <ul class="pl-7 list-disc list-outside opacity-90 marker:text-amber-500 space-y-1">
+                      {features.map(item => <li>{item}</li>)}
+                   </ul>
+                 </div>
+              )}
+
+              {included && included.length > 0 && (
+                 <div>
+                   <h4 class="font-bold flex items-center text-dark mb-2"><i class="ri-check-double-line text-emerald-500 mr-2 text-lg"></i>Что включено</h4>
+                   <ul class="pl-7 list-disc list-outside opacity-90 marker:text-emerald-500 space-y-1">
+                      {included.map(item => <li>{item}</li>)}
+                   </ul>
+                 </div>
+              )}
+              
+              {requirements && requirements.length > 0 && (
+                 <div>
+                   <h4 class="font-bold flex items-center text-dark mb-2"><i class="ri-file-list-3-line text-slate-500 mr-2 text-lg"></i>Для бронирования</h4>
+                   <ul class="pl-7 list-disc list-outside opacity-90 marker:text-slate-400 space-y-1">
+                      {requirements.map(item => <li>{item}</li>)}
+                   </ul>
+                 </div>
+              )}
+          </div>
+          
+          {/* Fallback for raw details if structured data is missing but details exists */}
+          {formattedDetails && (!features?.length && !included?.length) && (
+            <div class="prose prose-sm max-w-none prose-p:text-slate-600 prose-headings:text-dark prose-strong:text-dark" set:html={formattedDetails}></div>
+          )}
+          
+        </div>
+      </div>
+    )}
+
+    <button 
+      onclick={`event.stopPropagation(); openWhatsApp('${safeMessage}')`} 
+      class="w-full bg-primary text-white py-3.5 px-4 rounded-xl font-bold hover:bg-orange-600 transition mt-auto flex items-center justify-center shadow-lg shadow-orange-500/20 active:scale-[0.98]"
+    >
+      <i class="ri-whatsapp-line mr-2 text-xl"></i>Заказать
+    </button>
+  </div>
+</div>

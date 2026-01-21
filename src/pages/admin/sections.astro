@@ -1,0 +1,132 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getCollection } from '../../lib/data-store';
+
+const siteMeta = await getCollection('site-meta.json');
+
+// Дефолтные разделы если sections не существует
+const defaultSections = [
+    { id: 'popular', label: 'Популярное', icon: 'ri-fire-fill', enabled: true },
+    { id: 'excursions', label: 'Экскурсии', icon: 'ri-caravan-fill', enabled: true },
+    { id: 'transport', label: 'Транспорт', icon: 'ri-roadster-fill', enabled: true },
+    { id: 'accommodations', label: 'Жильё', icon: 'ri-hotel-fill', enabled: true },
+    { id: 'services', label: 'Услуги', icon: 'ri-customer-service-2-fill', enabled: true },
+    { id: 'currency', label: 'Курсы валют', icon: 'ri-exchange-dollar-line', enabled: false },
+    { id: 'contacts', label: 'Контакты', icon: 'ri-map-pin-fill', enabled: true },
+];
+
+const sections = siteMeta.sections || defaultSections;
+---
+
+<AdminLayout title="Разделы главной">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-8">
+            <div class="w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-3xl text-primary">
+                <i class="ri-layout-grid-fill"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-extrabold text-dark tracking-tight uppercase leading-none">Разделы</h1>
+                <p class="text-slate-500 text-sm mt-1">Перетаскивайте для изменения порядка</p>
+            </div>
+        </div>
+
+        <!-- Sections List -->
+        <div id="sections-list" class="space-y-3">
+            {sections.map((section, index) => (
+                <div 
+                    class="section-item bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-primary/30 transition-all"
+                    data-id={section.id}
+                    data-label={section.label}
+                    data-icon={section.icon}
+                >
+                    <div class="handle flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-colors">
+                        <i class="ri-draggable text-xl"></i>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 flex-1">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl">
+                            <i class={section.icon}></i>
+                        </div>
+                        <span class="font-bold text-dark text-lg">{section.label}</span>
+                    </div>
+                    
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            class="sr-only peer section-toggle" 
+                            checked={section.enabled}
+                            data-id={section.id}
+                        />
+                        <div class="w-14 h-8 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+            ))}
+        </div>
+
+        <!-- Info -->
+        <div class="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-100">
+            <div class="flex items-start gap-3">
+                <i class="ri-information-line text-blue-500 text-xl mt-0.5"></i>
+                <div>
+                    <p class="text-blue-800 font-semibold text-sm">Автосохранение</p>
+                    <p class="text-blue-600 text-sm mt-1">Изменения сохраняются автоматически при перетаскивании или переключении.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dynamically load SortableJS
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
+        script.onload = function() {
+            const list = document.getElementById('sections-list');
+            
+            // Initialize Sortable
+            new Sortable(list, {
+                handle: '.handle',
+                animation: 200,
+                ghostClass: 'opacity-50',
+                onEnd: saveOrder
+            });
+            
+            // Toggle handlers
+            document.querySelectorAll('.section-toggle').forEach(toggle => {
+                toggle.addEventListener('change', saveOrder);
+            });
+        };
+        document.head.appendChild(script);
+        
+        async function saveOrder() {
+            const sections = [];
+            document.querySelectorAll('.section-item').forEach(item => {
+                const id = item.dataset.id;
+                const toggle = item.querySelector('.section-toggle');
+                sections.push({
+                    id: id,
+                    label: item.dataset.label,
+                    icon: item.dataset.icon,
+                    enabled: toggle.checked
+                });
+            });
+            
+            try {
+                const res = await fetch('/api/site-meta/sections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sections })
+                });
+                
+                if (res.ok) {
+                    showToast('Порядок сохранён', 'success');
+                } else {
+                    showToast('Ошибка сохранения', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Ошибка сети', 'error');
+            }
+        }
+    </script>
+</AdminLayout>

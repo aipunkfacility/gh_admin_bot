@@ -1,0 +1,45 @@
+[
+  {
+    "id": "standard",
+    "title": "STANDARD",
+    "slug": "standard",
+    "icon": "ri-motorbike-line",
+    "description": "Идеальны для пляжа, поездок на рынок и спокойной езды. Honda Lead — любимчик девушек.",
+    "sortOrder": 1
+  },
+  {
+    "id": "comfort",
+    "title": "COMFORT",
+    "slug": "comfort",
+    "icon": "ri-e-bike-2-line",
+    "description": "Мощнее, устойчивее, подходит для поездок вдвоем и более дальних маршрутов.",
+    "sortOrder": 2
+  },
+  {
+    "id": "maxi",
+    "title": "Макси-скутеры: Комфорт и Мощность",
+    "badgeTitle": "Макси",
+    "slug": "maxi",
+    "icon": "ri-vip-crown-line",
+    "description": "Если вы планируете дальние поездки или просто любите уверенность на дороге — выбирайте этот класс.",
+    "sortOrder": 3
+  },
+  {
+    "id": "moto",
+    "title": "Мотоциклы на механике: Драйв и Свобода",
+    "badgeTitle": "Механика",
+    "slug": "moto",
+    "icon": "ri-motorbike-fill",
+    "description": "Для тех, кто умеет управлять сцеплением и хочет настоящих эмоций от вьетнамских дорог.",
+    "sortOrder": 4
+  },
+  {
+    "id": "car",
+    "title": "Аренда авто в Муйне: Комфорт и свобода",
+    "badgeTitle": "Автомобиль",
+    "slug": "car",
+    "icon": "ri-car-line",
+    "description": "Если скутер — это не ваша история, или вы путешествуете компанией, аренда авто станет идеальным решением.",
+    "sortOrder": 5
+  }
+]

@@ -1,0 +1,43 @@
+---
+import ServiceCard from '../components/ServiceCard.astro';
+import TransportCard from '../components/TransportCard.astro';
+
+interface Props {
+  items: any[];
+  categories: any[];
+}
+
+const { items, categories } = Astro.props;
+---
+
+<section id="popular" class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="text-4xl font-bold text-center mb-12 flex items-center justify-center gap-3">
+      <i class="ri-fire-line text-orange-500"></i> Популярное
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+      {items.map(item => {
+        if (item.type === 'transport') {
+          return (
+            <TransportCard 
+              {...item}
+              categories={categories}
+            />
+          );
+        } else {
+          return (
+            <ServiceCard 
+              title={item.title}
+              image={item.image}
+              shortDescription={item.shortDescription}
+              details={item.details}
+              priceFrom={item.priceFrom}
+              duration={item.duration}
+            />
+          );
+        }
+      })}
+    </div>
+  </div>
+</section>

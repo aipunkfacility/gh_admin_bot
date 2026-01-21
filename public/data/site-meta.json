@@ -1,0 +1,67 @@
+{
+  "mainTitle": "Муйне: Отдых без забот",
+  "mainSubtitle": "Мы поможем сделать ваш отдых комфортным и безопасным.",
+  "whatsappNumber": "84372733431",
+  "contacts": {
+    "telegramManager": "https://t.me/GreenHill_Support",
+    "telegramChannel": "https://t.me/GreenHill_tours",
+    "telegramBot": "https://t.me/GHtours_bot",
+    "offices": [
+      {
+        "name": "Green Hill Resort & Spa",
+        "address": "121 Nguyễn Đình Chiểu",
+        "mapLink": "https://maps.app.goo.gl/w1bmR4Z8Ub7FwpuUA"
+      },
+      {
+        "name": "Muine Sunlight Bungalow",
+        "address": "107 Nguyễn Đình Chiểu",
+        "mapLink": "https://maps.app.goo.gl/BVA6fUj6HBK49xzPA"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "currency",
+      "label": "Обмен валюты",
+      "icon": "ri-exchange-dollar-line",
+      "enabled": true
+    },
+    {
+      "id": "popular",
+      "label": "Популярное",
+      "icon": "ri-fire-fill",
+      "enabled": false
+    },
+    {
+      "id": "services",
+      "label": "Услуги",
+      "icon": "ri-customer-service-2-fill",
+      "enabled": true
+    },
+    {
+      "id": "transport",
+      "label": "Транспорт",
+      "icon": "ri-roadster-fill",
+      "enabled": true
+    },
+    {
+      "id": "excursions",
+      "label": "Экскурсии",
+      "icon": "ri-caravan-fill",
+      "enabled": true
+    },
+    {
+      "id": "accommodations",
+      "label": "Жильё",
+      "icon": "ri-hotel-fill",
+      "enabled": true
+    },
+    {
+      "id": "contacts",
+      "label": "Контакты",
+      "icon": "ri-map-pin-fill",
+      "enabled": true
+    }
+  ],
+  "id": "edit"
+}

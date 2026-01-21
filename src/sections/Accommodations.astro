@@ -1,0 +1,35 @@
+---
+import AccommodationCard from '../components/AccommodationCard.astro';
+
+interface Accommodation {
+  id: string;
+  title: string;
+  image?: string;
+  slogan?: string;
+  territoryDescription?: string;
+  address?: string;
+  details?: string;
+  isActive: boolean;
+}
+
+interface Props {
+  accommodations: Accommodation[];
+}
+
+const { accommodations } = Astro.props;
+const activeAccommodations = accommodations.filter(a => a.isActive !== false);
+---
+
+<section id="accommodations" class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="text-4xl font-bold text-center mb-12 flex items-center justify-center gap-3">
+      <i class="ri-home-4-line text-orange-500"></i> Жилье и апартаменты
+    </h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+      {activeAccommodations.map(acc => (
+        <AccommodationCard {...acc} />
+      ))}
+    </div>
+  </div>
+</section>

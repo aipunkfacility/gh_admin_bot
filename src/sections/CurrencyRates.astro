@@ -1,0 +1,164 @@
+---
+import { getCollection } from '../lib/data-store';
+
+const rates = await getCollection('rates.json') || {
+  rub_rate: 280,
+  usdt_rate: 25500,
+  usd_rate: 25000,
+  eur_rate: 27000,
+  cny_rate: 3400
+};
+
+const currencies = [
+  { code: 'RUB', name: 'Рубль', icon: 'ri-coins-fill', color: 'text-red-500', rate: rates.rub_rate },
+  { code: 'USD', name: 'Доллар', icon: 'ri-money-dollar-circle-fill', color: 'text-green-600', rate: rates.usd_rate },
+  { code: 'EUR', name: 'Евро', icon: 'ri-money-euro-circle-fill', color: 'text-blue-600', rate: rates.eur_rate },
+  { code: 'USDT', name: 'USDT', icon: 'ri-bit-coin-fill', color: 'text-emerald-500', rate: rates.usdt_rate },
+  { code: 'CNY', name: 'Юань', icon: 'ri-money-cny-circle-fill', color: 'text-amber-600', rate: rates.cny_rate },
+];
+
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat('ru-RU').format(num);
+};
+---
+
+<section id="currency" class="py-12 bg-white">
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 overflow-hidden flex flex-col md:flex-row">
+      
+      <!-- Rates Side -->
+      <div class="p-8 md:w-1/2 bg-slate-50/50">
+        <h2 class="text-2xl font-extrabold text-dark mb-6 flex items-center gap-2">
+            <i class="ri-exchange-dollar-line text-primary"></i>
+            Курсы валют
+        </h2>
+        
+        <div class="space-y-4">
+          {currencies.map(currency => (
+            <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <i class={`${currency.icon} ${currency.color} text-2xl`}></i>
+                    <div>
+                        <div class="font-bold text-slate-800 leading-none">{currency.name}</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{currency.code}</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-black text-slate-800 text-lg">{formatNumber(currency.rate)}</div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">VND</div>
+                </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Calculator Side -->
+      <div class="p-8 md:w-1/2 bg-white relative">
+        <div class="absolute top-0 right-0 p-4 opacity-5">
+            <i class="ri-calculator-fill text-9xl"></i>
+        </div>
+
+        <h2 class="text-2xl font-extrabold text-dark mb-6 relative z-10">Калькулятор</h2>
+        
+        <div class="space-y-6 relative z-10">
+            <!-- Currency Selection -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Валюта</label>
+                <div class="flex flex-wrap gap-2">
+                    {currencies.map((currency, index) => (
+                        <button 
+                            class={`currency-btn px-3 py-1.5 rounded-lg text-sm font-bold border transition-all flex items-center gap-1 ${index === 0 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-primary hover:text-primary'}`}
+                            data-rate={currency.rate}
+                            data-code={currency.code}
+                            data-icon={currency.icon}
+                        >
+                            {currency.code}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <!-- Amount Input -->
+            <div>
+                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Сумма</label>
+                 <div class="relative">
+                    <input 
+                        type="text" 
+                        id="calc-amount" 
+                        class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-bold text-lg text-slate-800"
+                        placeholder="100"
+                        value="100"
+                    />
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm" id="calc-currency-label">USD</div>
+                 </div>
+            </div>
+
+            <!-- Result -->
+            <div class="pt-6 border-t border-slate-100">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Вы получите (примерно)</label>
+                <div class="text-4xl font-black text-primary tracking-tight" id="calc-result">
+                    0
+                </div>
+                <div class="text-xs font-bold text-slate-400 mt-1">Вьетнамских донгов (VND)</div>
+            </div>
+            
+            <a href="#contacts" class="block w-full text-center py-3 rounded-xl bg-slate-900 text-white font-bold text-sm uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg mt-4">
+                Обменять
+            </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+    function initCalculator() {
+        const buttons = document.querySelectorAll('.currency-btn');
+        const input = document.getElementById('calc-amount');
+        const resultDisplay = document.getElementById('calc-result');
+        const currencyLabel = document.getElementById('calc-currency-label');
+        
+        let currentRate = 0;
+        
+        // Initialize with first button
+        if(buttons.length > 0) {
+            const first = buttons[0];
+            currentRate = parseFloat(first.dataset.rate);
+            currencyLabel.textContent = first.dataset.code;
+            calculate();
+        }
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update UI
+                buttons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'shadow-primary/30');
+                    b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-200');
+                });
+                
+                btn.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-200');
+                btn.classList.add('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'shadow-primary/30');
+                
+                // Update Logic
+                currentRate = parseFloat(btn.dataset.rate);
+                currencyLabel.textContent = btn.dataset.code;
+                calculate();
+            });
+        });
+
+        input.addEventListener('input', calculate);
+
+        function calculate() {
+            let val = input.value.replace(/[^0-9.]/g, ''); // Simple cleanup
+            let amount = parseFloat(val);
+            if (isNaN(amount)) amount = 0;
+            
+            const result = Math.floor(amount * currentRate);
+            resultDisplay.textContent = new Intl.NumberFormat('ru-RU').format(result);
+        }
+    }
+
+    // Run on load and on astro page transitions
+    initCalculator();
+    document.addEventListener('astro:page-load', initCalculator);
+</script>

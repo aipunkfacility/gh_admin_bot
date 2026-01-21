@@ -1,0 +1,253 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { readJsonFile } from '../../lib/bot/utils.js';
+
+export const prerender = false;
+
+const cookies = Astro.cookies;
+const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
+const isAuth = ADMIN_PASSWORD && cookies.get('gh_admin_auth')?.value === ADMIN_PASSWORD;
+
+if (!isAuth) {
+    return Astro.redirect('/admin/login');
+}
+
+// Загрузка текущих данных
+let rates = { rub_rate: 280, usdt_rate: 25500, usd_rate: 25000, eur_rate: 27000, cny_rate: 3500 };
+let admins = [123456, 789012];
+
+try {
+    rates = await readJsonFile('rates.json');
+    admins = await readJsonFile('admins.json');
+} catch (error) {
+    console.error('Error loading bot data:', error);
+}
+---
+
+<AdminLayout title="Настройки Бота">
+    <div class="space-y-6">
+        <div class="flex flex-col gap-2">
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                <span class="text-primary"><i class="ri-robot-2-fill"></i></span>
+                Настройки Telegram Бота
+            </h1>
+            <p class="text-slate-500 text-lg font-medium">Управление курсами валют и администраторами</p>
+        </div>
+
+        <!-- Горизонтальная раскладка двух блоков -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Курсы Валют -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 px-8 py-6">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="ri-money-dollar-circle-fill text-3xl"></i>
+                    Курсы Валют
+                </h2>
+            </div>
+            
+            <form id="ratesForm" class="p-8 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">🇷🇺 Рубль (RUB) → VND</label>
+                        <input 
+                            type="number" 
+                            name="rub_rate" 
+                            value={rates.rub_rate}
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all font-semibold text-lg"
+                            required
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">💎 USDT → VND</label>
+                        <input 
+                            type="number" 
+                            name="usdt_rate" 
+                            value={rates.usdt_rate}
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all font-semibold text-lg"
+                            required
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">💵 Доллар (USD) → VND</label>
+                        <input 
+                            type="number" 
+                            name="usd_rate" 
+                            value={rates.usd_rate}
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all font-semibold text-lg"
+                            required
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">🇪🇺 Евро (EUR) → VND</label>
+                        <input 
+                            type="number" 
+                            name="eur_rate" 
+                            value={rates.eur_rate}
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all font-semibold text-lg"
+                            required
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">🇨🇳 Юань (CNY) → VND</label>
+                        <input 
+                            type="number" 
+                            name="cny_rate" 
+                            value={rates.cny_rate}
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all font-semibold text-lg"
+                            required
+                        />
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button 
+                        type="submit" 
+                        class="btn-primary px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                    >
+                        <i class="ri-save-line"></i>
+                        Сохранить Курсы
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Администраторы -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-orange-600 to-orange-700 px-8 py-6">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="ri-admin-fill text-3xl"></i>
+                    Администраторы Бота
+                </h2>
+            </div>
+            
+            <div class="p-8 space-y-6">
+                <div class="bg-orange-50 border-2 border-orange-100 rounded-2xl p-6 flex items-start gap-4">
+                    <i class="ri-information-fill text-2xl text-orange-500"></i>
+                    <div>
+                        <p class="text-orange-900 font-bold mb-1">Как найти Telegram ID?</p>
+                        <p class="text-orange-700 text-sm font-medium">Напишите боту <code class="bg-orange-200/50 px-2 py-0.5 rounded text-orange-900">@userinfobot</code> в Telegram, и он покажет ваш идентификатор.</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Текущие администраторы:</h3>
+                    <ul id="adminsList" class="space-y-2">
+                        {admins.map((adminId) => (
+                            <li class="flex items-center justify-between bg-slate-50 rounded-lg px-6 py-4 border border-slate-200">
+                                <span class="font-mono text-lg font-bold text-slate-800">{adminId}</span>
+                                <button 
+                                    type="button" 
+                                    onclick={`removeAdmin(${adminId})`}
+                                    class="text-rose-600 hover:bg-rose-50 px-4 py-2 rounded-lg transition-all font-bold flex items-center gap-2"
+                                >
+                                    <i class="ri-delete-bin-fill"></i>
+                                    Удалить
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                
+                <form id="addAdminForm" class="flex gap-4">
+                    <input 
+                        type="number" 
+                        id="newAdminId" 
+                        placeholder="Введите Telegram ID (например: 123456789)"
+                        class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all font-semibold"
+                        required
+                    />
+                    <button 
+                        type="submit" 
+                        class="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition-all shadow-lg flex items-center gap-2"
+                    >
+                        <i class="ri-add-circle-fill"></i>
+                        Добавить
+                    </button>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script is:inline define:vars={{ initialAdmins: admins }}>
+        let currentAdmins = initialAdmins;
+
+        // Сохранение курсов
+        document.getElementById('ratesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const rates = {
+                rub_rate: parseInt(formData.get('rub_rate')),
+                usdt_rate: parseInt(formData.get('usdt_rate')),
+                usd_rate: parseInt(formData.get('usd_rate')),
+                eur_rate: parseInt(formData.get('eur_rate')),
+                cny_rate: parseInt(formData.get('cny_rate')),
+            };
+            
+            try {
+                const res = await fetch('/api/bot/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'rates', payload: rates })
+                });
+                
+                if (res.ok) {
+                    alert('✅ Курсы успешно обновлены!');
+                } else {
+                    alert('❌ Ошибка сохранения курсов');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Ошибка сети');
+            }
+        });
+
+        // Добавление администратора
+        document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newId = parseInt(document.getElementById('newAdminId').value);
+            
+            if (currentAdmins.includes(newId)) {
+                alert('⚠️ Этот администратор уже добавлен');
+                return;
+            }
+            
+            currentAdmins.push(newId);
+            await saveAdmins();
+            document.getElementById('newAdminId').value = '';
+        });
+
+        // Удаление администратора
+        window.removeAdmin = async (adminId) => {
+            if (!confirm(`Удалить администратора ${adminId}?`)) return;
+            
+            currentAdmins = currentAdmins.filter(id => id !== adminId);
+            await saveAdmins();
+        };
+
+        // Сохранение списка администраторов
+        async function saveAdmins() {
+            try {
+                const res = await fetch('/api/bot/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'admins', payload: currentAdmins })
+                });
+                
+                if (res.ok) {
+                    location.reload();
+                } else {
+                    alert('❌ Ошибка сохранения администраторов');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Ошибка сети');
+            }
+        }
+    </script>
+</AdminLayout>

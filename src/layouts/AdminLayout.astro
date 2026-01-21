@@ -1,0 +1,324 @@
+
+---
+const { title = 'Admin Panel' } = Astro.props;
+---
+
+<html lang="ru">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | GreenHill Admin</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/fonts/remixicon/remixicon.css">
+        <style is:global>
+            @import "tailwindcss";
+
+            @theme {
+              --color-primary: #FF6400;
+              --color-primary-hover: #ea580c;
+              --color-secondary: #204732;
+              --color-secondary-hover: #1f422b;
+              --color-dark: #1A2F5A;
+            }
+
+            body { 
+                font-family: 'Montserrat', sans-serif;
+                background-color: #f9fafb;
+            }
+            
+            .admin-sidebar {
+                background-color: var(--color-secondary);
+                color: white;
+            }
+
+            .nav-link.active {
+                background-color: var(--color-primary);
+                color: white;
+            }
+            
+            .btn-primary {
+                background-color: var(--color-primary);
+                color: white;
+                transition: background-color 0.2s;
+            }
+            .btn-primary:hover {
+                background-color: var(--color-primary-hover);
+            }
+
+            .sidebar-icon {
+                font-size: 1.25rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+            }
+            
+            /* Toast Notifications */
+            .toast-container {
+                position: fixed;
+                top: 24px;
+                right: 24px;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                pointer-events: none;
+            }
+            
+            .toast {
+                padding: 16px 24px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 14px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                pointer-events: auto;
+                animation: toast-in 0.3s ease-out;
+                max-width: 400px;
+            }
+            
+            .toast.success {
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+            }
+            
+            .toast.error {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                color: white;
+            }
+            
+            .toast.info {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+            }
+            
+            .toast.removing {
+                animation: toast-out 0.3s ease-in forwards;
+            }
+            
+            @keyframes toast-in {
+                from { opacity: 0; transform: translateX(100%); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            
+            @keyframes toast-out {
+                from { opacity: 1; transform: translateX(0); }
+                to { opacity: 0; transform: translateX(100%); }
+            }
+            
+            /* Confirm Modal */
+            .confirm-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 9998;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0,0,0,0.5);
+                backdrop-filter: blur(4px);
+                animation: fade-in 0.2s ease-out;
+            }
+            
+            .confirm-modal-content {
+                background: white;
+                padding: 32px;
+                border-radius: 20px;
+                max-width: 400px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                animation: scale-in 0.2s ease-out;
+            }
+            
+            @keyframes fade-in {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes scale-in {
+                from { opacity: 0; transform: scale(0.9); }
+                to { opacity: 1; transform: scale(1); }
+            }
+        </style>
+	</head>
+	<body class="min-h-screen text-slate-900 selection:bg-orange-100">
+        <div class="flex min-h-screen">
+            <!-- Sidebar -->
+            <aside class="w-72 admin-sidebar fixed h-full z-20 hidden md:block transition-all duration-300 overflow-y-auto">
+                <div class="p-8">
+                    <a href="/admin" class="flex items-center gap-3">
+                        <img src="/images/logo.svg" alt="Logo" class="w-10 h-10 object-contain" />
+                        <h1 class="text-xl font-extrabold tracking-tighter text-white leading-none">
+                            <div class="flex items-center">
+                                <span>GreenHill</span>
+                                <span class="text-primary ml-1.5">Tours</span>
+                            </div>
+                            <span class="text-white/50 block text-[10px] mt-1 font-black uppercase tracking-[0.3em]">Админ-панель</span>
+                        </h1>
+                    </a>
+                </div>
+                <nav class="px-4 pb-6 space-y-1">
+                    <a href="/admin" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all duration-200 group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-dashboard-fill"></i></span>
+                        <span class="font-semibold">Дашборд</span>
+                    </a>
+                    
+                    <div class="pt-6 pb-2 px-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Управление</div>
+                    
+                    <a href="/admin/excursions" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-caravan-fill"></i></span>
+                        <span class="font-semibold">Экскурсии</span>
+                    </a>
+                    <a href="/admin/transport-items" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-roadster-fill"></i></span>
+                        <span class="font-semibold">Транспорт</span>
+                    </a>
+                    <a href="/admin/accommodations" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-hotel-fill"></i></span>
+                        <span class="font-semibold">Жилье</span>
+                    </a>
+                    <a href="/admin/services" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-customer-service-2-fill"></i></span>
+                        <span class="font-semibold">Услуги</span>
+                    </a>
+                    
+                    <div class="pt-6 pb-2 px-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Система</div>
+                    <a href="/admin/sections" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-layout-grid-fill"></i></span>
+                        <span class="font-semibold">Разделы</span>
+                    </a>
+                    <a href="/admin/site-meta" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-settings-4-fill"></i></span>
+                        <span class="font-semibold">Настройки сайта</span>
+                    </a>
+                    <a href="/admin/bot-settings" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-robot-2-fill"></i></span>
+                        <span class="font-semibold">Настройки бота</span>
+                    </a>
+                    
+                    <div class="mt-12 pt-4 border-t border-white/10">
+                        <button id="logoutBtn" class="w-full flex items-center px-4 py-3 text-white/40 rounded-lg hover:bg-rose-500/10 hover:text-rose-500 transition-all group">
+                            <span class="mr-3 opacity-70 group-hover:translate-x-1 transition-transform sidebar-icon"><i class="ri-logout-box-r-fill"></i></span>
+                            <span class="font-bold uppercase text-xs tracking-widest">Выйти</span>
+                        </button>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Mobile Header -->
+            <div class="md:hidden fixed top-0 w-full admin-sidebar z-30 px-4 py-3 flex justify-between items-center">
+                 <a href="/admin" class="flex items-center gap-2 cursor-pointer">
+                    <img src="/images/logo.svg" alt="Logo" class="w-8 h-8 object-contain" />
+                    <h1 class="text-lg font-extrabold text-white tracking-tighter">GreenHill <span class="text-primary">Tours</span></h1>
+                 </a>
+                 <button id="adminMobileMenuBtn" class="p-2 rounded-lg bg-white/10 text-white text-2xl flex items-center justify-center">
+                    <i class="ri-menu-line"></i>
+                 </button>
+            </div>
+
+            <!-- Content -->
+            <main class="flex-1 md:ml-72 p-6 md:p-10 mt-20 md:mt-0 w-full">
+                <slot />
+            </main>
+        </div>
+        
+        <!-- Toast Container -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <script>
+            // Global Toast Function
+            window.showToast = function(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                const icons = {
+                    success: 'ri-check-line',
+                    error: 'ri-close-line',
+                    info: 'ri-information-line'
+                };
+                
+                toast.innerHTML = `<i class="${icons[type] || icons.info} text-xl"></i><span>${message}</span>`;
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            };
+            
+            // Global Confirm Function (returns Promise)
+            window.showConfirm = function(message, title = 'Подтверждение') {
+                return new Promise((resolve) => {
+                    const modal = document.createElement('div');
+                    modal.className = 'confirm-modal';
+                    modal.innerHTML = `
+                        <div class="confirm-modal-content">
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">${title}</h3>
+                            <p class="text-slate-600 mb-6 whitespace-pre-line">${message}</p>
+                            <div class="flex gap-3 justify-end">
+                                <button class="cancel-btn px-6 py-3 text-slate-500 hover:text-slate-700 font-semibold rounded-xl transition-colors">Отмена</button>
+                                <button class="confirm-btn px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors">Подтвердить</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    modal.querySelector('.cancel-btn').onclick = () => {
+                        modal.remove();
+                        resolve(false);
+                    };
+                    
+                    modal.querySelector('.confirm-btn').onclick = () => {
+                        modal.remove();
+                        resolve(true);
+                    };
+                    
+                    modal.onclick = (e) => {
+                        if (e.target === modal) {
+                            modal.remove();
+                            resolve(false);
+                        }
+                    };
+                });
+            };
+            
+            const logoutBtn = document.getElementById('logoutBtn');
+            const menuBtn = document.getElementById('adminMobileMenuBtn');
+            const sidebar = document.querySelector('aside');
+            
+            logoutBtn?.addEventListener('click', async () => {
+                const confirmed = await showConfirm('Вы точно хотите выйти из админ-панели?', 'Выход');
+                if (!confirmed) return;
+                try {
+                    await fetch('/api/auth?action=logout', { method: 'POST' });
+                    window.location.href = '/admin/login';
+                } catch (e) {
+                    console.error('Logout failed', e);
+                    showToast('Ошибка выхода', 'error');
+                }
+            });
+
+            menuBtn?.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+                if (!sidebar.classList.contains('hidden')) {
+                    sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-full', 'bg-[#2D5F3E]');
+                }
+            });
+
+            // Highlight active link
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('nav a').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === currentPath || (href !== '/admin' && currentPath.startsWith(href))) {
+                    link.classList.add('active');
+                }
+            });
+        </script>
+	</body>
+</html>

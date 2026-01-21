@@ -1,0 +1,96 @@
+---
+interface Props {
+  sections?: Array<{id: string; label: string; icon: string; enabled: boolean}>;
+}
+
+const { sections = [] } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
+
+// Маппинг ID разделов на якоря и названия
+const sectionLabels: Record<string, string> = {
+  popular: 'Популярное',
+  excursions: 'Экскурсии',
+  transport: 'Транспорт',
+  accommodations: 'Жилье',
+  services: 'Услуги',
+  currency: 'Обмен валюты',
+  contacts: 'Контакты'
+};
+
+// Фильтруем только включенные разделы
+const enabledSections = sections.filter(s => s.enabled);
+---
+
+<header class="bg-white py-3 shadow-sm sticky top-0 z-50">
+  <div class="w-full px-3 flex items-center justify-between">
+    <!-- Logo (far left) -->
+    <a href="/" class="flex items-center gap-2 group flex-shrink-0">
+      <div class="w-10 h-10 rounded-full overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
+          <img src={`${baseUrl}my-favicon/favicon.svg`} alt="Logo" class="w-full h-full object-cover" />
+      </div>
+      <span class="text-xl font-bold text-dark group-hover:text-primary transition-colors">
+        GreenHill <span class="text-primary">Tours</span>
+      </span>
+    </a>
+    
+    <!-- Central Nav (takes available space, centered) -->
+    <nav class="hidden lg:flex items-center justify-center gap-6 flex-1 px-4">
+      {enabledSections.map(section => (
+        <a href={`#${section.id}`} class="text-slate-600 font-bold hover:text-primary transition-colors text-lg whitespace-nowrap">
+          {section.label || sectionLabels[section.id] || section.id}
+        </a>
+      ))}
+    </nav>
+
+    <!-- WhatsApp Button (far right) -->
+    <button onclick="openWhatsApp()" class="hidden sm:flex items-center gap-2 bg-[#00D95F] hover:bg-[#00c054] text-white px-5 py-2 rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 flex-shrink-0">
+      <i class="ri-whatsapp-line text-xl"></i>
+      <span>Написать</span>
+    </button>
+    
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="lg:hidden p-2 text-slate-600 hover:text-primary transition-colors flex items-center justify-center">
+        <i class="ri-menu-right-line text-3xl"></i>
+    </button>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-100 bg-white absolute w-full left-0 shadow-lg">
+    <div class="px-6 py-4 flex flex-col gap-4">
+      {enabledSections.map(section => (
+        <a href={`#${section.id}`} class="text-lg font-bold text-slate-600 hover:text-primary">
+          {section.label || sectionLabels[section.id] || section.id}
+        </a>
+      ))}
+      <button onclick="openWhatsApp()" class="flex items-center justify-center gap-2 bg-[#00D95F] text-white py-3 rounded-xl font-bold mt-2">
+         <i class="ri-whatsapp-line text-xl"></i>
+         <span>Написать в WhatsApp</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  const btn = document.getElementById('mobileMenuBtn');
+  const menu = document.getElementById('mobileMenu');
+  
+  if (btn && menu) {
+      btn.addEventListener('click', () => {
+          menu.classList.toggle('hidden');
+          const icon = btn.querySelector('i');
+          if (menu.classList.contains('hidden')) {
+             icon.className = 'ri-menu-right-line text-3xl';
+          } else {
+             icon.className = 'ri-close-line text-3xl';
+          }
+      });
+
+      // Close on link click
+      menu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => {
+              menu.classList.add('hidden');
+              btn.querySelector('i').className = 'ri-menu-right-line text-3xl';
+          });
+      });
+  }
+</script>

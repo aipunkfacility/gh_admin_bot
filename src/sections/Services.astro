@@ -1,0 +1,33 @@
+---
+import ServiceCard from '../components/ServiceCard.astro';
+
+interface Service {
+  id: string;
+  title: string;
+  image?: string;
+  shortDescription?: string;
+  details?: string;
+  isActive: boolean;
+}
+
+interface Props {
+  services: Service[];
+}
+
+const { services } = Astro.props;
+const activeServices = services.filter(s => s.isActive !== false);
+---
+
+<section id="services" class="py-16 bg-gray-50">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="text-4xl font-bold text-center mb-12 flex items-center justify-center gap-3">
+      <i class="ri-customer-service-2-line text-orange-500"></i> Услуги и сервис
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+      {activeServices.map(service => (
+        <ServiceCard {...service} />
+      ))}
+    </div>
+  </div>
+</section>

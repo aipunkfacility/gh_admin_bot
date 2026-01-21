@@ -1,0 +1,777 @@
+import { Telegraf, session } from 'telegraf';
+import { stage } from './scenes.js';
+import {
+    readJsonFile,
+    getFullImageUrl,
+    paginate,
+    getPaginationButtons,
+    formatExcursionCard,
+    formatTransportCard,
+    formatAccommodationCard,
+    escapeMarkdown
+} from './utils.js';
+
+// Инициализация бота
+let token;
+try {
+    token = import.meta.env.TELEGRAM_BOT_TOKEN;
+} catch (e) {
+    // import.meta.env не существует в чистом Node.js
+}
+token = token || process.env.TELEGRAM_BOT_TOKEN;
+
+if (!token) throw new Error('Bot Token is required');
+const bot = new Telegraf(token);
+
+// Middleware
+bot.use(session());
+bot.use(stage.middleware());
+
+// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+
+async function showMainMenu(ctx) {
+    const message = `👋 Добро пожаловать в Green Hill Tours!
+
+Выберите интересующий раздел:`;
+
+    await ctx.reply(message, {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: '💰 Обмен валют', callback_data: 'calc_exchange' }],
+                [{ text: '🚖 Трансфер', callback_data: 'transfer_info' }],
+                [{ text: '🛂 Визаран', callback_data: 'visarun_info' }],
+                [{ text: '🏍 Транспорт', callback_data: 'cat_transport' }],
+                [{ text: '🌴 Экскурсии', callback_data: 'cat_excursions' }],
+                [{ text: '🏨 Жилье', callback_data: 'cat_accommodations' }],
+                [{ text: '📞 Контакты', callback_data: 'contacts' }],
+            ],
+        },
+    });
+}
+
+
+// ========== КОМАНДА /START ==========
+bot.command('start', async (ctx) => {
+    ctx.session = ctx.session || {};
+    await showMainMenu(ctx);
+});
+
+// ========== КОМАНДА /MENU ==========
+bot.command('menu', async (ctx) => {
+    await showMainMenu(ctx);
+});
+
+// Устанавливаем команды бота (появятся в меню рядом с полем ввода)
+bot.telegram.setMyCommands([
+    { command: 'start', description: 'Запустить бота' },
+    { command: 'menu', description: 'Главное меню' },
+]).catch(err => console.error('Failed to set bot commands:', err));
+
+
+// ========== НАЗАД В МЕНЮ ==========
+bot.action('back_to_start', async (ctx) => {
+    await ctx.answerCbQuery();
+    await showMainMenu(ctx);
+});
+
+bot.action('noop', async (ctx) => {
+    await ctx.answerCbQuery();
+});
+
+// ========== ТРАНСПОРТ ==========
+
+// Категории транспорта
+const transportCategories = [
+    { id: 'standard', name: '🛵 Стандарт', slug: 'standard' },
+    { id: 'comfort', name: '⚡️ Комфорт', slug: 'comfort' },
+    { id: 'maxi', name: '🏍 Макси', slug: 'maxi' },
+    { id: 'moto', name: '🏁 Мото', slug: 'moto' },
+    { id: 'car', name: '🚗 Авто', slug: 'car' },
+];
+
+bot.action('cat_transport', async (ctx) => {
+    await ctx.answerCbQuery();
+    ctx.session = ctx.session || {};
+    ctx.session.transportCategory = null;
+
+    await ctx.reply('🏍 Выберите категорию транспорта:', {
+        reply_markup: {
+            inline_keyboard: [
+                ...transportCategories.map(cat => [{ text: cat.name, callback_data: `transport_cat_${cat.id}` }]),
+                [{ text: '📋 Все категории', callback_data: 'transport_all_1' }],
+                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+            ],
+        },
+    });
+});
+
+// Выбор категории транспорта
+bot.action(/^transport_cat_(.+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const categoryId = ctx.match[1];
+    ctx.session = ctx.session || {};
+    ctx.session.transportCategory = categoryId;
+
+    await showTransportList(ctx, 1, categoryId);
+});
+
+// Все категории транспорта с пагинацией
+bot.action(/^transport_all_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const page = parseInt(ctx.match[1]);
+    ctx.session = ctx.session || {};
+    ctx.session.transportCategory = null;
+
+    await showTransportList(ctx, page, null);
+});
+
+// Пагинация транспорта по категории
+bot.action(/^transport_page_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const page = parseInt(ctx.match[1]);
+    const category = ctx.session?.transportCategory || null;
+
+    await showTransportList(ctx, page, category);
+});
+
+async function showTransportList(ctx, page, categoryId) {
+    try {
+        let items = await readJsonFile('transport-items.json');
+        items = items.filter(i => i.isActive !== false);
+
+        if (categoryId) {
+            items = items.filter(i => i.categoryId === categoryId);
+        }
+
+        if (!items || items.length === 0) {
+            await ctx.reply('🔍 Транспорт не найден.', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '◀️ Назад к категориям', callback_data: 'cat_transport' }],
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            });
+            return;
+        }
+
+        const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
+
+        const categoryName = categoryId
+            ? transportCategories.find(c => c.id === categoryId)?.name || 'Транспорт'
+            : '🏍 Весь транспорт';
+
+        await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
+
+        for (const item of pageItems) {
+            const imageUrl = getFullImageUrl(item.image);
+            const caption = `🏍 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.useCases || '')}\n\n💰 ${escapeMarkdown(item.pricePerDay || 'уточняйте')}/день`;
+
+            const keyboard = [
+                [{ text: '📋 Подробнее', callback_data: `transport_detail_${item.id}` }],
+                [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
+            ];
+
+            try {
+                await ctx.replyWithPhoto(imageUrl, {
+                    caption,
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            } catch {
+                await ctx.reply(caption, {
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            }
+        }
+
+        // Навигация
+        const navButtons = [];
+        const paginationRow = getPaginationButtons('transport', currentPage, totalPages, hasNext, hasPrev);
+        if (paginationRow.length > 1) {
+            navButtons.push(paginationRow);
+        }
+        navButtons.push([{ text: '◀️ Назад к категориям', callback_data: 'cat_transport' }]);
+        navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
+
+        await ctx.reply('📄 Страница:', {
+            reply_markup: { inline_keyboard: navButtons },
+        });
+
+    } catch (error) {
+        console.error('Error loading transport:', error);
+        await ctx.reply('❌ Ошибка загрузки транспорта.');
+    }
+}
+
+// Детали транспорта
+bot.action(/^transport_detail_(.+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const itemId = ctx.match[1];
+
+    try {
+        const items = await readJsonFile('transport-items.json');
+        const item = items.find(i => i.id === itemId);
+
+        if (!item) {
+            await ctx.reply('❌ Товар не найден.');
+            return;
+        }
+
+        const text = formatTransportCard(item);
+
+        if (item.image) {
+            const imageUrl = getFullImageUrl(item.image);
+
+            await ctx.replyWithPhoto(imageUrl, {
+                caption: text,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
+                        [{ text: '◀️ Назад к списку', callback_data: 'transport_page_1' }],
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            }).catch(async (photoError) => {
+                console.error('Failed to send photo:', photoError.message);
+                await ctx.reply(`${text}\n\n⚠️ Фото временно недоступно`, {
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
+                            [{ text: '◀️ Назад к списку', callback_data: 'transport_page_1' }],
+                            [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                        ],
+                    },
+                });
+            });
+        } else {
+            await ctx.reply(text, {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
+                        [{ text: '◀️ Назад к списку', callback_data: 'transport_page_1' }],
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            });
+        }
+    } catch (error) {
+        console.error('Error loading transport detail:', error);
+        await ctx.reply('❌ Ошибка загрузки.');
+    }
+});
+
+// ========== ЭКСКУРСИИ ==========
+
+bot.action('cat_excursions', async (ctx) => {
+    await ctx.answerCbQuery();
+    await showExcursionsList(ctx, 1);
+});
+
+bot.action(/^excursions_page_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const page = parseInt(ctx.match[1]);
+    await showExcursionsList(ctx, page);
+});
+
+async function showExcursionsList(ctx, page) {
+    try {
+        let items = await readJsonFile('excursions.json');
+        items = items.filter(i => i.isActive !== false);
+
+        if (!items || items.length === 0) {
+            await ctx.reply('🔍 Экскурсии временно недоступны.', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            });
+            return;
+        }
+
+        const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
+
+        await ctx.reply(`🌴 Экскурсии (${currentPage}/${totalPages}):`);
+
+        for (const item of pageItems) {
+            const imageUrl = getFullImageUrl(item.image);
+            const caption = `🌴 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.shortDescription || '')}\n\n💰 ${escapeMarkdown(item.priceFrom || 'уточняйте')}`;
+
+            const keyboard = [
+                [{ text: '📋 Подробнее', callback_data: `excursion_detail_${item.id}` }],
+                [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
+            ];
+
+            try {
+                await ctx.replyWithPhoto(imageUrl, {
+                    caption,
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            } catch {
+                await ctx.reply(caption, {
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            }
+        }
+
+        // Навигация
+        const navButtons = [];
+        const paginationRow = getPaginationButtons('excursions', currentPage, totalPages, hasNext, hasPrev);
+        if (paginationRow.length > 1) {
+            navButtons.push(paginationRow);
+        }
+        navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
+
+        await ctx.reply('📄 Страница:', {
+            reply_markup: { inline_keyboard: navButtons },
+        });
+
+    } catch (error) {
+        console.error('Error loading excursions:', error);
+        await ctx.reply('❌ Ошибка загрузки экскурсий.');
+    }
+}
+
+// Детали экскурсии
+bot.action(/^excursion_detail_(.+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const itemId = ctx.match[1];
+
+    try {
+        const items = await readJsonFile('excursions.json');
+        const item = items.find(i => i.id === itemId);
+
+        if (!item) {
+            await ctx.reply('❌ Экскурсия не найдена.');
+            return;
+        }
+
+        const text = formatExcursionCard(item);
+
+        if (item.image) {
+            const imageUrl = getFullImageUrl(item.image);
+
+            await ctx.replyWithPhoto(imageUrl, {
+                caption: text,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
+                        [{ text: '◀️ Назад к списку', callback_data: 'excursions_page_1' }],
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            }).catch(async (photoError) => {
+                console.error('Failed to send photo:', photoError.message);
+                await ctx.reply(`${text}\n\n⚠️ Фото временно недоступно`, {
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
+                            [{ text: '◀️ Назад к списку', callback_data: 'excursions_page_1' }],
+                            [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                        ],
+                    },
+                });
+            });
+        } else {
+            await ctx.reply(text, {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
+                        [{ text: '◀️ Назад к списку', callback_data: 'excursions_page_1' }],
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            });
+        }
+    } catch (error) {
+        console.error('Error loading excursion detail:', error);
+        await ctx.reply('❌ Ошибка загрузки.');
+    }
+});
+
+// ========== ЖИЛЬЕ ==========
+
+bot.action('cat_accommodations', async (ctx) => {
+    await ctx.answerCbQuery();
+    await showAccommodationsList(ctx, 1);
+});
+
+// Поддержка старого callback для совместимости
+bot.action('accommodation_menu', async (ctx) => {
+    await ctx.answerCbQuery();
+    await showAccommodationsList(ctx, 1);
+});
+
+bot.action(/^accommodations_page_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const page = parseInt(ctx.match[1]);
+    await showAccommodationsList(ctx, page);
+});
+
+async function showAccommodationsList(ctx, page) {
+    try {
+        let items = await readJsonFile('accommodations.json');
+        items = items.filter(i => i.isActive !== false);
+
+        if (!items || items.length === 0) {
+            await ctx.reply('🔍 Жилье временно недоступно.', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            });
+            return;
+        }
+
+        const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
+
+        await ctx.reply(`🏨 Жилье (${currentPage}/${totalPages}):`);
+
+        for (const item of pageItems) {
+            const imageUrl = getFullImageUrl(item.image);
+            const caption = `🏨 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.slogan || '')}\n\n📍 ${escapeMarkdown(item.address || '')}`;
+
+            const keyboard = [
+                [{ text: '📋 Подробнее', callback_data: `accommodation_detail_${item.id}` }],
+                [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
+            ];
+
+            try {
+                await ctx.replyWithPhoto(imageUrl, {
+                    caption,
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            } catch {
+                await ctx.reply(caption, {
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            }
+        }
+
+        // Навигация
+        const navButtons = [];
+        const paginationRow = getPaginationButtons('accommodations', currentPage, totalPages, hasNext, hasPrev);
+        if (paginationRow.length > 1) {
+            navButtons.push(paginationRow);
+        }
+        navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
+
+        await ctx.reply('📄 Страница:', {
+            reply_markup: { inline_keyboard: navButtons },
+        });
+
+    } catch (error) {
+        console.error('Error loading accommodations:', error);
+        await ctx.reply('❌ Ошибка загрузки жилья.');
+    }
+}
+
+// Детали жилья
+bot.action(/^accommodation_detail_(.+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const itemId = ctx.match[1];
+
+    try {
+        const items = await readJsonFile('accommodations.json');
+        const item = items.find(i => i.id === itemId);
+
+        if (!item) {
+            await ctx.reply('❌ Жилье не найдено.');
+            return;
+        }
+
+        const text = formatAccommodationCard(item);
+        const imageUrl = getFullImageUrl(item.image);
+
+        try {
+            await ctx.replyWithPhoto(imageUrl, {
+                caption: text,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
+                        [{ text: '◀️ Назад к списку', callback_data: 'accommodations_page_1' }],
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            });
+        } catch {
+            await ctx.reply(text, {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
+                        [{ text: '◀️ Назад к списку', callback_data: 'accommodations_page_1' }],
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                    ],
+                },
+            });
+        }
+    } catch (error) {
+        console.error('Error loading accommodation detail:', error);
+        await ctx.reply('❌ Ошибка загрузки.');
+    }
+});
+
+// ========== ИНФОРМАЦИОННЫЕ РАЗДЕЛЫ ==========
+
+// Визаран
+bot.action('visarun_info', async (ctx) => {
+    await ctx.answerCbQuery();
+    await ctx.reply(`🛂 *Визаран*
+
+Поможем с оформлением визаранов во Вьетнаме.
+
+✅ *Что включено:*
+• Трансфер туда-обратно
+• Оформление Е-визы во Вьетнам
+• Оформление Е-визы в Камбоджу
+
+⏰ *Тайминг:*
+• Выезд: 02:30
+• Возвращение: 16:00–17:00
+
+Для бронирования нажмите кнопку ниже!`, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: '✅ Забронировать', callback_data: 'book_visarun' }],
+                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+            ],
+        },
+    });
+});
+
+// Трансфер
+bot.action('transfer_info', async (ctx) => {
+    await ctx.answerCbQuery();
+    await ctx.reply(`🚖 *Трансфер*
+
+Организуем трансферы по всему Вьетнаму.
+
+🚘 *Автомобиль:* Toyota Fortuner (7 мест)
+
+✅ *Включено:*
+• Встреча с табличкой
+• Платные дороги
+• Вода в салоне
+
+📍 *Направления:*
+• Аэропорт Хошимин (SGN)
+• Нячанг / Камрань
+
+Для бронирования нажмите кнопку ниже!`, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: '✅ Забронировать', callback_data: 'book_transfer' }],
+                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+            ],
+        },
+    });
+});
+
+// Контакты
+bot.action('contacts', async (ctx) => {
+    await ctx.answerCbQuery();
+    await ctx.reply(`📞 *Наши контакты:*
+
+🌐 Сайт: greenhilltours.com
+📱 Telegram: @greenhilltours
+📧 Email: info@greenhilltours.com
+
+Мы всегда на связи!`, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+            ],
+        },
+    });
+});
+
+// Калькулятор валют
+bot.action('calc_exchange', async (ctx) => {
+    await ctx.answerCbQuery();
+    return ctx.scene.enter('exchange_calculator');
+});
+
+// ========== БРОНИРОВАНИЕ ==========
+
+// Бронирование обмена валют
+bot.action('book_exchange', async (ctx) => {
+    await ctx.answerCbQuery();
+
+    const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    const userId = ctx.from.id;
+
+    const calculation = ctx.scene?.session?.calculation || ctx.session?.calculation;
+
+    if (!calculation) {
+        await ctx.reply('❌ Данные расчета не найдены. Попробуйте заново.');
+        return;
+    }
+
+    const bookingMessage = `🔔 НОВАЯ ЗАЯВКА - ОБМЕН ВАЛЮТ
+
+👤 Пользователь: ${username} (ID: ${userId})
+💱 Операция: ${calculation.amount} ${calculation.currency} → ${calculation.result} VND
+
+Свяжитесь с клиентом для подтверждения!`;
+
+    try {
+        const admins = await readJsonFile('admins.json');
+
+        for (const adminId of admins) {
+            try {
+                await ctx.telegram.sendMessage(adminId, bookingMessage);
+            } catch (error) {
+                console.error(`Failed to notify admin ${adminId}:`, error);
+            }
+        }
+
+        await ctx.reply('✅ Ваша заявка принята! Мы свяжемся с вами в ближайшее время.', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                ],
+            },
+        });
+    } catch (error) {
+        console.error('Error in booking:', error);
+        await ctx.reply('❌ Ошибка отправки заявки. Попробуйте позже.');
+    }
+});
+
+// Бронирование визарана
+bot.action('book_visarun', async (ctx) => {
+    await ctx.answerCbQuery();
+
+    const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    const userId = ctx.from.id;
+
+    const bookingMessage = `🔔 НОВАЯ ЗАЯВКА - ВИЗАРАН
+
+👤 Пользователь: ${username} (ID: ${userId})
+📦 Услуга: Визаран в Камбоджу
+
+Свяжитесь с клиентом для подтверждения!`;
+
+    await sendBookingNotification(ctx, bookingMessage);
+});
+
+// Бронирование трансфера
+bot.action('book_transfer', async (ctx) => {
+    await ctx.answerCbQuery();
+
+    const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    const userId = ctx.from.id;
+
+    const bookingMessage = `🔔 НОВАЯ ЗАЯВКА - ТРАНСФЕР
+
+👤 Пользователь: ${username} (ID: ${userId})
+📦 Услуга: Трансфер
+
+Свяжитесь с клиентом для подтверждения!`;
+
+    await sendBookingNotification(ctx, bookingMessage);
+});
+
+// Общий обработчик бронирования товаров
+bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+
+    const match = ctx.match;
+    const type = match[1];
+    const itemId = match[2];
+
+    const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    const userId = ctx.from.id;
+
+    const typeNames = {
+        transport: 'Транспорт',
+        excursion: 'Экскурсия',
+        accommodation: 'Жилье',
+    };
+
+    // Получаем название товара
+    let itemName = itemId;
+    try {
+        const files = {
+            transport: 'transport-items.json',
+            excursion: 'excursions.json',
+            accommodation: 'accommodations.json',
+        };
+        const items = await readJsonFile(files[type]);
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            itemName = item.title;
+        }
+    } catch (e) {
+        // Используем ID если не удалось найти название
+    }
+
+    const bookingMessage = `🔔 НОВАЯ ЗАЯВКА
+
+👤 Пользователь: ${username} (ID: ${userId})
+📦 Тип: ${typeNames[type]}
+🏷 Товар: ${itemName}
+
+Свяжитесь с клиентом для подтверждения!`;
+
+    await sendBookingNotification(ctx, bookingMessage);
+});
+
+async function sendBookingNotification(ctx, bookingMessage) {
+    try {
+        const admins = await readJsonFile('admins.json');
+
+        for (const adminId of admins) {
+            try {
+                await ctx.telegram.sendMessage(adminId, bookingMessage);
+            } catch (error) {
+                console.error(`Failed to notify admin ${adminId}:`, error);
+            }
+        }
+
+        await ctx.reply('✅ Ваша заявка принята! Мы свяжемся с вами в ближайшее время.', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                ],
+            },
+        });
+    } catch (error) {
+        console.error('Error in booking:', error);
+        await ctx.reply('❌ Ошибка отправки заявки. Попробуйте позже.');
+    }
+}
+
+// Обработка "Назад в меню" из сцены
+bot.action('back_to_menu', async (ctx) => {
+    await ctx.answerCbQuery();
+    await ctx.scene.leave();
+    await showMainMenu(ctx);
+});
+
+// ========== ОБРАБОТЧИК ОШИБОК ==========
+bot.catch((err, ctx) => {
+    console.error('Bot error:', err);
+    ctx.reply('❌ Произошла ошибка. Попробуйте позже.');
+});
+
+// Экспорт экземпляра бота
+export { bot };

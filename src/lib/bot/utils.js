@@ -232,3 +232,44 @@ export function escapeMarkdown(text) {
   if (!text) return '';
   return text.toString().replace(/([_*\[\]()~`>#+=|{}.!-])/g, '\\$1');
 }
+
+/**
+ * тправляет фото с fallback на текст если фото не загрузится
+ * @param {import('telegraf').Context} ctx - Telegraf context
+ * @param {string} imageUrl - URL изображения
+ * @param {string} text - Текст caption
+ * @param {Array} buttons - ассив кнопок для inline_keyboard
+ * @returns {Promise<void>}
+ */
+export async function replyWithImageFallback(ctx, imageUrl, text, buttons) {
+  const { logger } = await import('../logger.js');
+
+  try {
+    await ctx.replyWithPhoto(imageUrl, {
+      caption: text,
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: buttons }
+    });
+  } catch (error) {
+    logger.warn('Failed to send photo', {
+      error: error.message,
+      imageUrl,
+      userId: ctx.from?.id
+    });
+    await ctx.reply(`${text}\n\n⚠️ Фото временно недоступно`, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: buttons }
+    });
+  }
+}
+
+/**
+ * алидирует itemId для безопасности
+ * @param {string} itemId - ID для проверки
+ * @returns {boolean} true если валидный
+ */
+export function validateItemId(itemId) {
+  if (!itemId || typeof itemId !== 'string') return false;
+  if (itemId.length > 50) return false;
+  return /^[a-z0-9-]+$/i.test(itemId);
+}

@@ -1,3 +1,12 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Find .env relative to this file's directory (go up 3 levels from src/lib/bot to project root)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envPath = path.resolve(__dirname, '..', '..', '..', '.env');
+dotenv.config({ path: envPath });
 import { Telegraf, session } from 'telegraf';
 import { stage } from './scenes.js';
 import {
@@ -8,8 +17,11 @@ import {
     formatExcursionCard,
     formatTransportCard,
     formatAccommodationCard,
-    escapeMarkdown
+    escapeMarkdown,
+    replyWithImageFallback,
+    validateItemId
 } from './utils.js';
+import { logger } from '../logger.js';
 
 // Инициализация бота
 let token;
@@ -62,20 +74,22 @@ bot.command('menu', async (ctx) => {
 });
 
 // Устанавливаем команды бота (появятся в меню рядом с полем ввода)
-bot.telegram.setMyCommands([
-    { command: 'start', description: 'Запустить бота' },
-    { command: 'menu', description: 'Главное меню' },
-]).catch(err => console.error('Failed to set bot commands:', err));
+// Команды устанавливаются при запуске (см. scripts/poll.js)
 
 
 // ========== НАЗАД В МЕНЮ ==========
 bot.action('back_to_start', async (ctx) => {
-    await ctx.answerCbQuery();
-    await showMainMenu(ctx);
+    try {
+        await ctx.answerCbQuery();
+        await showMainMenu(ctx);
+    } catch (error) {
+        logger.error('Error in back_to_start', { error: error.message, userId: ctx.from?.id });
+        await ctx.reply('❌ Произошла ошибка. Попробуйте позже.');
+    }
 });
 
 bot.action('noop', async (ctx) => {
-    await ctx.answerCbQuery();
+    await ctx.answerCbQuery().catch(() => { });
 });
 
 // ========== ТРАНСПОРТ ==========
@@ -195,12 +209,14 @@ async function showTransportList(ctx, page, categoryId) {
         navButtons.push([{ text: '◀️ Назад к категориям', callback_data: 'cat_transport' }]);
         navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
 
-        await ctx.reply('📄 Страница:', {
-            reply_markup: { inline_keyboard: navButtons },
-        });
+        if (totalPages > 1) {
+            await ctx.reply('📄 Страница:', {
+                reply_markup: { inline_keyboard: navButtons },
+            });
+        }
 
     } catch (error) {
-        console.error('Error loading transport:', error);
+        logger.error('Error loading transport', { error: error.message, stack: error.stack });
         await ctx.reply('❌ Ошибка загрузки транспорта.');
     }
 }
@@ -209,6 +225,13 @@ async function showTransportList(ctx, page, categoryId) {
 bot.action(/^transport_detail_(.+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const itemId = ctx.match[1];
+
+    // Валидация
+    if (!validateItemId(itemId)) {
+        logger.warn('Invalid itemId in transport_detail', { itemId, userId: ctx.from.id });
+        await ctx.reply('❌ Некорректный запрос.');
+        return;
+    }
 
     try {
         const items = await readJsonFile('transport-items.json');
@@ -223,30 +246,12 @@ bot.action(/^transport_detail_(.+)$/, async (ctx) => {
 
         if (item.image) {
             const imageUrl = getFullImageUrl(item.image);
-
-            await ctx.replyWithPhoto(imageUrl, {
-                caption: text,
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
-                        [{ text: '◀️ Назад к списку', callback_data: 'transport_page_1' }],
-                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-                    ],
-                },
-            }).catch(async (photoError) => {
-                console.error('Failed to send photo:', photoError.message);
-                await ctx.reply(`${text}\n\n⚠️ Фото временно недоступно`, {
-                    parse_mode: 'Markdown',
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
-                            [{ text: '◀️ Назад к списку', callback_data: 'transport_page_1' }],
-                            [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-                        ],
-                    },
-                });
-            });
+            const buttons = [
+                [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
+                [{ text: '◀️ Назад к списку', callback_data: 'transport_page_1' }],
+                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+            ];
+            await replyWithImageFallback(ctx, imageUrl, text, buttons);
         } else {
             await ctx.reply(text, {
                 parse_mode: 'Markdown',
@@ -260,7 +265,7 @@ bot.action(/^transport_detail_(.+)$/, async (ctx) => {
             });
         }
     } catch (error) {
-        console.error('Error loading transport detail:', error);
+        logger.error('Error loading transport detail', { error: error.message, itemId: ctx.match?.[1] });
         await ctx.reply('❌ Ошибка загрузки.');
     }
 });
@@ -329,12 +334,22 @@ async function showExcursionsList(ctx, page) {
         }
         navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
 
-        await ctx.reply('📄 Страница:', {
-            reply_markup: { inline_keyboard: navButtons },
-        });
+        if (totalPages > 1) {
+            await ctx.reply('📄 Страница:', {
+                reply_markup: { inline_keyboard: navButtons },
+            });
+        } else {
+            await ctx.reply('...', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]
+                    ]
+                },
+            });
+        }
 
     } catch (error) {
-        console.error('Error loading excursions:', error);
+        logger.error('Error loading excursions', { error: error.message });
         await ctx.reply('❌ Ошибка загрузки экскурсий.');
     }
 }
@@ -343,6 +358,13 @@ async function showExcursionsList(ctx, page) {
 bot.action(/^excursion_detail_(.+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const itemId = ctx.match[1];
+
+    // Валидация
+    if (!validateItemId(itemId)) {
+        logger.warn('Invalid itemId in excursion_detail', { itemId, userId: ctx.from.id });
+        await ctx.reply('❌ Некорректный запрос.');
+        return;
+    }
 
     try {
         const items = await readJsonFile('excursions.json');
@@ -357,30 +379,12 @@ bot.action(/^excursion_detail_(.+)$/, async (ctx) => {
 
         if (item.image) {
             const imageUrl = getFullImageUrl(item.image);
-
-            await ctx.replyWithPhoto(imageUrl, {
-                caption: text,
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
-                        [{ text: '◀️ Назад к списку', callback_data: 'excursions_page_1' }],
-                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-                    ],
-                },
-            }).catch(async (photoError) => {
-                console.error('Failed to send photo:', photoError.message);
-                await ctx.reply(`${text}\n\n⚠️ Фото временно недоступно`, {
-                    parse_mode: 'Markdown',
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
-                            [{ text: '◀️ Назад к списку', callback_data: 'excursions_page_1' }],
-                            [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-                        ],
-                    },
-                });
-            });
+            const buttons = [
+                [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
+                [{ text: '◀️ Назад к списку', callback_data: 'excursions_page_1' }],
+                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+            ];
+            await replyWithImageFallback(ctx, imageUrl, text, buttons);
         } else {
             await ctx.reply(text, {
                 parse_mode: 'Markdown',
@@ -394,7 +398,7 @@ bot.action(/^excursion_detail_(.+)$/, async (ctx) => {
             });
         }
     } catch (error) {
-        console.error('Error loading excursion detail:', error);
+        logger.error('Error loading excursion detail', { error: error.message, itemId: ctx.match?.[1] });
         await ctx.reply('❌ Ошибка загрузки.');
     }
 });
@@ -469,12 +473,22 @@ async function showAccommodationsList(ctx, page) {
         }
         navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
 
-        await ctx.reply('📄 Страница:', {
-            reply_markup: { inline_keyboard: navButtons },
-        });
+        if (totalPages > 1) {
+            await ctx.reply('📄 Страница:', {
+                reply_markup: { inline_keyboard: navButtons },
+            });
+        } else {
+            await ctx.reply('...', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]
+                    ]
+                },
+            });
+        }
 
     } catch (error) {
-        console.error('Error loading accommodations:', error);
+        logger.error('Error loading accommodations', { error: error.message });
         await ctx.reply('❌ Ошибка загрузки жилья.');
     }
 }
@@ -483,6 +497,13 @@ async function showAccommodationsList(ctx, page) {
 bot.action(/^accommodation_detail_(.+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const itemId = ctx.match[1];
+
+    // Валидация
+    if (!validateItemId(itemId)) {
+        logger.warn('Invalid itemId in accommodation_detail', { itemId, userId: ctx.from.id });
+        await ctx.reply('❌ Некорректный запрос.');
+        return;
+    }
 
     try {
         const items = await readJsonFile('accommodations.json');
@@ -495,33 +516,14 @@ bot.action(/^accommodation_detail_(.+)$/, async (ctx) => {
 
         const text = formatAccommodationCard(item);
         const imageUrl = getFullImageUrl(item.image);
-
-        try {
-            await ctx.replyWithPhoto(imageUrl, {
-                caption: text,
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
-                        [{ text: '◀️ Назад к списку', callback_data: 'accommodations_page_1' }],
-                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-                    ],
-                },
-            });
-        } catch {
-            await ctx.reply(text, {
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
-                        [{ text: '◀️ Назад к списку', callback_data: 'accommodations_page_1' }],
-                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-                    ],
-                },
-            });
-        }
+        const buttons = [
+            [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
+            [{ text: '◀️ Назад к списку', callback_data: 'accommodations_page_1' }],
+            [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+        ];
+        await replyWithImageFallback(ctx, imageUrl, text, buttons);
     } catch (error) {
-        console.error('Error loading accommodation detail:', error);
+        logger.error('Error loading accommodation detail', { error: error.message, itemId: ctx.match?.[1] });
         await ctx.reply('❌ Ошибка загрузки.');
     }
 });
@@ -627,19 +629,34 @@ bot.action('book_exchange', async (ctx) => {
 
     const bookingMessage = `🔔 НОВАЯ ЗАЯВКА - ОБМЕН ВАЛЮТ
 
-👤 Пользователь: ${username} (ID: ${userId})
-💱 Операция: ${calculation.amount} ${calculation.currency} → ${calculation.result} VND
+👤 Пользователь: ${escapeMarkdown(username || 'Неизвестно')} (ID: ${userId})
+💱 Операция: ${escapeMarkdown(String(calculation.amount))} ${escapeMarkdown(calculation.currency)} → ${escapeMarkdown(String(calculation.result))} VND
 
 Свяжитесь с клиентом для подтверждения!`;
 
     try {
-        const admins = await readJsonFile('admins.json');
+        let admins = [];
+        try {
+            admins = await readJsonFile('admins.json');
+        } catch (err) {
+            logger.warn('admins.json not found, using fallback', { error: err.message });
+            const fallbackAdmin = process.env.TELEGRAM_CHANNEL_ID;
+            if (fallbackAdmin) {
+                admins = [fallbackAdmin];
+            }
+        }
+
+        if (admins.length === 0) {
+            logger.warn('No admins configured for notifications');
+            await ctx.reply('⚠️ Заявка не может быть отправлена. Свяжитесь с поддержкой.');
+            return;
+        }
 
         for (const adminId of admins) {
             try {
                 await ctx.telegram.sendMessage(adminId, bookingMessage);
             } catch (error) {
-                console.error(`Failed to notify admin ${adminId}:`, error);
+                logger.error('Failed to notify admin', { adminId, error: error.message });
             }
         }
 
@@ -651,7 +668,7 @@ bot.action('book_exchange', async (ctx) => {
             },
         });
     } catch (error) {
-        console.error('Error in booking:', error);
+        logger.error('Error in booking', { error: error.message });
         await ctx.reply('❌ Ошибка отправки заявки. Попробуйте позже.');
     }
 });
@@ -743,7 +760,7 @@ async function sendBookingNotification(ctx, bookingMessage) {
             try {
                 await ctx.telegram.sendMessage(adminId, bookingMessage);
             } catch (error) {
-                console.error(`Failed to notify admin ${adminId}:`, error);
+                logger.error('Failed to notify admin', { adminId, error: error.message });
             }
         }
 
@@ -755,7 +772,7 @@ async function sendBookingNotification(ctx, bookingMessage) {
             },
         });
     } catch (error) {
-        console.error('Error in booking:', error);
+        logger.error('Error in booking notification', { error: error.message });
         await ctx.reply('❌ Ошибка отправки заявки. Попробуйте позже.');
     }
 }
@@ -769,7 +786,7 @@ bot.action('back_to_menu', async (ctx) => {
 
 // ========== ОБРАБОТЧИК ОШИБОК ==========
 bot.catch((err, ctx) => {
-    console.error('Bot error:', err);
+    logger.error('Bot error', { error: err.message, stack: err.stack, userId: ctx?.from?.id });
     ctx.reply('❌ Произошла ошибка. Попробуйте позже.');
 });
 

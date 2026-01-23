@@ -1,6 +1,7 @@
 import { Scenes } from 'telegraf';
 import { readJsonFile } from './utils.js';
 import { formatNumber, validateNumberInput } from './utils.js';
+import { logger } from '../logger.js';
 
 // ========== КАЛЬКУЛЯТОР ВАЛЮТ (WizardScene) ==========
 
@@ -45,7 +46,7 @@ const exchangeWizard = new Scenes.WizardScene(
 
             return ctx.wizard.next();
         } catch (error) {
-            console.error('Error in exchange wizard step 1:', error);
+            logger.error('Error in exchange wizard step 1', { error: error.message });
             await ctx.reply('❌ Ошибка загрузки курсов. Попробуйте позже.');
             return ctx.scene.leave();
         }
@@ -153,7 +154,7 @@ ${formatNumber(amount)} ${currency.code} = ${formatNumber(result)} VND${addition
 
             return ctx.scene.leave();
         } catch (error) {
-            console.error('Error in exchange wizard step 3:', error);
+            logger.error('Error in exchange wizard step 3', { error: error.message });
             await ctx.reply('❌ Ошибка расчета. Попробуйте позже.');
             return ctx.scene.leave();
         }

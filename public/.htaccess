@@ -1,0 +1,8 @@
+PassengerAppRoot /home/g/ganjavagen/tours.ganjavagen.beget.tech/public_html
+PassengerAppType node
+PassengerStartupFile server/entry.mjs
+PassengerNodejs /home/g/ganjavagen/.nvm/versions/node/v20.20.0/bin/node
+
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

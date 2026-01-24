@@ -4,8 +4,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
 // Управление контентом
 const managementItems = [
-    { name: 'Экскурсии', slug: 'excursions', icon: 'ri-caravan-fill', color: 'from-orange-500 to-primary' },
-    { name: 'Транспорт', slug: 'transport-items', icon: 'ri-roadster-fill', color: 'from-secondary to-green-800' },
+    { name: 'Экскурсии', slug: 'excursions', icon: 'ri-caravan-fill', color: 'from-orange-500 to-action' },
+    { name: 'Транспорт', slug: 'transport-items', icon: 'ri-roadster-fill', color: 'from-brand to-green-800' },
     { name: 'Жилье', slug: 'accommodations', icon: 'ri-hotel-fill', color: 'from-blue-600 to-dark' },
     { name: 'Услуги', slug: 'services', icon: 'ri-customer-service-2-fill', color: 'from-amber-500 to-orange-600' },
 ];
@@ -21,13 +21,13 @@ const systemItems = [
 <AdminLayout title="Дашборд">
     <div class="mb-8">
         <h1 class="text-3xl font-extrabold text-dark tracking-tight uppercase">Панель управления</h1>
-        <div class="h-1 w-20 bg-primary mt-2"></div>
+        <div class="h-1 w-20 bg-action mt-2"></div>
     </div>
 
     <!-- Управление -->
     <div class="mb-8">
         <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <i class="ri-folder-open-fill text-primary"></i>
+            <i class="ri-folder-open-fill text-action"></i>
             Управление контентом
         </h2>
         <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
@@ -37,8 +37,8 @@ const systemItems = [
                         <div class={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-xl text-white shadow mb-3`}>
                             <i class={item.icon}></i>
                         </div>
-                        <h3 class="text-base font-bold text-dark group-hover:text-primary transition-colors">{item.name}</h3>
-                        <div class="flex items-center mt-1.5 text-slate-400 group-hover:text-primary transition-colors font-bold text-[10px]">
+                        <h3 class="text-base font-bold text-dark group-hover:text-action transition-colors">{item.name}</h3>
+                        <div class="flex items-center mt-1.5 text-slate-400 group-hover:text-action transition-colors font-bold text-[10px]">
                             <span>Управлять</span>
                             <i class="ri-arrow-right-line ml-1 group-hover:translate-x-1 transition-transform"></i>
                         </div>
@@ -61,8 +61,8 @@ const systemItems = [
                         <div class={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-xl text-white shadow mb-3`}>
                             <i class={item.icon}></i>
                         </div>
-                        <h3 class="text-base font-bold text-dark group-hover:text-primary transition-colors">{item.name}</h3>
-                        <div class="flex items-center mt-1.5 text-slate-400 group-hover:text-primary transition-colors font-bold text-[10px]">
+                        <h3 class="text-base font-bold text-dark group-hover:text-action transition-colors">{item.name}</h3>
+                        <div class="flex items-center mt-1.5 text-slate-400 group-hover:text-action transition-colors font-bold text-[10px]">
                             <span>Открыть</span>
                             <i class="ri-arrow-right-line ml-1 group-hover:translate-x-1 transition-transform"></i>
                         </div>

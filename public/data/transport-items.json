@@ -23,7 +23,7 @@
       "Мягкая подвеска"
     ],
     "details": "",
-    "image": "/images/rentals/sym.webp",
+    "image": "/images/transport/sym.webp",
     "isPopular": true,
     "isActive": true,
     "pricePerDay": "150к"
@@ -52,7 +52,7 @@
       "Литые диски"
     ],
     "details": "",
-    "image": "/images/rentals/lead.webp",
+    "image": "/images/transport/lead.webp",
     "isPopular": false,
     "isActive": true
   },
@@ -80,7 +80,7 @@
       "Дисковый передний тормоз"
     ],
     "details": "",
-    "image": "/images/rentals/vision.webp",
+    "image": "/images/transport/vision.webp",
     "isPopular": false,
     "isActive": true
   },
@@ -108,7 +108,7 @@
       "Яркая LED-оптика"
     ],
     "details": "",
-    "image": "/images/rentals/airblade.webp",
+    "image": "/images/transport/airblade.webp",
     "isPopular": false,
     "isActive": true
   },
@@ -136,7 +136,7 @@
       "Информативная цифровая панель приборов"
     ],
     "details": "",
-    "image": "/images/rentals/pcx160.webp",
+    "image": "/images/transport/pcx160.webp",
     "isPopular": false,
     "isActive": true
   },
@@ -164,7 +164,7 @@
       "Широкие бескамерные шины"
     ],
     "details": "",
-    "image": "/images/rentals/nvx.webp",
+    "image": "/images/transport/nvx.webp",
     "isPopular": false,
     "isActive": true
   },
@@ -192,7 +192,7 @@
       "Спортивная резина"
     ],
     "details": "",
-    "image": "/images/rentals/suzuki.webp",
+    "image": "/images/transport/suzuki.webp",
     "isPopular": false,
     "isActive": true
   },
@@ -220,8 +220,20 @@
       "Мягкая подвеска"
     ],
     "details": "",
-    "image": "/images/rentals/toyota.webp",
+    "image": "/images/transport/toyota.webp",
     "isPopular": false,
     "isActive": true
+  },
+  {
+    "title": "тест",
+    "pricePerDay": "",
+    "categoryId": "",
+    "useCases": "",
+    "benefits": [],
+    "specs": [],
+    "features": [],
+    "details": "",
+    "image": "/images/transport/pcx160.webp",
+    "id": "1769245939736"
   }
 ]

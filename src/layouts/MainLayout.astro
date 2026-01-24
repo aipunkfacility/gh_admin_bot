@@ -1,5 +1,6 @@
 ﻿---
 import Header from '../components/Header.astro';
+import SEO from '../components/SEO.astro';
 import '@fontsource/montserrat/400.css';
 import '@fontsource/montserrat/500.css';
 import '@fontsource/montserrat/600.css';
@@ -9,26 +10,18 @@ import '@fontsource/montserrat/800.css';
 interface Props {
   title: string;
   description?: string;
+  image?: string;
   sections?: Array<{id: string; label: string; icon: string; enabled: boolean}>;
 }
 
-const { title, description = "Экскурсии, аренда байков и трансферы в Муйне, Вьетнам", sections = [] } = Astro.props;
+const { title, description, image, sections = [] } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL;
 ---
 
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title}</title>
-  <meta name="description" content={description}>
-
-  <!-- Open Graph -->
-  <meta property="og:title" content={title}>
-  <meta property="og:description" content={description}>
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="ru_RU">
+  <SEO title={title} description={description} image={image} />
 
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href={baseUrl + "my-favicon/favicon.svg"}>
@@ -48,10 +41,10 @@ const baseUrl = import.meta.env.BASE_URL;
     @import "tailwindcss";
 
     @theme {
-      --color-primary: #FF6400;
-      --color-primary-hover: #ea580c;
-      --color-secondary: #2D5F3E;
-      --color-secondary-hover: #1f422b;
+      --color-action: #FF6400;
+      --color-action-hover: #ea580c;
+      --color-brand: #2D5F3E;
+      --color-brand-hover: #1f422b;
       --color-dark: #1A2F5A;
     }
 
@@ -156,7 +149,7 @@ const baseUrl = import.meta.env.BASE_URL;
         content: "\2022";
         position: absolute;
         left: 0;
-        color: var(--color-primary);
+        color: var(--color-action);
         font-weight: bold;
       }
     }

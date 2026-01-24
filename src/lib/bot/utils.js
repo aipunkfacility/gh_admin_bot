@@ -273,3 +273,33 @@ export function validateItemId(itemId) {
   if (itemId.length > 50) return false;
   return /^[a-z0-9-]+$/i.test(itemId);
 }
+/**
+ * Обертка для безопасного выполнения обработчика бота
+ * @param {string} name - Имя обработчика для логов
+ * @param {Function} handler - Функция-обработчик
+ * @returns {Function} Обернутый обработчик
+ */
+export function wrapHandler(name, handler) {
+  return async (ctx) => {
+    try {
+      if (ctx.callbackQuery) {
+        await ctx.answerCbQuery().catch(() => { });
+      }
+      await handler(ctx);
+    } catch (error) {
+      const { logger } = await import('../logger.js');
+      logger.error(`Error in handler ${name}`, {
+        error: error.message,
+        stack: error.stack,
+        userId: ctx.from?.id,
+        callbackData: ctx.callbackQuery?.data
+      });
+
+      try {
+        await ctx.reply('❌ Произошла ошибка. Попробуйте позже.');
+      } catch (replyError) {
+        // Игнорируем если не удалось даже ответить
+      }
+    }
+  };
+}

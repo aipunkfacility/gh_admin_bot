@@ -18,10 +18,10 @@ const { title = 'Admin Panel' } = Astro.props;
             @import "tailwindcss";
 
             @theme {
-              --color-primary: #FF6400;
-              --color-primary-hover: #ea580c;
-              --color-secondary: #204732;
-              --color-secondary-hover: #1f422b;
+              --color-action: #FF6400;
+              --color-action-hover: #ea580c;
+              --color-brand: #204732;
+              --color-brand-hover: #1f422b;
               --color-dark: #1A2F5A;
             }
 
@@ -31,22 +31,22 @@ const { title = 'Admin Panel' } = Astro.props;
             }
             
             .admin-sidebar {
-                background-color: var(--color-secondary);
+                background-color: var(--color-brand);
                 color: white;
             }
 
             .nav-link.active {
-                background-color: var(--color-primary);
+                background-color: var(--color-action);
                 color: white;
             }
             
             .btn-primary {
-                background-color: var(--color-primary);
+                background-color: var(--color-action);
                 color: white;
                 transition: background-color 0.2s;
             }
             .btn-primary:hover {
-                background-color: var(--color-primary-hover);
+                background-color: var(--color-action-hover);
             }
 
             .sidebar-icon {
@@ -155,7 +155,7 @@ const { title = 'Admin Panel' } = Astro.props;
                         <h1 class="text-xl font-extrabold tracking-tighter text-white leading-none">
                             <div class="flex items-center">
                                 <span>GreenHill</span>
-                                <span class="text-primary ml-1.5">Tours</span>
+                                <span class="text-action ml-1.5">Tours</span>
                             </div>
                             <span class="text-white/50 block text-[10px] mt-1 font-black uppercase tracking-[0.3em]">Админ-панель</span>
                         </h1>
@@ -213,7 +213,7 @@ const { title = 'Admin Panel' } = Astro.props;
             <div class="md:hidden fixed top-0 w-full admin-sidebar z-30 px-4 py-3 flex justify-between items-center">
                  <a href="/admin" class="flex items-center gap-2 cursor-pointer">
                     <img src="/images/logo.svg" alt="Logo" class="w-8 h-8 object-contain" />
-                    <h1 class="text-lg font-extrabold text-white tracking-tighter">GreenHill <span class="text-primary">Tours</span></h1>
+                    <h1 class="text-lg font-extrabold text-white tracking-tighter">GreenHill <span class="text-action">Tours</span></h1>
                  </a>
                  <button id="adminMobileMenuBtn" class="p-2 rounded-lg bg-white/10 text-white text-2xl flex items-center justify-center">
                     <i class="ri-menu-line"></i>
@@ -242,7 +242,10 @@ const { title = 'Admin Panel' } = Astro.props;
                     info: 'ri-information-line'
                 };
                 
-                toast.innerHTML = `<i class="${icons[type] || icons.info} text-xl"></i><span>${message}</span>`;
+                toast.innerHTML = `<i class="${icons[type] || icons.info} text-xl"></i>`;
+                const textSpan = document.createElement('span');
+                textSpan.textContent = message;
+                toast.appendChild(textSpan);
                 container.appendChild(toast);
                 
                 setTimeout(() => {

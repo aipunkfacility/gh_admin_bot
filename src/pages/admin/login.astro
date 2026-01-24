@@ -18,9 +18,9 @@
         @import "tailwindcss";
 
         @theme {
-          --color-primary: #FF6400;
-          --color-primary-hover: #ea580c;
-          --color-secondary: #204732;
+          --color-action: #FF6400;
+          --color-action-hover: #ea580c;
+          --color-brand: #204732;
           --color-dark: #1A2F5A;
         }
 
@@ -52,13 +52,13 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
     <!-- Abstract background decorations -->
-    <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary/20 blur-[100px] rounded-full"></div>
-    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/30 blur-[100px] rounded-full"></div>
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-action/20 blur-[100px] rounded-full"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-brand/30 blur-[100px] rounded-full"></div>
     
     <div class="w-full max-w-md animate-fade-in opacity-0">
         <div class="glass-panel p-10 rounded-[2rem] relative z-10 overflow-hidden">
             <!-- Top accent bar -->
-            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-orange-400 to-amber-500"></div>
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-action via-orange-400 to-amber-500"></div>
 
             <div class="text-center mb-10">
                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-50 border border-slate-100 mb-6 shadow-sm overflow-hidden">
@@ -66,7 +66,7 @@
                 </div>
                 
                 <h1 class="text-2xl font-black tracking-tighter text-dark mb-1">
-                    GreenHill <span class="text-primary">Tours</span>
+                    GreenHill <span class="text-action">Tours</span>
                 </h1>
                 <div class="flex items-center justify-center gap-2">
                     <span class="h-px w-8 bg-slate-200"></span>
@@ -84,7 +84,7 @@
                         </span>
                         <input type="password" id="password" name="password" required 
                             placeholder="Минимум 8 символов"
-                            class="block w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-dark placeholder-slate-400 focus:outline-none focus:border-primary transition-all font-semibold input-focus">
+                            class="block w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-dark placeholder-slate-400 focus:outline-none focus:border-action transition-all font-semibold input-focus">
                     </div>
                 </div>
                 
@@ -94,7 +94,7 @@
                 </div>
 
                 <button type="submit" id="submitBtn"
-                    class="w-full flex justify-center items-center py-4 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white bg-primary hover:bg-primary-hover shadow-xl shadow-orange-500/20 transition-all active:scale-[98%] group">
+                    class="w-full flex justify-center items-center py-4 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white bg-action hover:bg-action-hover shadow-xl shadow-orange-500/20 transition-all active:scale-[98%] group">
                     <span>Войти в систему</span>
                     <i class="ri-arrow-right-line ml-2 text-lg group-hover:translate-x-1 transition-transform"></i>
                 </button>

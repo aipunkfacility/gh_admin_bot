@@ -1,6 +1,6 @@
 import { Scenes } from 'telegraf';
 import { readJsonFile } from './utils.js';
-import { formatNumber, validateNumberInput } from './utils.js';
+import { formatNumber, validateNumberInput, wrapHandler } from './utils.js';
 import { logger } from '../logger.js';
 
 // ========== КАЛЬКУЛЯТОР ВАЛЮТ (WizardScene) ==========
@@ -9,11 +9,10 @@ const exchangeWizard = new Scenes.WizardScene(
     'exchange_calculator',
 
     // ===== ШАГ 1: Вывод курсов и выбор валюты =====
-    async (ctx) => {
-        try {
-            const rates = await readJsonFile('rates.json');
+    wrapHandler('exchange_step1', async (ctx) => {
+        const rates = await readJsonFile('rates.json');
 
-            const message = `💱 КУРС ВАЛЮТ НА СЕГОДНЯ:
+        const message = `💱 КУРС ВАЛЮТ НА СЕГОДНЯ:
 
 🇷🇺 1 ₽ ➔ ${formatNumber(rates.rub_rate)} ₫
 💎 1 USDT ➔ ${formatNumber(rates.usdt_rate)} ₫
@@ -23,43 +22,37 @@ const exchangeWizard = new Scenes.WizardScene(
 
 👇 Что будем менять?`;
 
-            await ctx.reply(message, {
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '🇷🇺 RUB', callback_data: 'calc_rub' },
-                            { text: '💎 USDT', callback_data: 'calc_usdt' },
-                        ],
-                        [
-                            { text: '💵 USD', callback_data: 'calc_usd' },
-                            { text: '🇪🇺 EUR', callback_data: 'calc_eur' },
-                        ],
-                        [
-                            { text: '🇨🇳 CNY', callback_data: 'calc_cny' },
-                        ],
-                        [
-                            { text: '◀️ Назад', callback_data: 'back_to_menu' },
-                        ],
+        await ctx.reply(message, {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: '🇷🇺 RUB', callback_data: 'calc_rub' },
+                        { text: '💎 USDT', callback_data: 'calc_usdt' },
                     ],
-                },
-            });
+                    [
+                        { text: '💵 USD', callback_data: 'calc_usd' },
+                        { text: '🇪🇺 EUR', callback_data: 'calc_eur' },
+                    ],
+                    [
+                        { text: '🇨🇳 CNY', callback_data: 'calc_cny' },
+                    ],
+                    [
+                        { text: '◀️ Назад', callback_data: 'back_to_menu' },
+                    ],
+                ],
+            },
+        });
 
-            return ctx.wizard.next();
-        } catch (error) {
-            logger.error('Error in exchange wizard step 1', { error: error.message });
-            await ctx.reply('❌ Ошибка загрузки курсов. Попробуйте позже.');
-            return ctx.scene.leave();
-        }
-    },
+        return ctx.wizard.next();
+    }),
 
     // ===== ШАГ 2: Ввод суммы =====
-    async (ctx) => {
+    wrapHandler('exchange_step2', async (ctx) => {
         // Обработка callback от выбора валюты
         if (ctx.callbackQuery) {
             const action = ctx.callbackQuery.data;
 
             if (action === 'back_to_menu') {
-                await ctx.answerCbQuery();
                 return ctx.scene.leave();
             }
 
@@ -75,21 +68,17 @@ const exchangeWizard = new Scenes.WizardScene(
             const currency = currencyMap[action];
 
             if (!currency) {
-                await ctx.answerCbQuery('Неизвестная валюта');
                 return;
             }
 
             ctx.scene.session.currency = currency;
-
-            await ctx.answerCbQuery();
             await ctx.reply(`${currency.emoji} Введите сумму в ${currency.name} (только цифры):`);
-
             return ctx.wizard.next();
         }
-    },
+    }),
 
     // ===== ШАГ 3: Расчет и результат =====
-    async (ctx) => {
+    wrapHandler('exchange_step3', async (ctx) => {
         if (!ctx.message || !ctx.message.text) {
             await ctx.reply('⚠️ Пожалуйста, введите число.');
             return;
@@ -116,49 +105,43 @@ const exchangeWizard = new Scenes.WizardScene(
             return ctx.scene.leave();
         }
 
-        try {
-            const rates = await readJsonFile('rates.json');
-            const rate = rates[currency.key];
-            const result = amount * rate;
+        const rates = await readJsonFile('rates.json');
+        const rate = rates[currency.key];
+        const result = amount * rate;
 
-            // Доп. информация
-            let additionalInfo = '';
-            if (currency.code === 'RUB') {
-                additionalInfo = '\n\n✅ Принимаем: Сбер, СБП.';
-            } else {
-                additionalInfo = '\n\n💵 Выдаем наличные VND.';
-            }
+        // Доп. информация
+        let additionalInfo = '';
+        if (currency.code === 'RUB') {
+            additionalInfo = '\n\n✅ Принимаем: Сбер, СБП.';
+        } else {
+            additionalInfo = '\n\n💵 Выдаем наличные VND.';
+        }
 
-            const message = `💰 Расчет:
+        const message = `💰 Расчет:
 ${formatNumber(amount)} ${currency.code} = ${formatNumber(result)} VND${additionalInfo}`;
 
-            // Сохраняем данные расчета для бронирования
-            ctx.scene.session.calculation = {
-                amount,
-                currency: currency.code,
-                result,
-            };
+        // Сохраняем данные расчета для бронирования
+        ctx.scene.session.calculation = {
+            amount,
+            currency: currency.code,
+            result,
+        };
 
-            // ВАЖНО: Сохраняем в основную сессию, т.к. scene.session очистится после leave()
-            ctx.session = ctx.session || {};
-            ctx.session.calculation = ctx.scene.session.calculation;
+        // ВАЖНО: Сохраняем в основную сессию, т.к. scene.session очистится после leave()
+        ctx.session = ctx.session || {};
+        ctx.session.calculation = ctx.scene.session.calculation;
 
-            await ctx.reply(message, {
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '✅ Забронировать обмен', callback_data: 'book_exchange' }],
-                        [{ text: '◀️ В меню', callback_data: 'back_to_menu' }],
-                    ],
-                },
-            });
+        await ctx.reply(message, {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '✅ Забронировать обмен', callback_data: 'book_exchange' }],
+                    [{ text: '◀️ В меню', callback_data: 'back_to_menu' }],
+                ],
+            },
+        });
 
-            return ctx.scene.leave();
-        } catch (error) {
-            logger.error('Error in exchange wizard step 3', { error: error.message });
-            await ctx.reply('❌ Ошибка расчета. Попробуйте позже.');
-            return ctx.scene.leave();
-        }
-    }
+        return ctx.scene.leave();
+    })
 );
 
 // Экспорт сцены

@@ -29,7 +29,7 @@ const formatNumber = (num: number) => {
       <!-- Rates Side -->
       <div class="p-8 md:w-1/2 bg-slate-50/50">
         <h2 class="text-2xl font-extrabold text-dark mb-6 flex items-center gap-2">
-            <i class="ri-exchange-dollar-line text-primary"></i>
+            <i class="ri-exchange-dollar-line text-action"></i>
             Курсы валют
         </h2>
         
@@ -67,7 +67,7 @@ const formatNumber = (num: number) => {
                 <div class="flex flex-wrap gap-2">
                     {currencies.map((currency, index) => (
                         <button 
-                            class={`currency-btn px-3 py-1.5 rounded-lg text-sm font-bold border transition-all flex items-center gap-1 ${index === 0 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-primary hover:text-primary'}`}
+                            class={`currency-btn px-3 py-1.5 rounded-lg text-sm font-bold border transition-all flex items-center gap-1 ${index === 0 ? 'bg-action text-white border-action shadow-lg shadow-action/30' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-action hover:text-action'}`}
                             data-rate={currency.rate}
                             data-code={currency.code}
                             data-icon={currency.icon}
@@ -85,7 +85,7 @@ const formatNumber = (num: number) => {
                     <input 
                         type="text" 
                         id="calc-amount" 
-                        class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-bold text-lg text-slate-800"
+                        class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action font-bold text-lg text-slate-800"
                         placeholder="100"
                         value="100"
                     />
@@ -96,7 +96,7 @@ const formatNumber = (num: number) => {
             <!-- Result -->
             <div class="pt-6 border-t border-slate-100">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Вы получите (примерно)</label>
-                <div class="text-4xl font-black text-primary tracking-tight" id="calc-result">
+                <div class="text-4xl font-black text-action tracking-tight" id="calc-result">
                     0
                 </div>
                 <div class="text-xs font-bold text-slate-400 mt-1">Вьетнамских донгов (VND)</div>
@@ -114,7 +114,7 @@ const formatNumber = (num: number) => {
 <script>
     function initCalculator() {
         const buttons = document.querySelectorAll('.currency-btn');
-        const input = document.getElementById('calc-amount');
+        const input = document.getElementById('calc-amount') as HTMLInputElement;
         const resultDisplay = document.getElementById('calc-result');
         const currencyLabel = document.getElementById('calc-currency-label');
         
@@ -123,8 +123,8 @@ const formatNumber = (num: number) => {
         // Initialize with first button
         if(buttons.length > 0) {
             const first = buttons[0];
-            currentRate = parseFloat(first.dataset.rate);
-            currencyLabel.textContent = first.dataset.code;
+            currentRate = parseFloat(first.getAttribute('data-rate') || '0');
+            if (currencyLabel) currencyLabel.textContent = first.getAttribute('data-code') || '';
             calculate();
         }
 
@@ -132,23 +132,24 @@ const formatNumber = (num: number) => {
             btn.addEventListener('click', () => {
                 // Update UI
                 buttons.forEach(b => {
-                    b.classList.remove('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'shadow-primary/30');
+                    b.classList.remove('bg-action', 'text-white', 'border-action', 'shadow-lg', 'shadow-action/30');
                     b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-200');
                 });
                 
                 btn.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-200');
-                btn.classList.add('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'shadow-primary/30');
+                btn.classList.add('bg-action', 'text-white', 'border-action', 'shadow-lg', 'shadow-action/30');
                 
                 // Update Logic
-                currentRate = parseFloat(btn.dataset.rate);
-                currencyLabel.textContent = btn.dataset.code;
+                currentRate = parseFloat(btn.getAttribute('data-rate') || '0');
+                if (currencyLabel) currencyLabel.textContent = btn.getAttribute('data-code') || '';
                 calculate();
             });
         });
 
-        input.addEventListener('input', calculate);
+        if (input) input.addEventListener('input', calculate);
 
         function calculate() {
+            if (!input) return;
             let val = input.value.replace(/[^0-9.]/g, ''); // Simple cleanup
             let amount = parseFloat(val);
             if (isNaN(amount)) amount = 0;

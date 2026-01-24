@@ -19,7 +19,8 @@ import {
     formatAccommodationCard,
     escapeMarkdown,
     replyWithImageFallback,
-    validateItemId
+    validateItemId,
+    wrapHandler
 } from './utils.js';
 import { logger } from '../logger.js';
 
@@ -63,34 +64,28 @@ async function showMainMenu(ctx) {
 
 
 // ========== КОМАНДА /START ==========
-bot.command('start', async (ctx) => {
+bot.command('start', wrapHandler('start', async (ctx) => {
     ctx.session = ctx.session || {};
     await showMainMenu(ctx);
-});
+}));
 
 // ========== КОМАНДА /MENU ==========
-bot.command('menu', async (ctx) => {
+bot.command('menu', wrapHandler('menu', async (ctx) => {
     await showMainMenu(ctx);
-});
+}));
 
 // Устанавливаем команды бота (появятся в меню рядом с полем ввода)
 // Команды устанавливаются при запуске (см. scripts/poll.js)
 
 
 // ========== НАЗАД В МЕНЮ ==========
-bot.action('back_to_start', async (ctx) => {
-    try {
-        await ctx.answerCbQuery();
-        await showMainMenu(ctx);
-    } catch (error) {
-        logger.error('Error in back_to_start', { error: error.message, userId: ctx.from?.id });
-        await ctx.reply('❌ Произошла ошибка. Попробуйте позже.');
-    }
-});
+bot.action('back_to_start', wrapHandler('back_to_start', async (ctx) => {
+    await showMainMenu(ctx);
+}));
 
-bot.action('noop', async (ctx) => {
-    await ctx.answerCbQuery().catch(() => { });
-});
+bot.action('noop', wrapHandler('noop', async (ctx) => {
+    // Ничего не делаем, wrapper сам ответит на query
+}));
 
 // ========== ТРАНСПОРТ ==========
 
@@ -103,8 +98,7 @@ const transportCategories = [
     { id: 'car', name: '🚗 Авто', slug: 'car' },
 ];
 
-bot.action('cat_transport', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('cat_transport', wrapHandler('cat_transport', async (ctx) => {
     ctx.session = ctx.session || {};
     ctx.session.transportCategory = null;
 
@@ -117,36 +111,33 @@ bot.action('cat_transport', async (ctx) => {
             ],
         },
     });
-});
+}));
 
 // Выбор категории транспорта
-bot.action(/^transport_cat_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^transport_cat_(.+)$/, wrapHandler('transport_cat', async (ctx) => {
     const categoryId = ctx.match[1];
     ctx.session = ctx.session || {};
     ctx.session.transportCategory = categoryId;
 
     await showTransportList(ctx, 1, categoryId);
-});
+}));
 
 // Все категории транспорта с пагинацией
-bot.action(/^transport_all_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^transport_all_(\d+)$/, wrapHandler('transport_all', async (ctx) => {
     const page = parseInt(ctx.match[1]);
     ctx.session = ctx.session || {};
     ctx.session.transportCategory = null;
 
     await showTransportList(ctx, page, null);
-});
+}));
 
 // Пагинация транспорта по категории
-bot.action(/^transport_page_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^transport_page_(\d+)$/, wrapHandler('transport_page', async (ctx) => {
     const page = parseInt(ctx.match[1]);
     const category = ctx.session?.transportCategory || null;
 
     await showTransportList(ctx, page, category);
-});
+}));
 
 async function showTransportList(ctx, page, categoryId) {
     try {
@@ -222,8 +213,7 @@ async function showTransportList(ctx, page, categoryId) {
 }
 
 // Детали транспорта
-bot.action(/^transport_detail_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^transport_detail_(.+)$/, wrapHandler('transport_detail', async (ctx) => {
     const itemId = ctx.match[1];
 
     // Валидация
@@ -268,20 +258,18 @@ bot.action(/^transport_detail_(.+)$/, async (ctx) => {
         logger.error('Error loading transport detail', { error: error.message, itemId: ctx.match?.[1] });
         await ctx.reply('❌ Ошибка загрузки.');
     }
-});
+}));
 
 // ========== ЭКСКУРСИИ ==========
 
-bot.action('cat_excursions', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('cat_excursions', wrapHandler('cat_excursions', async (ctx) => {
     await showExcursionsList(ctx, 1);
-});
+}));
 
-bot.action(/^excursions_page_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^excursions_page_(\d+)$/, wrapHandler('excursions_page', async (ctx) => {
     const page = parseInt(ctx.match[1]);
     await showExcursionsList(ctx, page);
-});
+}));
 
 async function showExcursionsList(ctx, page) {
     try {
@@ -355,8 +343,7 @@ async function showExcursionsList(ctx, page) {
 }
 
 // Детали экскурсии
-bot.action(/^excursion_detail_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^excursion_detail_(.+)$/, wrapHandler('excursion_detail', async (ctx) => {
     const itemId = ctx.match[1];
 
     // Валидация
@@ -401,26 +388,23 @@ bot.action(/^excursion_detail_(.+)$/, async (ctx) => {
         logger.error('Error loading excursion detail', { error: error.message, itemId: ctx.match?.[1] });
         await ctx.reply('❌ Ошибка загрузки.');
     }
-});
+}));
 
 // ========== ЖИЛЬЕ ==========
 
-bot.action('cat_accommodations', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('cat_accommodations', wrapHandler('cat_accommodations', async (ctx) => {
     await showAccommodationsList(ctx, 1);
-});
+}));
 
 // Поддержка старого callback для совместимости
-bot.action('accommodation_menu', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('accommodation_menu', wrapHandler('accommodation_menu', async (ctx) => {
     await showAccommodationsList(ctx, 1);
-});
+}));
 
-bot.action(/^accommodations_page_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^accommodations_page_(\d+)$/, wrapHandler('accommodations_page', async (ctx) => {
     const page = parseInt(ctx.match[1]);
     await showAccommodationsList(ctx, page);
-});
+}));
 
 async function showAccommodationsList(ctx, page) {
     try {
@@ -494,8 +478,7 @@ async function showAccommodationsList(ctx, page) {
 }
 
 // Детали жилья
-bot.action(/^accommodation_detail_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', async (ctx) => {
     const itemId = ctx.match[1];
 
     // Валидация
@@ -526,13 +509,12 @@ bot.action(/^accommodation_detail_(.+)$/, async (ctx) => {
         logger.error('Error loading accommodation detail', { error: error.message, itemId: ctx.match?.[1] });
         await ctx.reply('❌ Ошибка загрузки.');
     }
-});
+}));
 
 // ========== ИНФОРМАЦИОННЫЕ РАЗДЕЛЫ ==========
 
 // Визаран
-bot.action('visarun_info', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
     await ctx.reply(`🛂 *Визаран*
 
 Поможем с оформлением визаранов во Вьетнаме.
@@ -555,11 +537,10 @@ bot.action('visarun_info', async (ctx) => {
             ],
         },
     });
-});
+}));
 
 // Трансфер
-bot.action('transfer_info', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('transfer_info', wrapHandler('transfer_info', async (ctx) => {
     await ctx.reply(`🚖 *Трансфер*
 
 Организуем трансферы по всему Вьетнаму.
@@ -584,11 +565,10 @@ bot.action('transfer_info', async (ctx) => {
             ],
         },
     });
-});
+}));
 
 // Контакты
-bot.action('contacts', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('contacts', wrapHandler('contacts', async (ctx) => {
     await ctx.reply(`📞 *Наши контакты:*
 
 🌐 Сайт: greenhilltours.com
@@ -603,20 +583,17 @@ bot.action('contacts', async (ctx) => {
             ],
         },
     });
-});
+}));
 
 // Калькулятор валют
-bot.action('calc_exchange', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('calc_exchange', wrapHandler('calc_exchange', async (ctx) => {
     return ctx.scene.enter('exchange_calculator');
-});
+}));
 
 // ========== БРОНИРОВАНИЕ ==========
 
 // Бронирование обмена валют
-bot.action('book_exchange', async (ctx) => {
-    await ctx.answerCbQuery();
-
+bot.action('book_exchange', wrapHandler('book_exchange', async (ctx) => {
     const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
     const userId = ctx.from.id;
 
@@ -671,12 +648,10 @@ bot.action('book_exchange', async (ctx) => {
         logger.error('Error in booking', { error: error.message });
         await ctx.reply('❌ Ошибка отправки заявки. Попробуйте позже.');
     }
-});
+}));
 
 // Бронирование визарана
-bot.action('book_visarun', async (ctx) => {
-    await ctx.answerCbQuery();
-
+bot.action('book_visarun', wrapHandler('book_visarun', async (ctx) => {
     const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
     const userId = ctx.from.id;
 
@@ -688,12 +663,10 @@ bot.action('book_visarun', async (ctx) => {
 Свяжитесь с клиентом для подтверждения!`;
 
     await sendBookingNotification(ctx, bookingMessage);
-});
+}));
 
 // Бронирование трансфера
-bot.action('book_transfer', async (ctx) => {
-    await ctx.answerCbQuery();
-
+bot.action('book_transfer', wrapHandler('book_transfer', async (ctx) => {
     const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
     const userId = ctx.from.id;
 
@@ -705,12 +678,10 @@ bot.action('book_transfer', async (ctx) => {
 Свяжитесь с клиентом для подтверждения!`;
 
     await sendBookingNotification(ctx, bookingMessage);
-});
+}));
 
 // Общий обработчик бронирования товаров
-bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-
+bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, wrapHandler('book_item', async (ctx) => {
     const match = ctx.match;
     const type = match[1];
     const itemId = match[2];
@@ -750,7 +721,7 @@ bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, async (ctx) => {
 Свяжитесь с клиентом для подтверждения!`;
 
     await sendBookingNotification(ctx, bookingMessage);
-});
+}));
 
 async function sendBookingNotification(ctx, bookingMessage) {
     try {
@@ -778,11 +749,10 @@ async function sendBookingNotification(ctx, bookingMessage) {
 }
 
 // Обработка "Назад в меню" из сцены
-bot.action('back_to_menu', async (ctx) => {
-    await ctx.answerCbQuery();
+bot.action('back_to_menu', wrapHandler('back_to_menu', async (ctx) => {
     await ctx.scene.leave();
     await showMainMenu(ctx);
-});
+}));
 
 // ========== ОБРАБОТЧИК ОШИБОК ==========
 bot.catch((err, ctx) => {

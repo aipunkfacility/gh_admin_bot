@@ -28,15 +28,15 @@ const enabledSections = sections.filter(s => s.enabled);
       <div class="w-10 h-10 rounded-full overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
           <img src={`${baseUrl}my-favicon/favicon.svg`} alt="Logo" class="w-full h-full object-cover" />
       </div>
-      <span class="text-xl font-bold text-dark group-hover:text-primary transition-colors">
-        GreenHill <span class="text-primary">Tours</span>
+      <span class="text-xl font-bold text-dark group-hover:text-action transition-colors">
+        GreenHill <span class="text-action">Tours</span>
       </span>
     </a>
     
     <!-- Central Nav (takes available space, centered) -->
     <nav class="hidden lg:flex items-center justify-center gap-6 flex-1 px-4">
       {enabledSections.map(section => (
-        <a href={`#${section.id}`} class="text-slate-600 font-bold hover:text-primary transition-colors text-lg whitespace-nowrap">
+        <a href={`#${section.id}`} class="text-slate-600 font-bold hover:text-action transition-colors text-lg whitespace-nowrap">
           {section.label || sectionLabels[section.id] || section.id}
         </a>
       ))}
@@ -49,7 +49,7 @@ const enabledSections = sections.filter(s => s.enabled);
     </button>
     
     <!-- Mobile Menu Button -->
-    <button id="mobileMenuBtn" class="lg:hidden p-2 text-slate-600 hover:text-primary transition-colors flex items-center justify-center">
+    <button id="mobileMenuBtn" class="lg:hidden p-2 text-slate-600 hover:text-action transition-colors flex items-center justify-center">
         <i class="ri-menu-right-line text-3xl"></i>
     </button>
   </div>
@@ -58,7 +58,7 @@ const enabledSections = sections.filter(s => s.enabled);
   <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-100 bg-white absolute w-full left-0 shadow-lg">
     <div class="px-6 py-4 flex flex-col gap-4">
       {enabledSections.map(section => (
-        <a href={`#${section.id}`} class="text-lg font-bold text-slate-600 hover:text-primary">
+        <a href={`#${section.id}`} class="text-lg font-bold text-slate-600 hover:text-action">
           {section.label || sectionLabels[section.id] || section.id}
         </a>
       ))}

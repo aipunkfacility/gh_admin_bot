@@ -16,7 +16,7 @@
     ],
     "schedule": "",
     "type": "service",
-    "image": "/images/servises/exchange.webp",
+    "image": "/images/services/exchange.webp",
     "isPopular": false,
     "isActive": true,
     "priceFrom": "",
@@ -39,7 +39,7 @@
       "Дата окончания визы"
     ],
     "type": "service",
-    "image": "/images/servises/visarun.webp",
+    "image": "/images/services/visarun.webp",
     "isPopular": false,
     "isActive": true,
     "priceFrom": "4 200 000 VND"

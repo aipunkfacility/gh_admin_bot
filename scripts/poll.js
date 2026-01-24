@@ -33,5 +33,31 @@ bot.launch()
     });
 
 // Плавная остановка
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+// Плавная остановка (Super Graceful Shutdown)
+async function stop(signal) {
+    console.log(`\n🛑 Получен сигнал ${signal}. Остановка бота...`);
+
+    // 1. Уведомление админа
+    const adminId = process.env.TELEGRAM_CHANNEL_ID;
+    if (adminId) {
+        try {
+            await bot.telegram.sendMessage(adminId, `🔴 <b>Bot Stopping</b>\nReason: <code>${signal}</code>`, { parse_mode: 'HTML' });
+            console.log('✅ Админ уведомлен об остановке');
+        } catch (e) {
+            console.error('⚠️ Не удалось уведомить админа:', e.message);
+        }
+    }
+
+    // 2. Остановка Long Polling
+    try {
+        bot.stop(signal);
+        console.log('✅ Polling остановлен');
+    } catch (e) {
+        console.error('❌ Ошибка при остановке:', e);
+    }
+
+    process.exit(0);
+}
+
+process.once('SIGINT', () => stop('SIGINT'));
+process.once('SIGTERM', () => stop('SIGTERM'));

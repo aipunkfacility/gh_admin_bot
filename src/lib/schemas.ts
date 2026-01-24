@@ -7,6 +7,8 @@ export const BaseItemSchema = z.object({
     image: z.string().optional(),
     details: z.string().optional(),
     isActive: z.boolean().default(true),
+    tgMessageId: z.string().nullable().optional(),
+    tgImage: z.string().optional(),
 });
 
 // --- Auth Schemas ---
@@ -48,8 +50,52 @@ export const ExcursionSchema = BaseItemSchema.extend({
     highlights: z.array(z.string()).optional(),
 });
 
+export const PostSchema = z.object({
+    id: z.string(),
+    text: z.string().min(1, "Текст поста обязателен"),
+    image: z.string().optional(),
+    createdAt: z.string().optional(),
+    sentAt: z.string().optional(),
+    status: z.enum(['draft', 'sent']).default('draft'),
+    tgMessageId: z.string().nullable().optional(),
+});
+
+export const ServiceSchema = BaseItemSchema.extend({
+    shortDescription: z.string().optional(),
+    priceFrom: z.string().optional(),
+    schedule: z.string().optional(),
+    details: z.string().optional(),
+    features: z.array(z.string()).optional(),
+    included: z.array(z.string()).optional(),
+    requirements: z.array(z.string()).optional(),
+    type: z.string().default('service'),
+    isPopular: z.boolean().optional(),
+});
+
+// --- Telegram Fields Helper ---
+const tgFields = [
+    { name: 'tgImage', label: 'Фото для Telegram', type: 'image', help: 'Если пусто — берется основное фото' },
+    { name: 'tgMessageId', label: 'ID сообщения в канале', type: 'text', help: 'Заполнится автоматически при отправке.', readOnly: true },
+];
+
 // --- Admin UI Schema Registry ---
 export const schemas: Record<string, any> = {
+    'posts': {
+        name: 'Посты (Telegram)',
+        schema: PostSchema,
+        fields: [
+            { name: 'text', label: 'Текст поста (Markdown)', type: 'textarea', required: true },
+            { name: 'image', label: 'Фото к посту', type: 'image' },
+            {
+                name: 'status', label: 'Статус', type: 'select', options: [
+                    { value: 'draft', label: 'Черновик' },
+                    { value: 'sent', label: 'Отправлено' }
+                ], default: 'draft'
+            },
+            { name: 'tgMessageId', label: 'ID сообщения', type: 'text', readOnly: true },
+        ],
+        showInMenu: true
+    },
     'transport-items': {
         name: 'Транспорт',
         schema: TransportSchema,
@@ -64,6 +110,7 @@ export const schemas: Record<string, any> = {
             { name: 'benefits', label: 'Преимущества', type: 'array' },
             { name: 'specs', label: 'Характеристики', type: 'array' },
             { name: 'features', label: 'Особенности', type: 'array' },
+            ...tgFields
         ]
     },
     'excursions': {
@@ -81,6 +128,7 @@ export const schemas: Record<string, any> = {
             { name: 'included', label: 'Включено', type: 'array' },
             { name: 'highlights', label: 'Что увидим', type: 'array' },
             { name: 'details', label: 'Детальное описание', type: 'textarea' },
+            ...tgFields
         ]
     },
     'accommodations': {
@@ -97,6 +145,63 @@ export const schemas: Record<string, any> = {
             { name: 'roomFeatures', label: 'В номере', type: 'array' },
             { name: 'atmosphere', label: 'Атмосфера', type: 'textarea' },
             { name: 'locationDescription', label: 'О расположении', type: 'textarea' },
+            ...tgFields
+        ]
+    },
+    'services': {
+        name: 'Услуги',
+        schema: ServiceSchema,
+        fields: [
+            { name: 'title', label: 'Название', type: 'text', required: true },
+            { name: 'image', label: 'Фото', type: 'image' },
+            { name: 'shortDescription', label: 'Краткое описание', type: 'textarea' },
+            { name: 'schedule', label: 'Расписание', type: 'text' },
+            { name: 'details', label: 'Детали (Полное описание)', type: 'textarea' },
+            { name: 'features', label: 'Особенности', type: 'array' },
+            { name: 'requirements', label: 'Требования', type: 'array' },
+            { name: 'isActive', label: 'Активно', type: 'checkbox', default: true },
+            { name: 'isPopular', label: 'Популярное', type: 'checkbox' },
+            ...tgFields
+        ]
+    },
+    'site-meta': {
+        name: 'Настройки сайта',
+        schema: BaseItemSchema.extend({
+            mainTitle: z.string().optional(),
+            mainSubtitle: z.string().optional(),
+            whatsappNumber: z.string().optional(),
+            'contacts.telegramManager': z.string().optional(),
+            'contacts.telegramChannel': z.string().optional(),
+            'contacts.telegramBot': z.string().optional(),
+            'contacts.offices': z.any().optional(),
+            copyrightYear: z.string().optional(),
+        }),
+        fields: [
+            { name: 'mainTitle', label: 'Заголовок сайта', type: 'text', colSpan: 2 },
+            { name: 'mainSubtitle', label: 'Подзаголовок', type: 'textarea', colSpan: 2 },
+            { name: 'copyrightYear', label: 'Год (Copyright)', type: 'text', colSpan: 1 },
+            { name: 'whatsappNumber', label: 'WhatsApp (Номер)', type: 'text', colSpan: 1 },
+            { name: 'contacts.telegramManager', label: 'Telegram Менеджер', type: 'text', colSpan: 1 },
+            { name: 'contacts.telegramChannel', label: 'Telegram Канал', type: 'text', colSpan: 1 },
+            { name: 'contacts.telegramBot', label: 'Telegram Бот', type: 'text', colSpan: 1 },
+            { name: 'contacts.offices', label: 'Офисы', type: 'offices', colSpan: 2 }
+        ]
+    },
+    'sections': {
+        name: 'Разделы',
+        schema: BaseItemSchema.extend({
+            slug: z.string(),
+            heroTitle: z.string().optional(),
+            heroSubtitle: z.string().optional(),
+            heroImage: z.string().optional(),
+        }),
+        fields: [
+            { name: 'title', label: 'Название в меню', type: 'text', required: true },
+            { name: 'slug', label: 'Slug (path)', type: 'text', required: true },
+            { name: 'heroTitle', label: 'Заголовок Hero', type: 'text' },
+            { name: 'heroSubtitle', label: 'Подзаголовок Hero', type: 'textarea' },
+            { name: 'heroImage', label: 'Фон Hero', type: 'image' },
+            { name: 'isActive', label: 'Активно', type: 'checkbox', default: true },
         ]
     }
 };
@@ -105,3 +210,5 @@ export const schemas: Record<string, any> = {
 export type TransportItem = z.infer<typeof TransportSchema>;
 export type Accommodation = z.infer<typeof AccommodationSchema>;
 export type Excursion = z.infer<typeof ExcursionSchema>;
+export type Post = z.infer<typeof PostSchema>;
+export type Service = z.infer<typeof ServiceSchema>;

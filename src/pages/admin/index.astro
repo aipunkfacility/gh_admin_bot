@@ -1,9 +1,23 @@
-
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
+const cookies = Astro.cookies;
+const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
+
+let isAuth = false;
+if (ADMIN_PASSWORD) {
+    const { getAuthToken } = await import('../../lib/auth');
+    const expectedToken = getAuthToken(ADMIN_PASSWORD);
+    isAuth = cookies.get('gh_admin_auth')?.value === expectedToken;
+}
+
+if (!isAuth) {
+    return Astro.redirect('/admin/login');
+}
+
 // Управление контентом
 const managementItems = [
+    { name: 'Посты', slug: 'posts', icon: 'ri-telegram-fill', color: 'from-blue-500 to-indigo-600' },
     { name: 'Экскурсии', slug: 'excursions', icon: 'ri-caravan-fill', color: 'from-orange-500 to-action' },
     { name: 'Транспорт', slug: 'transport-items', icon: 'ri-roadster-fill', color: 'from-brand to-green-800' },
     { name: 'Жилье', slug: 'accommodations', icon: 'ri-hotel-fill', color: 'from-blue-600 to-dark' },
@@ -19,56 +33,156 @@ const systemItems = [
 ---
 
 <AdminLayout title="Дашборд">
-    <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-dark tracking-tight uppercase">Панель управления</h1>
-        <div class="h-1 w-20 bg-action mt-2"></div>
+    <div class="mb-12">
+        <h1 id="greeting" class="text-3xl font-extrabold text-dark tracking-tight mb-2">Добро пожаловать</h1>
+        <p class="text-slate-400 font-bold text-xs uppercase tracking-widest" id="currentDate"></p>
     </div>
 
-    <!-- Управление -->
-    <div class="mb-8">
-        <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <i class="ri-folder-open-fill text-action"></i>
-            Управление контентом
-        </h2>
-        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
-            {managementItems.map(item => (
-                <a href={`/admin/${item.slug}`} class="group">
-                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col">
-                        <div class={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-xl text-white shadow mb-3`}>
-                            <i class={item.icon}></i>
-                        </div>
-                        <h3 class="text-base font-bold text-dark group-hover:text-action transition-colors">{item.name}</h3>
-                        <div class="flex items-center mt-1.5 text-slate-400 group-hover:text-action transition-colors font-bold text-[10px]">
-                            <span>Управлять</span>
-                            <i class="ri-arrow-right-line ml-1 group-hover:translate-x-1 transition-transform"></i>
-                        </div>
+    {/* CONTENT MANAGEMENT */}
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-6">
+            <span class="w-1.5 h-6 bg-action rounded-full"></span>
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Управление контентом</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            
+            {/* Telegram Posts */}
+            <a href="/admin/posts" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-action/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-48">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-telegram-fill"></i>
                     </div>
-                </a>
-            ))}
+                </div>
+                <div class="mt-auto">
+                    <h3 class="text-lg font-bold text-dark group-hover:text-blue-600 transition-colors">Посты</h3>
+                    <p class="text-xs font-semibold text-slate-400 mt-1">Публикации и синхронизация</p>
+                </div>
+            </a>
+
+            {/* Excursions */}
+            <a href="/admin/excursions" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-action/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-48">
+                 <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-action flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-caravan-fill"></i>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <h3 class="text-lg font-bold text-dark group-hover:text-action transition-colors">Экскурсии</h3>
+                    <p class="text-xs font-semibold text-slate-400 mt-1">Туры и программы</p>
+                </div>
+            </a>
+
+            {/* Transport */}
+            <a href="/admin/transport-items" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-action/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-48">
+                 <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-green-50 text-brand flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-roadster-fill"></i>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <h3 class="text-lg font-bold text-dark group-hover:text-brand transition-colors">Транспорт</h3>
+                    <p class="text-xs font-semibold text-slate-400 mt-1">Байки и авто</p>
+                </div>
+            </a>
+
+            {/* Accommodation */}
+            <a href="/admin/accommodations" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-action/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-48">
+                 <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-hotel-fill"></i>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <h3 class="text-lg font-bold text-dark group-hover:text-indigo-600 transition-colors">Жилье</h3>
+                    <p class="text-xs font-semibold text-slate-400 mt-1">Виллы и отели</p>
+                </div>
+            </a>
+
+            {/* Services */}
+            <a href="/admin/services" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-action/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-48">
+                 <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="ri-customer-service-2-fill"></i>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <h3 class="text-lg font-bold text-dark group-hover:text-amber-600 transition-colors">Услуги</h3>
+                    <p class="text-xs font-semibold text-slate-400 mt-1">Сервис и помощь</p>
+                </div>
+            </a>
+
         </div>
     </div>
 
-    <!-- Система -->
-    <div>
-        <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <i class="ri-settings-3-fill text-slate-500"></i>
-            Система
-        </h2>
-        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
-            {systemItems.map(item => (
-                <a href={`/admin/${item.slug}`} class="group">
-                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col">
-                        <div class={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-xl text-white shadow mb-3`}>
-                            <i class={item.icon}></i>
-                        </div>
-                        <h3 class="text-base font-bold text-dark group-hover:text-action transition-colors">{item.name}</h3>
-                        <div class="flex items-center mt-1.5 text-slate-400 group-hover:text-action transition-colors font-bold text-[10px]">
-                            <span>Открыть</span>
-                            <i class="ri-arrow-right-line ml-1 group-hover:translate-x-1 transition-transform"></i>
-                        </div>
+    {/* SYSTEM SETTINGS */}
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-6">
+            <span class="w-1.5 h-6 bg-slate-200 rounded-full"></span>
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Система</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            
+            {/* Sections */}
+            <a href="/admin/sections" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-purple-500/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-40">
+                <div class="flex items-center gap-4 mb-auto">
+                    <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
+                        <i class="ri-layout-grid-fill"></i>
                     </div>
-                </a>
-            ))}
+                    <h3 class="text-base font-bold text-dark group-hover:text-purple-600 transition-colors">Разделы</h3>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-purple-600 group-hover:text-white transition-all ml-auto">
+                    <i class="ri-arrow-right-line"></i>
+                </div>
+            </a>
+
+            {/* Site Meta */}
+            <a href="/admin/site-meta" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-slate-500/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-40">
+                <div class="flex items-center gap-4 mb-auto">
+                    <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xl">
+                        <i class="ri-settings-4-fill"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-dark group-hover:text-slate-600 transition-colors">Настройки сайта</h3>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-600 group-hover:text-white transition-all ml-auto">
+                    <i class="ri-arrow-right-line"></i>
+                </div>
+            </a>
+
+            {/* Bot Settings */}
+            <a href="/admin/bot-settings" class="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-cyan-500/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-40">
+                <div class="flex items-center gap-4 mb-auto">
+                    <div class="w-10 h-10 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center text-xl">
+                        <i class="ri-robot-2-fill"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-dark group-hover:text-cyan-600 transition-colors">Настройки бота</h3>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-cyan-600 group-hover:text-white transition-all ml-auto">
+                    <i class="ri-arrow-right-line"></i>
+                </div>
+            </a>
+
         </div>
     </div>
+
+    <script>
+        // Greeting Logic
+        const hour = new Date().getHours();
+        const greetingEl = document.getElementById('greeting');
+        let text = 'Здравствуйте';
+        if (hour >= 5 && hour < 12) text = 'Доброе утро';
+        else if (hour >= 12 && hour < 18) text = 'Добрый день';
+        else if (hour >= 18 && hour < 23) text = 'Добрый вечер';
+        
+        if (greetingEl) greetingEl.textContent = text + ', Администратор';
+
+        // Date Logic
+        const dateEl = document.getElementById('currentDate');
+        if (dateEl) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            // @ts-ignore
+            dateEl.textContent = new Date().toLocaleDateString('ru-RU', options);
+        }
+    </script>
 </AdminLayout>

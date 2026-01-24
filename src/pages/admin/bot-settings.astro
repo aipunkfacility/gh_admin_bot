@@ -6,7 +6,13 @@ export const prerender = false;
 
 const cookies = Astro.cookies;
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
-const isAuth = ADMIN_PASSWORD && cookies.get('gh_admin_auth')?.value === ADMIN_PASSWORD;
+
+let isAuth = false;
+if (ADMIN_PASSWORD) {
+    const { getAuthToken } = await import('../../lib/auth');
+    const expectedToken = getAuthToken(ADMIN_PASSWORD);
+    isAuth = cookies.get('gh_admin_auth')?.value === expectedToken;
+}
 
 if (!isAuth) {
     return Astro.redirect('/admin/login');

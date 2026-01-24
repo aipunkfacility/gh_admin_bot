@@ -13,16 +13,28 @@ import {
     readJsonFile,
     getFullImageUrl,
     paginate,
-    getPaginationButtons,
     formatExcursionCard,
     formatTransportCard,
     formatAccommodationCard,
     escapeMarkdown,
     replyWithImageFallback,
     validateItemId,
-    wrapHandler
+    wrapHandler,
+    buildPaginationKeyboard
 } from './utils.js';
 import { logger } from '../logger.js';
+import rateLimit from 'telegraf-ratelimit';
+
+// Настройка лимитов (защита от флуда)
+const limitConfig = {
+    window: 1000,
+    limit: 1,
+    onLimitExceeded: (ctx, next) => {
+        if (ctx.callbackQuery) {
+            return ctx.answerCbQuery('⚠️ Слишком быстро! Пожалуйста, подождите.').catch(() => { });
+        }
+    }
+};
 
 // Инициализация бота
 let token;
@@ -38,6 +50,7 @@ const bot = new Telegraf(token);
 
 // Middleware
 bot.use(session());
+bot.use(rateLimit(limitConfig));
 bot.use(stage.middleware());
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -191,17 +204,14 @@ async function showTransportList(ctx, page, categoryId) {
             }
         }
 
-        // Навигация
-        const navButtons = [];
-        const paginationRow = getPaginationButtons('transport', currentPage, totalPages, hasNext, hasPrev);
-        if (paginationRow.length > 1) {
-            navButtons.push(paginationRow);
-        }
-        navButtons.push([{ text: '◀️ Назад к категориям', callback_data: 'cat_transport' }]);
-        navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
+        // Навигация (Новая система!)
+        const navButtons = buildPaginationKeyboard('transport', { currentPage, totalPages, hasNext, hasPrev }, [
+            { text: '◀️ Назад к категориям', callback_data: 'cat_transport' },
+            { text: '🏠 Главное меню', callback_data: 'back_to_start' }
+        ]);
 
-        if (totalPages > 1) {
-            await ctx.reply('📄 Страница:', {
+        if (navButtons.length > 0) {
+            await ctx.reply('📄 Управление списком:', {
                 reply_markup: { inline_keyboard: navButtons },
             });
         }
@@ -314,27 +324,14 @@ async function showExcursionsList(ctx, page) {
             }
         }
 
-        // Навигация
-        const navButtons = [];
-        const paginationRow = getPaginationButtons('excursions', currentPage, totalPages, hasNext, hasPrev);
-        if (paginationRow.length > 1) {
-            navButtons.push(paginationRow);
-        }
-        navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
+        // Навигация (Новая система!)
+        const navButtons = buildPaginationKeyboard('excursions', { currentPage, totalPages, hasNext, hasPrev }, [
+            { text: '🏠 Главное меню', callback_data: 'back_to_start' }
+        ]);
 
-        if (totalPages > 1) {
-            await ctx.reply('📄 Страница:', {
-                reply_markup: { inline_keyboard: navButtons },
-            });
-        } else {
-            await ctx.reply('...', {
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]
-                    ]
-                },
-            });
-        }
+        await ctx.reply('📄 Навигация:', {
+            reply_markup: { inline_keyboard: navButtons },
+        });
 
     } catch (error) {
         logger.error('Error loading excursions', { error: error.message });
@@ -449,27 +446,14 @@ async function showAccommodationsList(ctx, page) {
             }
         }
 
-        // Навигация
-        const navButtons = [];
-        const paginationRow = getPaginationButtons('accommodations', currentPage, totalPages, hasNext, hasPrev);
-        if (paginationRow.length > 1) {
-            navButtons.push(paginationRow);
-        }
-        navButtons.push([{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]);
+        // Навигация (Новая система!)
+        const navButtons = buildPaginationKeyboard('accommodations', { currentPage, totalPages, hasNext, hasPrev }, [
+            { text: '🏠 Главное меню', callback_data: 'back_to_start' }
+        ]);
 
-        if (totalPages > 1) {
-            await ctx.reply('📄 Страница:', {
-                reply_markup: { inline_keyboard: navButtons },
-            });
-        } else {
-            await ctx.reply('...', {
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }]
-                    ]
-                },
-            });
-        }
+        await ctx.reply('📄 Навигация:', {
+            reply_markup: { inline_keyboard: navButtons },
+        });
 
     } catch (error) {
         logger.error('Error loading accommodations', { error: error.message });

@@ -22,12 +22,15 @@ export const POST: APIRoute = async ({ request, cookies, url }: APIContext) => {
             const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
 
             if (password === ADMIN_PASSWORD) {
-                cookies.set(COOKIE_NAME, ADMIN_PASSWORD, {
+                const { getAuthToken } = await import('../../lib/auth');
+                const token = getAuthToken(ADMIN_PASSWORD);
+
+                cookies.set(COOKIE_NAME, token, {
                     path: '/',
                     httpOnly: true,
-                    secure: import.meta.env.PROD, // Auto-detect environment
+                    secure: import.meta.env.PROD,
                     sameSite: 'lax',
-                    maxAge: 60 * 60 * 24 * 7 // 1 week
+                    maxAge: 60 * 60 * 24 * 7 // 1 неделя
                 });
                 return new Response(JSON.stringify({ success: true }), { status: 200 });
             }

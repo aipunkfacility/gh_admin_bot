@@ -48,7 +48,12 @@
     "details": "",
     "isPopular": true,
     "isActive": true,
-    "schedule": "Ежедневно"
+    "schedule": [
+      "Ежедневно"
+    ],
+    "tgMessageId": "311",
+    "tgText": "",
+    "tgImage": "/images/uploads/FISHING.jpg"
   },
   {
     "id": "mount-taku",

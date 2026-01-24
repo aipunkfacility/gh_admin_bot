@@ -60,7 +60,7 @@ const { title = 'Admin Panel' } = Astro.props;
             /* Toast Notifications */
             .toast-container {
                 position: fixed;
-                top: 24px;
+                bottom: 24px;
                 right: 24px;
                 z-index: 9999;
                 display: flex;
@@ -169,6 +169,10 @@ const { title = 'Admin Panel' } = Astro.props;
                     
                     <div class="pt-6 pb-2 px-6 text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Управление</div>
                     
+                    <a href="/admin/posts" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all duration-200 group nav-link">
+                        <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-telegram-fill"></i></span>
+                        <span class="font-semibold">Посты (TG)</span>
+                    </a>
                     <a href="/admin/excursions" class="flex items-center px-4 py-3 text-white/70 rounded-lg hover:bg-white/10 hover:text-white transition-all group nav-link">
                         <span class="mr-3 opacity-70 group-hover:scale-110 transition-transform sidebar-icon"><i class="ri-caravan-fill"></i></span>
                         <span class="font-semibold">Экскурсии</span>

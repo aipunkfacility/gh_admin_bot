@@ -21,34 +21,33 @@ const sections = siteMeta.sections || defaultSections;
 <AdminLayout title="Разделы главной">
     <div class="max-w-2xl mx-auto">
         <!-- Header -->
-        <div class="flex items-center gap-4 mb-8">
-            <div class="w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-3xl text-action">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-xl text-action">
                 <i class="ri-layout-grid-fill"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-extrabold text-dark tracking-tight uppercase leading-none">Разделы</h1>
-                <p class="text-slate-500 text-sm mt-1">Перетаскивайте для изменения порядка</p>
+                <h1 class="text-xl font-extrabold text-dark tracking-tight uppercase leading-none">Разделы</h1>
             </div>
         </div>
 
         <!-- Sections List -->
-        <div id="sections-list" class="space-y-3">
+        <div id="sections-list" class="space-y-2">
             {sections.map((section, index) => (
                 <div 
-                    class="section-item bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-action/30 transition-all"
+                    class="section-item bg-white rounded-xl border border-slate-200 p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing hover:shadow hover:border-action/30 transition-all"
                     data-id={section.id}
                     data-label={section.label}
                     data-icon={section.icon}
                 >
-                    <div class="handle flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-colors">
-                        <i class="ri-draggable text-xl"></i>
+                    <div class="handle flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 transition-colors">
+                        <i class="ri-draggable text-lg"></i>
                     </div>
                     
                     <div class="flex items-center gap-3 flex-1">
-                        <div class="w-10 h-10 rounded-xl bg-action/10 flex items-center justify-center text-action text-xl">
+                        <div class="w-8 h-8 rounded-lg bg-action/10 flex items-center justify-center text-action text-lg">
                             <i class={section.icon}></i>
                         </div>
-                        <span class="font-bold text-dark text-lg">{section.label}</span>
+                        <span class="font-bold text-dark text-sm">{section.label}</span>
                     </div>
                     
                     <label class="relative inline-flex items-center cursor-pointer">
@@ -58,7 +57,7 @@ const sections = siteMeta.sections || defaultSections;
                             checked={section.enabled}
                             data-id={section.id}
                         />
-                        <div class="w-14 h-8 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-action/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-action"></div>
+                        <div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-action"></div>
                     </label>
                 </div>
             ))}

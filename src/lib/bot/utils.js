@@ -88,28 +88,34 @@ export function paginate(items, page = 1, perPage = 5) {
 }
 
 /**
- * Создает inline-клавиатуру с пагинацией
- * @param {string} prefix - Префикс для callback_data (напр. 'transport')
- * @param {number} currentPage - Текущая страница
- * @param {number} totalPages - Всего страниц
- * @param {boolean} hasNext - Есть следующая страница
- * @param {boolean} hasPrev - Есть предыдущая страница
- * @returns {Array} Массив кнопок для inline_keyboard
+ * Собирает полную клавиатуру для списка (с пагинацией и кнопками назад)
+ * @param {string} prefix - Префикс (transport, excursions, accommodations)
+ * @param {Object} pagination - Объект из paginate()
+ * @param {Array} extraButtons - Дополнительные кнопки (например, [ { text: 'Назад', callback_data: 'cat_transport' } ])
+ * @returns {Array} Inline keyboard rows
  */
-export function getPaginationButtons(prefix, currentPage, totalPages, hasNext, hasPrev) {
-  const buttons = [];
+export function buildPaginationKeyboard(prefix, pagination, extraButtons = []) {
+  const { currentPage, totalPages, hasNext, hasPrev } = pagination;
+  const keyboard = [];
 
-  if (hasPrev) {
-    buttons.push({ text: '◀️', callback_data: `${prefix}_page_${currentPage - 1}` });
+  // Ряд пагинации (только если страниц больше 1)
+  if (totalPages > 1) {
+    const row = [];
+    if (hasPrev) row.push({ text: '⬅️ Назад', callback_data: `${prefix}_page_${currentPage - 1}` });
+    row.push({ text: `стр. ${currentPage}/${totalPages}`, callback_data: 'noop' });
+    if (hasNext) row.push({ text: 'Далее ➡️', callback_data: `${prefix}_page_${currentPage + 1}` });
+    keyboard.push(row);
   }
 
-  buttons.push({ text: `${currentPage}/${totalPages}`, callback_data: 'noop' });
-
-  if (hasNext) {
-    buttons.push({ text: '▶️', callback_data: `${prefix}_page_${currentPage + 1}` });
+  // Добавляем дополнительные кнопки снизу
+  if (extraButtons.length) {
+    extraButtons.forEach(btn => {
+      if (Array.isArray(btn)) keyboard.push(btn);
+      else keyboard.push([btn]);
+    });
   }
 
-  return buttons;
+  return keyboard;
 }
 
 // ========== ФОРМАТИРОВАНИЕ КАРТОЧЕК ==========
@@ -230,7 +236,8 @@ export function formatAccommodationCard(item) {
  */
 export function escapeMarkdown(text) {
   if (!text) return '';
-  return text.toString().replace(/([_*\[\]()~`>#+=|{}.!-])/g, '\\$1');
+  // Оставляем только самое необходимое. Экранируем только те символы, которые реально могут сломать парсинг (звездочки, подчеркивания, обратные кавычки)
+  return text.toString().replace(/([_*`\[\]])/g, '\\$1');
 }
 
 /**
@@ -295,11 +302,45 @@ export function wrapHandler(name, handler) {
         callbackData: ctx.callbackQuery?.data
       });
 
-      try {
-        await ctx.reply('❌ Произошла ошибка. Попробуйте позже.');
-      } catch (replyError) {
-        // Игнорируем если не удалось даже ответить
-      }
     }
   };
+}
+
+/**
+ * Форматирует карточку услуги для Telegram
+ * @param {Object} item - Объект услуги
+ * @returns {string} Отформатированный текст
+ */
+export function formatServiceCard(item) {
+  let text = `⚡️ *${escapeMarkdown(item.title)}*\n\n`;
+
+  if (item.shortDescription) {
+    text += `${escapeMarkdown(item.shortDescription)}\n\n`;
+  }
+
+  if (item.details) {
+    text += `${escapeMarkdown(item.details)}\n\n`;
+  }
+
+  if (item.features?.length) {
+    text += `✅ *Особенности:*\n`;
+    text += item.features.map(f => `• ${escapeMarkdown(f)}`).join('\n');
+    text += '\n\n';
+  }
+
+  if (item.requirements?.length) {
+    text += `📋 *Что нужно:*\n`;
+    text += item.requirements.map(r => `• ${escapeMarkdown(r)}`).join('\n');
+    text += '\n\n';
+  }
+
+  if (item.schedule) {
+    text += `⏰ *Расписание:* ${escapeMarkdown(item.schedule)}\n\n`;
+  }
+
+  if (item.priceFrom) {
+    text += `💰 *Цена:* ${escapeMarkdown(item.priceFrom)}`;
+  }
+
+  return text;
 }

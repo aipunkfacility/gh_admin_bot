@@ -1,6 +1,7 @@
 ﻿---
 import Header from '../components/Header.astro';
 import SEO from '../components/SEO.astro';
+import { getItem } from '../lib/data-store';
 import '@fontsource/montserrat/400.css';
 import '@fontsource/montserrat/500.css';
 import '@fontsource/montserrat/600.css';
@@ -16,6 +17,8 @@ interface Props {
 
 const { title, description, image, sections = [] } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL;
+
+const siteMeta = await getItem('site-meta.json', 'settings') || {};
 ---
 
 <!DOCTYPE html>
@@ -38,7 +41,7 @@ const baseUrl = import.meta.env.BASE_URL;
   <link rel="stylesheet" href={baseUrl + "fonts/remixicon/remixicon.css"}>
 
   <style is:global>
-    @import "tailwindcss";
+    @import 'tailwindcss';
 
     @theme {
       --color-action: #FF6400;
@@ -162,7 +165,7 @@ const baseUrl = import.meta.env.BASE_URL;
   <slot />
 
   <footer class="bg-gray-900 text-white py-6 text-center">
-    <p>© 2026 Green Hill Tours. Все права защищены.</p>
+    <p>&copy; {siteMeta.copyrightYear || new Date().getFullYear()} Green Hill Tours. Все права защищены.</p>
     <p class="text-gray-400 text-sm mt-2">Муйне, Вьетнам</p>
   </footer>
 </body>

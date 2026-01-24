@@ -27,16 +27,16 @@
       "enabled": true
     },
     {
-      "id": "popular",
-      "label": "Популярное",
-      "icon": "ri-fire-fill",
-      "enabled": false
-    },
-    {
       "id": "services",
       "label": "Услуги",
       "icon": "ri-customer-service-2-fill",
       "enabled": true
+    },
+    {
+      "id": "popular",
+      "label": "Популярное",
+      "icon": "ri-fire-fill",
+      "enabled": false
     },
     {
       "id": "transport",
@@ -63,5 +63,6 @@
       "enabled": true
     }
   ],
-  "id": "edit"
+  "id": "general",
+  "copyrightYear": ""
 }

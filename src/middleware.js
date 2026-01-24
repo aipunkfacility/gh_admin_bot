@@ -13,16 +13,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Allow access to login page
     if (url.pathname === '/admin/login') {
         // If already logged in with correct token, redirect to dashboard
-        if (ADMIN_PASSWORD && cookies.get(COOKIE_NAME)?.value === ADMIN_PASSWORD) {
-            return redirect('/admin');
+        if (ADMIN_PASSWORD) {
+            const { getAuthToken } = await import('./lib/auth');
+            const expectedToken = getAuthToken(ADMIN_PASSWORD);
+            if (cookies.get(COOKIE_NAME)?.value === expectedToken) {
+                return redirect('/admin');
+            }
         }
         return next();
     }
 
     if (isProtectedRoute) {
         const auth = cookies.get(COOKIE_NAME);
-        // Verify both existence and value of the cookie
-        if (!ADMIN_PASSWORD || auth?.value !== ADMIN_PASSWORD) {
+
+        let isAuth = false;
+        if (ADMIN_PASSWORD) {
+            const { getAuthToken } = await import('./lib/auth');
+            const expectedToken = getAuthToken(ADMIN_PASSWORD);
+            isAuth = auth?.value === expectedToken;
+        }
+
+        if (!isAuth) {
             return redirect('/admin/login');
         }
     }

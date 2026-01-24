@@ -19,7 +19,9 @@
     "address": "121 Nguyễn Đình Chiểu, Ham Tien",
     "image": "/images/hotels/1768647906226-resort.webp",
     "isPopular": false,
-    "isActive": true
+    "isActive": true,
+    "tgMessageId": "321",
+    "tgImage": "/images/uploads/RESORT.jpg"
   },
   {
     "id": "cozy-guesthouse",
@@ -41,6 +43,8 @@
     "address": "107 Nguyễn Đình Chiểu",
     "image": "/images/hotels/bungalow.webp",
     "isPopular": false,
-    "isActive": true
+    "isActive": true,
+    "tgMessageId": "322",
+    "tgImage": "/images/uploads/GUESTHOUSE.jpg"
   }
 ]

@@ -43,7 +43,7 @@ const sections = siteMeta.sections || defaultSections;
                 </div>
 
                 <div id="sections-list" class="space-y-3">
-                    {sections.map((section, index) => (
+                    {sections.map((section, _index) => (
                         <div 
                             class="section-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-action/30 transition-all group"
                             data-id={section.id}
@@ -391,7 +391,7 @@ const sections = siteMeta.sections || defaultSections;
             });
             
             document.querySelectorAll('.category-toggle').forEach(toggle => {
-                toggle.addEventListener('change', function(e) {
+                toggle.addEventListener('change', function() {
                     const listId = this.closest('[id$="-list"]').id;
                     saveCategoriesOrder(listId);
                 });

@@ -1,5 +1,4 @@
 import type { APIRoute } from 'astro';
-import { writeJsonFile } from '../../../lib/bot/utils.js';
 import { checkAuth, unauthorizedResponse } from '../../../lib/auth';
 
 export const prerender = false;
@@ -25,8 +24,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         await saveSingleObject('site-meta.json', payload);
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('SiteMeta API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
     }
 }

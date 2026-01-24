@@ -1,7 +1,6 @@
 import { Scenes } from 'telegraf';
 import { readJsonFile } from './utils.js';
 import { formatNumber, validateNumberInput, wrapHandler } from './utils.js';
-import { logger } from '../logger.js';
 
 // ========== КАЛЬКУЛЯТОР ВАЛЮТ (WizardScene) ==========
 

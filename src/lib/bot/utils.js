@@ -237,7 +237,7 @@ export function formatAccommodationCard(item) {
 export function escapeMarkdown(text) {
   if (!text) return '';
   // Оставляем только самое необходимое. Экранируем только те символы, которые реально могут сломать парсинг (звездочки, подчеркивания, обратные кавычки)
-  return text.toString().replace(/([_*`\[\]])/g, '\\$1');
+  return text.toString().replace(/([_*`[]])/g, '\\$1');
 }
 
 /**

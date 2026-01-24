@@ -24,7 +24,7 @@
       "id": "currency",
       "label": "Обмен валюты",
       "icon": "ri-exchange-dollar-line",
-      "enabled": false
+      "enabled": true
     },
     {
       "id": "popular",

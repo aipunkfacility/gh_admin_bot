@@ -82,9 +82,10 @@ export const POST: APIRoute = async ({ request, params }) => {
         const savedItem = await saveItem(`${collection}.json`, body);
         return new Response(JSON.stringify(savedItem), { status: 200 });
 
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error(e);
-        return new Response(JSON.stringify({ error: e.message || 'Internal Error' }), { status: 500 });
+        const msg = e instanceof Error ? e.message : 'Internal Error';
+        return new Response(JSON.stringify({ error: msg }), { status: 500 });
     }
 }
 

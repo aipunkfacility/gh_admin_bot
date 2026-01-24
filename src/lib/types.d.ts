@@ -72,7 +72,7 @@ export interface SchemaField {
   help?: string;
   rows?: number;
   options?: string[];
-  default?: any;
+  default?: unknown;
 }
 
 export interface Schema {

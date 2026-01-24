@@ -2,9 +2,24 @@
 import ServiceCard from '../components/ServiceCard.astro';
 import TransportCard from '../components/TransportCard.astro';
 
+interface Item {
+  type?: string;
+  title: string;
+  image?: string;
+  shortDescription?: string;
+  details?: string;
+  priceFrom?: string;
+  duration?: string;
+}
+
+interface Category {
+  id: string;
+  title: string;
+}
+
 interface Props {
-  items: any[];
-  categories: any[];
+  items: Item[];
+  categories: Category[];
 }
 
 const { items, categories } = Astro.props;

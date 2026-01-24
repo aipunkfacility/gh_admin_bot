@@ -167,7 +167,7 @@ const systemItems = [
         const dateEl = document.getElementById('currentDate');
         if (dateEl) {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            // @ts-ignore
+            // @ts-expect-error - options type mismatch in localedate
             dateEl.textContent = new Date().toLocaleDateString('ru-RU', options);
         }
     </script>

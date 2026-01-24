@@ -16,16 +16,15 @@ export const PUT: APIRoute = async ({ request, params }) => {
             return new Response(JSON.stringify({ error: 'Invalid data' }), { status: 400 });
         }
 
-        const items: any[] = await getCollection(`${collection}.json`);
+        const items = await getCollection(`${collection}.json`) as Array<{ id: string;[key: string]: unknown }>;
 
         const itemMap = new Map(items.map(item => [item.id, item]));
 
-        const newItems = order
+        const newItems: Array<{ id: string;[key: string]: unknown }> = order
             .map((id: string) => itemMap.get(id))
-            .filter(item => item !== undefined);
+            .filter((item): item is { id: string;[key: string]: unknown } => item !== undefined);
 
-        // Keep items not in order array at the end (or as is?) 
-        // Original logic appends missing items to the end
+        // Keep items not in order array at the end
         items.forEach(item => {
             if (!order.includes(item.id)) {
                 newItems.push(item);
@@ -35,8 +34,9 @@ export const PUT: APIRoute = async ({ request, params }) => {
         await saveCollection(`${collection}.json`, newItems);
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error);
-        return new Response(JSON.stringify({ error: error.message || 'Server error' }), { status: 500 });
+        const msg = error instanceof Error ? error.message : 'Server error';
+        return new Response(JSON.stringify({ error: msg }), { status: 500 });
     }
 }

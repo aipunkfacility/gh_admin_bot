@@ -79,8 +79,26 @@ const tgFields = [
     { name: 'tgMessageId', label: 'ID сообщения в канале', type: 'text', help: 'Заполнится автоматически при отправке.', readOnly: true },
 ];
 
+interface SchemaMetadata {
+    name: string;
+    schema: import('zod').ZodTypeAny; // Better than any
+    fields: Array<{
+        name: string;
+        label: string;
+        type: string;
+        required?: boolean;
+        options?: unknown;
+        default?: unknown;
+        readOnly?: boolean;
+        help?: string;
+        colSpan?: number;
+        placeholder?: string;
+    }>;
+    showInMenu?: boolean;
+}
+
 // --- Admin UI Schema Registry ---
-export const schemas: Record<string, any> = {
+export const schemas: Record<string, SchemaMetadata> = {
     'posts': {
         name: 'Посты (Telegram)',
         schema: PostSchema,

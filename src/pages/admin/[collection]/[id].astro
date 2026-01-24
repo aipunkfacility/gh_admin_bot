@@ -1,501 +1,237 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { schemas } from '../../../lib/schemas';
-import { getItem, getCollection } from '../../../lib/data-store';
-
-const cookies = Astro.cookies;
-const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
-
-let isAuth = false;
-if (ADMIN_PASSWORD) {
-    const { getAuthToken } = await import('../../../lib/auth');
-    const expectedToken = getAuthToken(ADMIN_PASSWORD);
-    isAuth = cookies.get('gh_admin_auth')?.value === expectedToken;
-}
-
-if (!isAuth) {
-    return Astro.redirect('/admin/login');
-}
+import { getItem } from '../../../lib/data-store';
 
 const { collection, id } = Astro.params;
 const isCreate = !id || id === 'create';
 
-// Redirect if schema not found
-const schemaSource = schemas[collection];
-if (!schemaSource) {
+const collectionNames: Record<string, string> = {
+    'excursions': 'Экскурсии',
+    'transport-items': 'Транспорт',
+    'accommodations': 'Жилье',
+    'services': 'Услуги'
+};
+
+const schema = (schemas as Record<string, unknown>)[collection as string] as { fields: Array<{ label: string; name: string; required?: boolean; type: string; default?: unknown; help?: string }> };
+if (!schema) {
     return Astro.redirect('/admin');
 }
 
-// Clone schema to avoid mutating global registry
-const schema = JSON.parse(JSON.stringify(schemaSource));
-
-// Load dynamic categories if needed
-if (collection === 'transport-items' || collection === 'excursions') {
-    const catFile = collection === 'transport-items' ? 'transport-categories.json' : 'excursion-categories.json';
-    const categories = await getCollection(catFile);
-    const catField = schema.fields.find(f => f.name === 'categoryId');
-    if (catField && Array.isArray(categories)) {
-        catField.options = categories.map(c => ({
-            value: c.id,
-            label: c.title
-        }));
-    }
-}
-
-let item = {};
+let item: Record<string, unknown> = {};
 if (!isCreate) {
-    item = await getItem(`${collection}.json`, id);
-    if (!item) {
+    const data = await getItem(`${collection}.json`, id as string);
+    if (!data) {
         return Astro.redirect(`/admin/${collection}`);
     }
+    item = data as Record<string, unknown>;
 } else {
-    // Default values
-    schema.fields.forEach(f => {
+    schema.fields.forEach((f) => {
         if (f.default !== undefined) item[f.name] = f.default;
     });
 }
 
-// Helper to get nested value (e.g. contacts.telegram)
-const getValue = (obj, path) => {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+const getValue = (obj: Record<string, unknown>, path: string): string => {
+    // @ts-expect-error - dynamic path reduction
+    const val = path.split('.').reduce((acc, part) => acc && (acc as Record<string, unknown>)[part], obj);
+    return (val as string) || '';
 };
 
-// Helper to normalize image paths for preview
-const normalizeSrc = (src) => {
+const normalizeSrc = (src: string) => {
     if (!src) return '';
     if (src.startsWith('http') || src.startsWith('/')) return src;
     if (src.startsWith('./')) return src.replace('./', '/');
     return '/' + src;
 };
 
-// --- Field Separation Logic ---
-const sidebarFieldNames = [
-    'image', 'tgImage', 'tgMessageId', 
-    'isActive', 'isPopular', 'status', 
-    'categoryId', 
-    'pricePerDay', 'pricePerMonth', 'priceFrom', 'priceStart', 'deposit', 'duration'
-];
-
-// Special handling: 'title' should be in the header or top of main, but schema defines it.
-// We will filter it out from generic loop and render explicitly if needed, or keep in main.
-// For now, let's keep title in mainFields for simplicity, but fields like 'image' definitely go to sidebar.
-
-const mainFields = schema.fields.filter(f => !sidebarFieldNames.includes(f.name));
-const sidebarFields = schema.fields.filter(f => sidebarFieldNames.includes(f.name));
-
-const showTgCard = (!isCreate && ['excursions', 'transport-items', 'accommodations', 'posts', 'services'].includes(collection));
-const showSettingsCard = sidebarFields.some(f => !f.name.startsWith('tg'));
-const hasSidebar = showTgCard || showSettingsCard;
-
-const hasPdfUpload = collection === 'transport-items'; // Example feature toggle if needed
+const collectionTitle = collectionNames[collection as string] || collection;
+const pageTitle = isCreate ? `Новая запись: ${collectionTitle}` : `Редактирование: ${item.title || id}`;
 ---
 
-<AdminLayout title={isCreate ? 'Создание элемента' : 'Редактирование'}>
-    <form id="editForm" class="max-w-7xl mx-auto pb-20 relative">
-        
-        {/* --- STICKY HEADER --- */}
-        <div class="sticky top-0 z-50 bg-slate-50/90 backdrop-blur-md border-b border-slate-200 -mx-4 px-4 py-4 mb-8 flex items-center justify-between shadow-sm">
-             <div class="flex items-center gap-4">
-                {collection !== 'site-meta' && (
-                <a href={`/admin/${collection}`} class="text-slate-400 hover:text-dark transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+<AdminLayout title={pageTitle}>
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <a href={`/admin/${collection}`} class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-action transition-colors mb-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    {collectionTitle}
                 </a>
-                )}
-                <div>
-                    <h1 class="text-xl font-extrabold text-dark tracking-tight uppercase line-clamp-1">
-                        {isCreate ? 'Новая запись' : (getValue(item, 'title') || 'Редактирование')}
-                    </h1>
-                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{schema.name}</div>
-                </div>
+                <h1 class="text-3xl font-extrabold text-dark tracking-tight leading-none">
+                    {isCreate ? '✨ Новая запись' : `✏️ ${item.title || 'Редактирование'}`}
+                </h1>
+                <div class="h-1 w-12 bg-action mt-2"></div>
             </div>
-
-            <div class="flex items-center gap-3">
-                 {collection !== 'site-meta' && (
-                 <a href={`/admin/${collection}`} class="hidden sm:inline-flex px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-dark transition-colors">Отмена</a>
-                 )}
-                 
-                 {/* Sync TG Button (Header) */}
-                 {(!isCreate && (collection === 'excursions' || collection === 'transport-items' || collection === 'accommodations' || collection === 'posts' || collection === 'services')) && (
-                     <button type="button" id="syncTgBtn" class="px-6 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2">
-                        <i class="ri-telegram-fill text-lg"></i>
-                        <span class="hidden sm:inline">Sync TG</span>
-                    </button>
-                 )}
-
-                 <button type="submit" class="px-8 py-3 bg-action hover:bg-action-hover text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-xl shadow-orange-500/20 transition-all active:scale-[98%] flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    <span>Сохранить</span>
-                </button>
-            </div>
-        </div>
-
-        <div class={`grid grid-cols-1 ${hasSidebar ? 'lg:grid-cols-3' : ''} gap-8`}>
             
-            {/* --- MAIN COLUMN (LEFT) --- */}
-            <div class={`${hasSidebar ? 'lg:col-span-2' : 'w-full'} space-y-6`}>
-                
-                {/* Content Card */}
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="w-1 h-6 bg-action rounded-full"></span>
-                        <h2 class="text-lg font-bold text-dark">Основная информация</h2>
-                    </div>
-
-                    {collection === 'site-meta' ? (
-                        <div class="space-y-6">
-                            {/* --- SITE SETTINGS LAYOUT --- */}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                
-                                {/* Card 1: Main Info */}
-                                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 h-full">
-                                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Инфо</h3>
-                                    {mainFields.filter(f => ['mainTitle', 'mainSubtitle'].includes(f.name)).map(field => (
-                                        <div class="space-y-1">
-                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1">
-                                                {field.label}
-                                            </label>
-                                            {field.type === 'textarea' ? (
-                                                <textarea name={field.name} rows={4} class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark placeholder:text-slate-300">{getValue(item, field.name) || ''}</textarea>
-                                            ) : (
-                                                <input type="text" name={field.name} value={getValue(item, field.name) || ''} class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark placeholder:text-slate-300" />
-                                            )}
-                                        </div>
-                                    ))}
-
-                                    {/* Copyright Year */}
-                                    {mainFields.filter(f => f.name === 'copyrightYear').map(field => (
-                                        <div class="space-y-1">
-                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1">
-                                                {field.label}
-                                            </label>
-                                            <input type="text" name={field.name} value={getValue(item, field.name) || ''} class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark placeholder:text-slate-300" placeholder="Например: 2026" />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Card 2: Contacts */}
-                                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 h-full">
-                                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Контакты</h3>
-                                    {mainFields.filter(f => !['mainTitle', 'mainSubtitle', 'contacts.offices', 'copyrightYear'].includes(f.name)).map(field => (
-                                        <div class="space-y-1">
-                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1">
-                                                {field.label}
-                                            </label>
-                                            <input type="text" name={field.name} value={getValue(item, field.name) || ''} class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark placeholder:text-slate-300" />
-                                        </div>
-                                    ))}
-
-                                    {/* Copyright Year Removed */}
-                                </div>
-                            </div>
-
-                            {/* Card 3: Offices (Full Width) */}
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-4">Офисы</h3>
-                                {mainFields.filter(f => f.name === 'contacts.offices').map(field => (
-                                      <div class="offices-editor space-y-4" data-name={field.name} data-initial={JSON.stringify(getValue(item, field.name) || [])}>
-                                          <div class="offices-list grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                                          <button type="button" class="add-office-btn w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs uppercase hover:border-action hover:text-action transition-all">
-                                              + Добавить офис
-                                          </button>
-                                      </div>
-                                ))}
-                            </div>
-                        </div>
-                    ) : (
-                        /* --- GENERIC GRID LAYOUT --- */
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            {mainFields.map(field => (
-                                <div class={`space-y-1 ${String(field.colSpan) === '1' ? 'col-span-1' : 'col-span-1 md:col-span-2'}`}>
-                                    {field.type !== 'checkbox' && (
-                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1">
-                                        {field.label} {field.required && <span class="text-action">*</span>}
-                                    </label>
-                                    )}
-                                    
-                                    {field.type === 'text' && (
-                                        <input type="text" name={field.name} value={getValue(item, field.name) || ''} required={field.required}
-                                            class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark placeholder:text-slate-300" />
-                                    )}
-
-                                    {field.type === 'textarea' && (
-                                        <textarea name={field.name} rows={field.rows || 4} required={field.required}
-                                            class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark placeholder:text-slate-300">{getValue(item, field.name) || ''}</textarea>
-                                    )}
-                                    
-                                    {field.type === 'array' && (
-                                        <textarea name={field.name} rows={field.rows || 4} data-type="array"
-                                            class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark placeholder:text-slate-300"
-                                            placeholder="Каждый элемент с новой строки">{(() => {
-                                                const val = getValue(item, field.name);
-                                                if (Array.isArray(val)) return val.join('\n');
-                                                return val || '';
-                                            })()}</textarea>
-                                    )}
-                                    
-                                    {field.type === 'offices' && (
-                                        <div class="offices-editor space-y-4" data-name={field.name} data-initial={JSON.stringify(getValue(item, field.name) || [])}>
-                                            <div class="offices-list grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                                            <button type="button" class="add-office-btn px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors">
-                                                + Добавить офис
-                                            </button>
-                                        </div>
-                                    )}
-                                    
-                                    {field.type === 'checkbox' && (
-                                        <div class="flex items-center gap-3 pt-6 border-t border-slate-100 mt-2">
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" name={field.name} class="sr-only peer" checked={getValue(item, field.name)} />
-                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-action/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-action"></div>
-                                            </label>
-                                            <span class="text-sm font-bold text-dark select-none cursor-pointer" onclick="this.previousElementSibling.click()">{field.label}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* --- SIDEBAR (RIGHT) --- */}
-            {hasSidebar && (
-            <div class="space-y-6">
-                
-                {/* 1. Media & Status Card */}
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Настройки</h3>
-                     
-                     {sidebarFields.map(field => {
-                        // Skip Telegram fields here, we will render them in separate card
-                        if (field.name.startsWith('tg')) return null;
-
-                        return (
-                            <div class="space-y-2">
-                                {field.type !== 'checkbox' && (
-                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
-                                        {field.label} {field.required && <span class="text-action">*</span>}
-                                    </label>
-                                )}
-
-                                {field.type === 'image' && (
-                                    <div class="space-y-4 image-upload-group">
-                                        <div class="flex flex-col gap-3">
-                                             <div class="preview-container hidden rounded-xl overflow-hidden border border-slate-200 w-full aspect-video bg-slate-100 relative shadow-sm group">
-                                                <img src="" class="w-full h-full object-cover" />
-                                            </div>
-                                            
-                                            <div class="flex gap-2">
-                                                <input type="text" name={field.name} value={getValue(item, field.name) || ''} 
-                                                    class="image-path-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-dark focus:outline-none focus:border-action" 
-                                                    placeholder="/images/..." />
-                                                <button type="button" class="upload-trigger-btn px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm">
-                                                    📷
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {field.type === 'checkbox' && (
-                                    <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                        <input type="checkbox" name={field.name} checked={!!getValue(item, field.name)}
-                                            class="h-5 w-5 text-action focus:ring-action/20 border-slate-300 rounded-lg cursor-pointer" />
-                                        <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">{field.label}</span>
-                                    </div>
-                                )}
-
-                                {field.type === 'select' && (
-                                      <select name={field.name} class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark text-sm">
-                                          <option value="">— Выберите —</option>
-                                          {field.options && field.options.map(opt => {
-                                              const optValue = typeof opt === 'object' ? opt.value : opt;
-                                              const optLabel = typeof opt === 'object' ? opt.label : opt;
-                                              return (
-                                                  <option value={optValue} selected={getValue(item, field.name) === optValue}>{optLabel}</option>
-                                              );
-                                          })}
-                                      </select>
-                                )}
-                                
-                                {field.type === 'text' && (
-                                     <input type="text" name={field.name} value={getValue(item, field.name) || ''}
-                                        class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action transition-all font-semibold text-dark text-sm" />
-                                )}
-                            </div>
-                        );
-                     })}
-                </div>
-
-                {/* 2. Telegram Card */}
-                {showTgCard && (
-                    <div class="bg-gradient-to-br from-white to-blue-50/50 p-6 rounded-2xl shadow-sm border border-blue-100 space-y-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full -mr-8 -mt-8"></div>
-                        
-                        <div class="flex items-center gap-2 border-b border-blue-100 pb-2">
-                             <i class="ri-telegram-fill text-blue-500 text-xl"></i>
-                             <h3 class="text-xs font-black text-blue-500 uppercase tracking-widest">Telegram</h3>
-                        </div>
-
-                         {/* Render Telegram Fields */}
-                         {sidebarFields.filter(f => f.name.startsWith('tg')).map(field => (
-                             <div class="space-y-2">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
-                                    {field.label}
-                                </label>
-                                
-                                {field.type === 'image' && (
-                                     <div class="space-y-4 image-upload-group">
-                                        <div class="flex flex-col gap-3">
-                                             <div class="preview-container hidden rounded-xl overflow-hidden border border-slate-200 w-full aspect-video bg-white relative shadow-sm">
-                                                <img src="" class="w-full h-full object-cover" />
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <input type="text" name={field.name} value={getValue(item, field.name) || ''} 
-                                                    class="image-path-input w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-dark focus:outline-none focus:border-blue-500" 
-                                                    placeholder="По умолчанию (осн. фото)" />
-                                                <button type="button" class="upload-trigger-btn px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 text-[10px] font-bold uppercase tracking-wider transition-all">
-                                                    📷
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {field.type === 'text' && (
-                                     <input type="text" name={field.name} value={getValue(item, field.name) || ''} readOnly={field.readOnly}
-                                        class="w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-500" />
-                                )}
-                             </div>
-                         ))}
-
-                    </div>
-                )}
-                
-                {/* 3. Delete Zone */}
-                {!isCreate && collection !== 'site-meta' && (
-                    <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 space-y-4">
-                        <h3 class="text-xs font-black text-rose-400 uppercase tracking-widest">Опасная зона</h3>
-                        <button type="button" id="deleteBtn" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
-                            Удалить запись
-                        </button>
-                    </div>
-                )}
-            </div>
+            {!isCreate && (
+                <button 
+                    id="deleteBtn" 
+                    data-id={id} 
+                    data-title={item.title as string}
+                    class="group px-6 py-4 bg-rose-50 hover:bg-rose-100 text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 border border-rose-100"
+                >
+                    <i class="ri-delete-bin-fill text-base group-hover:scale-110 transition-transform"></i>
+                    Удалить
+                </button>
             )}
         </div>
-    </form>
+
+        <form id="editForm" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="h-1 bg-gradient-to-r from-action to-amber-400"></div>
+            
+            <div class="p-8 md:p-10 space-y-8">
+                {schema.fields.map((field, idx) => (
+                    <div class="space-y-2 animate-fadeIn" style={`animation-delay: ${idx * 50}ms`}>
+                        <label class="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            {field.label}
+                            {field.required && <span class="text-action text-xs">*</span>}
+                        </label>
+                        
+                        {field.type === 'text' && (
+                            <input 
+                                type="text" 
+                                name={field.name} 
+                                value={getValue(item, field.name)} 
+                                required={field.required}
+                                class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark"
+                            />
+                        )}
+
+                        {field.type === 'textarea' && (
+                            <textarea 
+                                name={field.name} 
+                                rows={5} 
+                                required={field.required}
+                                class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark resize-y min-h-[120px]"
+                            >{getValue(item, field.name)}</textarea>
+                        )}
+
+                        {field.type === 'checkbox' && (
+                            <label class="flex items-center gap-4 bg-slate-50 p-5 rounded-xl border border-slate-200 cursor-pointer hover:border-action/30 transition-all">
+                                <div class="relative">
+                                    <input 
+                                        type="checkbox" 
+                                        name={field.name} 
+                                        checked={getValue(item, field.name) !== 'false'}
+                                        class="peer sr-only"
+                                    />
+                                    <div class="w-12 h-7 bg-slate-300 rounded-full peer-checked:bg-action transition-colors"></div>
+                                    <div class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm peer-checked:translate-x-5 transition-transform"></div>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-bold text-dark block">{field.help || field.label}</span>
+                                </div>
+                            </label>
+                        )}
+
+                        {field.type === 'image' && (
+                            <div class="image-upload-group space-y-4">
+                                <div class="flex items-stretch gap-3">
+                                    <input 
+                                        type="text" 
+                                        name={field.name} 
+                                        value={getValue(item, field.name)} 
+                                        class="image-path-input flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark" 
+                                        placeholder="/images/example.jpg"
+                                    />
+                                    <button 
+                                        type="button" 
+                                        class="upload-trigger-btn px-6 rounded-xl bg-dark text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-[98%]"
+                                    >
+                                        Загрузить
+                                    </button>
+                                </div>
+                                <div class="preview-container" style={getValue(item, field.name) ? '' : 'display:none'}>
+                                    <div class="relative w-40 h-40 rounded-xl overflow-hidden border-2 border-slate-100 shadow-sm transition-all group/preview">
+                                        <img src={normalizeSrc(getValue(item, field.name))} class="w-full h-full object-cover" alt="" />
+                                        <div class="absolute inset-0 bg-dark/60 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
+                                            <span class="text-[10px] text-white font-black uppercase tracking-wider">Предпросмотр</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {field.help && field.type !== 'checkbox' && (
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                <i class="ri-information-line"></i> {field.help}
+                            </p>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            <div class="p-8 md:p-10 bg-slate-50 border-t border-slate-100 flex justify-between items-center gap-4">
+                <a href={`/admin/${collection}`} class="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-dark transition-colors">
+                    Отмена
+                </a>
+                <button 
+                    type="submit" 
+                    id="submitBtn"
+                    class="px-8 py-4 bg-action hover:bg-action-hover text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-orange-500/20 transition-all active:scale-[98%] flex items-center gap-2"
+                >
+                    <i class="ri-save-fill text-base"></i>
+                    <span id="submitText">Сохранить</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div class="bg-dark text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
+            <span id="toast-message" class="text-sm font-bold">Сохранено</span>
+        </div>
+    </div>
 
     <script define:vars={{ collection, id, isCreate }}>
-        const form = document.getElementById('editForm');
+        const form = document.getElementById('editForm') as HTMLFormElement;
+        const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+        const submitText = document.getElementById('submitText') as HTMLElement;
         
-        // Delete functionality
-        const deleteBtn = document.getElementById('deleteBtn');
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', async () => {
-                const confirmed = await showConfirm('Это действие НЕОБРАТИМО!\n\nВы точно хотите удалить эту запись?', '⚠️ Удаление');
-                if (!confirmed) return;
-                try {
-                    const res = await fetch(`/api/${collection}/${id}`, { method: 'DELETE' });
-                    if (res.ok) {
-                        showToast('Запись удалена', 'success');
-                        setTimeout(() => window.location.href = `/admin/${collection}`, 1000);
-                    } else {
-                        showToast('Ошибка при удалении', 'error');
-                    }
-                } catch (e) {
-                    showToast('Ошибка сети', 'error');
-                }
-            });
+        function showToast(message: string, type = 'success') {
+            const toast = document.getElementById('toast') as HTMLElement;
+            const msg = document.getElementById('toast-message') as HTMLElement;
+            
+            msg.textContent = message;
+            toast.className = `fixed bottom-6 right-6 transform transition-all duration-300 z-50 ${type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3`;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
         }
-        
-        // Sync TG functionality
-        const syncTgBtn = document.getElementById('syncTgBtn');
-        if (syncTgBtn) {
-            syncTgBtn.addEventListener('click', async () => {
-                const tgIdField = form.querySelector('input[name="tgMessageId"]');
-                const hasExistingPost = tgIdField && tgIdField.value && tgIdField.value !== '';
-                
-                let confirmMsg = 'Опубликовать этот товар в Telegram канале?';
-                if (hasExistingPost) {
-                    confirmMsg = 'ВНИМАНИЕ: Синхронизация ОБНОВИТ текущий пост в Telegram. \n\nВаши ручные правки в канале (если они были) будут затерты текстом из админки. Продолжить?';
-                }
 
-                const confirmed = await showConfirm(confirmMsg, '📢 Telegram Sync');
-                if (!confirmed) return;
-                
-                const originalText = syncTgBtn.innerHTML;
-                syncTgBtn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> ...';
-                syncTgBtn.disabled = true;
-                
-                try {
-                    const res = await fetch(`/api/bot/sync-channel`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ collection, id })
-                    });
-                    
-                    const result = await res.json();
-                    
-                    if (res.ok) {
-                        if (result.warning) {
-                            showToast(result.warning, 'warning');
-                        } else {
-                            showToast(result.message || 'Успешно синхронизировано!', 'success');
-                        }
-                        // Даем время прочитать тост перед перезагрузкой
-                        setTimeout(() => location.reload(), result.warning ? 3000 : 1500);
-                    } else {
-                        showToast('Ошибка: ' + (result.error || 'Неизвестная ошибка'), 'error');
-                    }
-                } catch (e) {
-                    console.error(e);
-                    showToast('Ошибка сети при синхронизации', 'error');
-                } finally {
-                    syncTgBtn.innerHTML = originalText;
-                    syncTgBtn.disabled = false;
-                }
-            });
-        }
-        
-        // Logic for Image Previews
-        const normalizeSrc = (src) => {
+        const normalizeSrc = (src: string) => {
             if (!src) return '';
             if (src.startsWith('http') || src.startsWith('/')) return src;
             if (src.startsWith('./')) return src.replace('./', '/');
             return '/' + src;
         };
 
-        // Initialize previews on load
+        function updatePreview(e: Event) {
+            const input = e.target as HTMLInputElement;
+            const parent = input.closest('.image-upload-group') as HTMLElement;
+            const preview = parent.querySelector('.preview-container') as HTMLElement;
+            const img = preview.querySelector('img') as HTMLImageElement;
+            if (input.value) {
+                img.src = normalizeSrc(input.value);
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
         document.querySelectorAll('.image-path-input').forEach(input => {
-            const updatePreview = () => {
-                const parent = input.closest('.space-y-4');
-                const preview = parent.querySelector('.preview-container');
-                const img = preview.querySelector('img');
-                if (input.value) {
-                    img.src = normalizeSrc(input.value);
-                    preview.classList.remove('hidden');
-                    preview.classList.add('block');
-                } else {
-                    preview.classList.add('hidden');
-                    preview.classList.remove('block');
-                }
-            };
-            
-            // Run on load
-            updatePreview();
-            
-            // Run on change
             input.addEventListener('input', updatePreview);
         });
 
         // Upload Logic
         document.querySelectorAll('.upload-trigger-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const parentDiv = btn.closest('.image-upload-group'); // Fix scope using dedicated class
-                const textInput = parentDiv.querySelector('.image-path-input');
-                const previewContainer = parentDiv.querySelector('.preview-container');
-                const imgPreview = previewContainer.querySelector('img');
+            btn.addEventListener('click', () => {
+                const parentDiv = btn.closest('.image-upload-group') as HTMLElement; 
+                const textInput = parentDiv.querySelector('.image-path-input') as HTMLInputElement;
                 
                 // Create hidden file input
                 const fileInput = document.createElement('input');
@@ -507,153 +243,124 @@ const hasPdfUpload = collection === 'transport-items'; // Example feature toggle
                 fileInput.click();
                 
                 fileInput.onchange = async () => {
-                    const file = fileInput.files[0];
-                    if (!file) return;
+                    const files = fileInput.files;
+                    if (!files || files.length === 0) return;
+                    const file = files[0];
                     
                     const formData = new FormData();
                     formData.append('file', file);
                     
                     const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '⏳';
-                    btn.disabled = true;
+                    btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i>';
+                    (btn as HTMLButtonElement).disabled = true;
                     
                     try {
                         const res = await fetch('/api/upload', {
                             method: 'POST',
                             body: formData
                         });
-                        
                         const data = await res.json();
                         
                         if (data.success) {
                             textInput.value = data.url;
-                            // Trigger event to update preview
                             textInput.dispatchEvent(new Event('input'));
-                            showToast('Фото загружено!', 'success');
+                            showToast('Фото загружено!');
                         } else {
-                            alert('Ошибка загрузки: ' + (data.error || 'Неизвестная ошибка'));
+                            showToast('Ошибка загрузки', 'error');
                         }
-                    } catch (e) {
-                        console.error('Upload network error:', e);
-                        alert('Ошибка сети при загрузке: ' + e.message);
+                    } catch {
+                        showToast('Ошибка сети', 'error');
                     } finally {
                         btn.innerHTML = originalHTML;
-                        btn.disabled = false;
+                        (btn as HTMLButtonElement).disabled = false;
                         document.body.removeChild(fileInput);
                     }
                 };
             });
         });
 
-        form.addEventListener('submit', async (e) => {
+        form.addEventListener('submit', async (e: Event) => {
             e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitText.textContent = 'Сохранение...';
+            
             const formData = new FormData(form);
-            const data = {};
+            const data: Record<string, unknown> = {};
 
-            // Handle nested keys and checkboxes
-            for (let [key, value] of formData.entries()) {
+            for (const [key, value] of formData.entries()) {
                 if (key.includes('.')) {
                     const [parent, child] = key.split('.');
                     if (!data[parent]) data[parent] = {};
-                    data[parent][child] = value;
+                    (data[parent] as Record<string, unknown>)[child] = value;
                 } else {
                     data[key] = value;
                 }
             }
 
-            // Handle checkboxes explicitly
             const checkboxes = form.querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(cb => {
-                data[cb.name] = cb.checked;
-            });
-            
-            // Handle array fields (textarea with data-type="array")
-            form.querySelectorAll('textarea[data-type="array"]').forEach(ta => {
-                const name = ta.name;
-                const lines = ta.value.split('\n').map(l => l.trim()).filter(l => l);
-                data[name] = lines;
-            });
-            
-            // Handle offices editor
-            document.querySelectorAll('.offices-editor').forEach(editor => {
-                const fieldName = editor.dataset.name;
-                const offices = [];
-                editor.querySelectorAll('.office-item').forEach(item => {
-                    offices.push({
-                        name: item.querySelector('[data-field="name"]').value,
-                        address: item.querySelector('[data-field="address"]').value,
-                        mapLink: item.querySelector('[data-field="mapLink"]').value
-                    });
-                });
-                // Set nested value for contacts.offices
-                if (fieldName.includes('.')) {
-                    const [parent, child] = fieldName.split('.');
+                const input = cb as HTMLInputElement;
+                const name = input.name;
+                const checked = input.checked;
+                if (name.includes('.')) {
+                    const [parent, child] = name.split('.');
                     if (!data[parent]) data[parent] = {};
-                    data[parent][child] = offices;
+                    (data[parent] as Record<string, unknown>)[child] = checked;
                 } else {
-                    data[fieldName] = offices;
+                    data[name] = checked;
                 }
             });
-            
+
             if (!isCreate) {
                 data.id = id;
             } else if (!data.id) {
-                // Generate slug if new
-                data.id = (data.slug || String(Date.now()));
+                data.id = (data.slug as string || String(Date.now()));
             }
 
             try {
-                const url = `/api/${collection}/${data.id}`; 
-                const res = await fetch(url, {
+                const res = await fetch(`/api/${collection as string}/${data.id as string}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
                 if (res.ok) {
-                    showToast('Запись успешно сохранена!', 'success');
-                    if (isCreate || collection === 'site-meta') {
-                        setTimeout(() => location.reload(), 1000);
-                    } else {
-                        // Stay on page for other collections
-                    }
+                    showToast('Успешно сохранено!');
+                    setTimeout(() => {
+                        window.location.href = `/admin/${collection as string}`;
+                    }, 1000);
                 } else {
-                    const errData = await res.json();
-                    showToast('Ошибка: ' + (errData.error || 'Проверьте данные'), 'error');
+                    showToast('Ошибка сохранения', 'error');
+                    submitBtn.disabled = false;
+                    submitText.textContent = 'Сохранить';
                 }
-            } catch (err) {
-                console.error(err);
-                showToast('Критическая ошибка сети', 'error');
+            } catch {
+                showToast('Ошибка сети', 'error');
+                submitBtn.disabled = false;
+                submitText.textContent = 'Сохранить';
             }
         });
         
-        // Initialize offices editors
-        function createOfficeItem(office = {}) {
-            const div = document.createElement('div');
-            div.className = 'office-item p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3';
-            div.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-slate-500 uppercase">Офис</span>
-                    <button type="button" class="remove-office text-red-400 hover:text-red-600 text-xs font-bold">Удалить</button>
-                </div>
-                <input type="text" data-field="name" value="${office.name || ''}" placeholder="Название офиса" 
-                    class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold" />
-                <input type="text" data-field="address" value="${office.address || ''}" placeholder="Адрес" 
-                    class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold" />
-                <input type="text" data-field="mapLink" value="${office.mapLink || ''}" placeholder="Ссылка на карту (Google Maps)" 
-                    class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold" />
-            `;
-            div.querySelector('.remove-office').onclick = () => div.remove();
-            return div;
+        // Delete Logic
+        const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async () => {
+                const title = deleteBtn.getAttribute('data-title');
+                if (!confirm(`Вы уверены, что хотите удалить "${title}"?`)) return;
+                
+                try {
+                    const res = await fetch(`/api/${collection as string}/${id as string}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        showToast('Элемент удален');
+                        setTimeout(() => window.location.href = `/admin/${collection as string}`, 1000);
+                    } else {
+                        showToast('Ошибка удаления', 'error');
+                    }
+                } catch {
+                    showToast('Ошибка сети', 'error');
+                }
+            });
         }
-        
-        document.querySelectorAll('.offices-editor').forEach(editor => {
-            const list = editor.querySelector('.offices-list');
-            const addBtn = editor.querySelector('.add-office-btn');
-            const initial = JSON.parse(editor.dataset.initial || '[]');
-            
-            initial.forEach(office => list.appendChild(createOfficeItem(office)));
-            addBtn.onclick = () => list.appendChild(createOfficeItem());
-        });
     </script>
 </AdminLayout>

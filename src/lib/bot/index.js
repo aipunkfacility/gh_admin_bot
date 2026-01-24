@@ -29,9 +29,9 @@ import rateLimit from 'telegraf-ratelimit';
 const limitConfig = {
     window: 1000,
     limit: 1,
-    onLimitExceeded: (ctx, next) => {
-        if (ctx.callbackQuery) {
-            return ctx.answerCbQuery('⚠️ Слишком быстро! Пожалуйста, подождите.').catch(() => { });
+    onLimitExceeded: (_ctx) => {
+        if (_ctx.callbackQuery) {
+            return _ctx.answerCbQuery('⚠️ Слишком быстро! Пожалуйста, подождите.').catch(() => { });
         }
     }
 };
@@ -40,7 +40,7 @@ const limitConfig = {
 let token;
 try {
     token = import.meta.env.TELEGRAM_BOT_TOKEN;
-} catch (e) {
+} catch {
     // import.meta.env не существует в чистом Node.js
 }
 token = token || process.env.TELEGRAM_BOT_TOKEN;
@@ -129,7 +129,7 @@ bot.action('back_to_start', wrapHandler('back_to_start', async (ctx) => {
     await showMainMenu(ctx);
 }));
 
-bot.action('noop', wrapHandler('noop', async (ctx) => {
+bot.action('noop', wrapHandler('noop', async () => {
     // Ничего не делаем, wrapper сам ответит на query
 }));
 
@@ -797,7 +797,7 @@ bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, wrapHandler('book_
             }
             itemName = item.title;
         }
-    } catch (e) {
+    } catch {
         // Используем ID если не удалось найти название
     }
 

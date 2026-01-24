@@ -34,7 +34,7 @@ export function formatServiceDetails(text) {
     let inList = false;
 
     lines.forEach(line => {
-        const isHeader = /^[\u2705\uD83D\uDD53\uD83D\uDCA0\uD83D\uDCA3\uD83D\uDE90\uD83D\uDE98\uD83C\uDFD4\uD83C\uDFD6\uD83C\uDF03\uD83C\uDFA2\uD83C\uDFA1]/.test(line) || line.endsWith(':');
+        const isHeader = /^[\u2705\uD83D\uDD53\uD83D\uDCA0\uD83D\uDCA3\uD83D\uDE90\uD83D\uDE98\uD83C\uDFD4\uD83C\uDFD6\uD83C\uDF03\uD83C\uDFA2\uD83C\uDFA1]/u.test(line) || line.endsWith(':');
         const isListItem = line.startsWith('•');
 
         if (isListItem) {

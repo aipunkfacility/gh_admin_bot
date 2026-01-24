@@ -479,7 +479,7 @@ if (!isArray) {
                         handle: '.handle',
                         animation: 150,
                         ghostClass: 'bg-orange-50',
-                        onEnd: async function (evt) {
+                        onEnd: async function () {
                             const allLists = document.querySelectorAll('.sortable-list');
                             const allItemIds = Array.from(allLists).flatMap(l => 
                                 Array.from(l.querySelectorAll('.item-row')).map(row => row.getAttribute('data-id'))
@@ -540,7 +540,7 @@ if (!isArray) {
                 const button = event.target.closest('button');
                 const originalHTML = button.innerHTML;
                 button.disabled = true;
-                button.innerHTML = '<i class=\"ri-loader-4-line animate-spin\"></i>';
+                button.innerHTML = '<i class="ri-loader-4-line animate-spin"></i>';
                 
                 try {
                     // Fetch full item first

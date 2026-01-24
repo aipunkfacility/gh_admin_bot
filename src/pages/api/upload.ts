@@ -66,8 +66,9 @@ export const POST: APIRoute = async ({ request }) => {
             success: true
         }), { status: 200 });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('Upload Error:', error);
-        return new Response(JSON.stringify({ error: 'Upload failed' }), { status: 500 });
+        return new Response(JSON.stringify({ error: 'Upload failed', details: errorMessage }), { status: 500 });
     }
 };

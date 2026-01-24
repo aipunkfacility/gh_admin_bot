@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request, cookies, url }: APIContext) => {
             }
 
             return new Response(JSON.stringify({ error: 'Incorrect password' }), { status: 401 });
-        } catch (e) {
+        } catch {
             return new Response(JSON.stringify({ error: 'Invalid Request' }), { status: 400 });
         }
     }

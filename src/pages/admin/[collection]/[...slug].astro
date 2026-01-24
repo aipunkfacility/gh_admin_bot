@@ -8,7 +8,7 @@ const id = Array.isArray(slug) ? slug[0] : slug;
 const isCreate = !id || id === 'create';
 const isSiteMeta = collection === 'site-meta';
 
-const collectionNames = {
+const collectionNames: Record<string, string> = {
     'excursions': 'Экскурсии',
     'transport-items': 'Транспорт',
     'accommodations': 'Жилье',
@@ -16,39 +16,42 @@ const collectionNames = {
     'site-meta': 'Настройки'
 };
 
-const schema = schemas[collection];
+const schema = (schemas as Record<string, unknown>)[collection as string] as { fields: Array<{ label: string; name: string; required?: boolean; type: string; default?: unknown; help?: string; rows?: number; options?: string[] }> };
 if (!schema) {
     return Astro.redirect('/admin');
 }
 
-let item = {};
+let item: Record<string, unknown> = {};
 
 if (isSiteMeta) {
     const data = await getCollectionData(`${collection}.json`);
-    item = Array.isArray(data) ? {} : data;
+    item = (Array.isArray(data) ? {} : data) as Record<string, unknown>;
 } else if (!isCreate) {
-    item = await getItem(`${collection}.json`, id);
-    if (!item) {
+    const data = await getItem(`${collection}.json`, id as string);
+    if (!data) {
         return Astro.redirect(`/admin/${collection}`);
     }
+    item = data as Record<string, unknown>;
 } else {
-    schema.fields.forEach(f => {
+    schema.fields.forEach((f) => {
         if (f.default !== undefined) item[f.name] = f.default;
     });
 }
 
-const getValue = (obj, path) => {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+const getValue = (obj: Record<string, unknown>, path: string): string => {
+    // @ts-expect-error - dynamic path reduction
+    const val = path.split('.').reduce((acc, part) => acc && (acc as Record<string, unknown>)[part], obj);
+    return (val as string) || '';
 };
 
-const normalizeSrc = (src) => {
+const normalizeSrc = (src: string) => {
     if (!src) return '';
     if (src.startsWith('http') || src.startsWith('/')) return src;
     if (src.startsWith('./')) return src.replace('./', '/');
     return '/' + src;
 };
 
-const collectionTitle = collectionNames[collection] || collection;
+const collectionTitle = collectionNames[collection as string] || collection;
 const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Новая запись: ${collectionTitle}` : `Редактирование: ${item.title || id}`);
 ---
 
@@ -71,8 +74,8 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
             <div class="h-1 bg-gradient-to-r from-action via-orange-400 to-amber-400"></div>
             
             <div class="p-8 md:p-10 space-y-8">
-                {schema.fields.map((field, index) => (
-                    <div class="space-y-2 animate-fadeIn" style={`animation-delay: ${index * 50}ms`}>
+                {schema.fields.map((field, idx) => (
+                    <div class="space-y-2 animate-fadeIn" style={`animation-delay: ${idx * 50}ms`}>
                         <label class="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                             {field.label}
                             {field.required && <span class="text-action text-xs">*</span>}
@@ -82,7 +85,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                             <input 
                                 type="text" 
                                 name={field.name} 
-                                value={getValue(item, field.name) || ''} 
+                                value={getValue(item, field.name)} 
                                 required={field.required}
                                 class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark placeholder:text-slate-300"
                                 placeholder={field.help || `Введите ${field.label.toLowerCase()}`}
@@ -96,14 +99,14 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                                 required={field.required}
                                 class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark placeholder:text-slate-300 resize-y min-h-[120px]"
                                 placeholder={field.help || `Введите ${field.label.toLowerCase()}`}
-                            >{getValue(item, field.name) || ''}</textarea>
+                            >{getValue(item, field.name)}</textarea>
                         )}
 
                         {field.type === 'number' && (
                             <input 
                                 type="number" 
                                 name={field.name} 
-                                value={getValue(item, field.name) || ''} 
+                                value={getValue(item, field.name)} 
                                 required={field.required}
                                 class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark"
                             />
@@ -115,7 +118,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                                     <input 
                                         type="checkbox" 
                                         name={field.name} 
-                                        checked={getValue(item, field.name) !== false}
+                                        checked={getValue(item, field.name) !== 'false'}
                                         class="peer sr-only"
                                     />
                                     <div class="w-12 h-7 bg-slate-300 rounded-full peer-checked:bg-action transition-colors"></div>
@@ -124,7 +127,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                                 <div>
                                     <span class="text-sm font-bold text-dark block">{field.help || field.label}</span>
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        {getValue(item, field.name) !== false ? 'Включено' : 'Выключено'}
+                                        {getValue(item, field.name) !== 'false' ? 'Включено' : 'Выключено'}
                                     </span>
                                 </div>
                             </label>
@@ -136,7 +139,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                                     name={field.name} 
                                     class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark appearance-none cursor-pointer"
                                 >
-                                    {field.options && field.options.map(opt => (
+                                    {field.options && field.options.map((opt) => (
                                         <option value={opt} selected={getValue(item, field.name) === opt}>{opt}</option>
                                     ))}
                                 </select>
@@ -150,7 +153,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                                     <input 
                                         type="text" 
                                         name={field.name} 
-                                        value={getValue(item, field.name) || ''} 
+                                        value={getValue(item, field.name)} 
                                         class="image-path-input flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-action/20 focus:border-action focus:bg-white transition-all font-semibold text-dark" 
                                         placeholder="/images/example.jpg"
                                     />
@@ -164,7 +167,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                                 </div>
                                 <div class="preview-container" style={getValue(item, field.name) ? '' : 'display:none'}>
                                     <div class="relative w-40 h-40 rounded-xl overflow-hidden border-2 border-slate-100 shadow-sm group">
-                                        <img src={normalizeSrc(getValue(item, field.name))} class="w-full h-full object-cover" />
+                                        <img src={normalizeSrc(getValue(item, field.name))} class="w-full h-full object-cover" alt="" />
                                         <div class="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <span class="text-[10px] text-white font-black uppercase tracking-wider">Предпросмотр</span>
                                         </div>
@@ -206,7 +209,6 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
 
     <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
         <div id="toast-container" class="bg-dark text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
-            <span id="toast-icon">✓</span>
             <span id="toast-message" class="font-semibold">Сохранено</span>
         </div>
     </div>
@@ -223,21 +225,21 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
     </style>
 
     <script define:vars={{ collection, id, isCreate, isSiteMeta }}>
-        const form = document.getElementById('editForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const submitText = document.getElementById('submitText');
+        const form = document.getElementById('editForm') as HTMLFormElement;
+        const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+        const submitText = document.getElementById('submitText') as HTMLElement;
         
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const container = document.getElementById('toast-container');
-            const icon = document.getElementById('toast-icon');
-            const msg = document.getElementById('toast-message');
+        function showToast(message: string, type = 'success') {
+            const toast = document.getElementById('toast') as HTMLElement;
+            const container = document.getElementById('toast-container') as HTMLElement;
+            const msg = document.getElementById('toast-message') as HTMLElement;
             
-            icon.textContent = type === 'success' ? '✓' : '✗';
             msg.textContent = message;
-            container.className = type === 'success' 
-                ? 'bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3'
-                : 'bg-rose-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3';
+            if (container) {
+                container.className = type === 'success' 
+                    ? 'bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3'
+                    : 'bg-rose-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3';
+            }
             
             toast.classList.remove('translate-y-20', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
@@ -248,7 +250,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
             }, 3000);
         }
         
-        const normalizeSrc = (src) => {
+        const normalizeSrc = (src: string) => {
             if (!src) return '';
             if (src.startsWith('http') || src.startsWith('/')) return src;
             if (src.startsWith('./')) return src.replace('./', '/');
@@ -256,12 +258,13 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
         };
 
         document.querySelectorAll('.image-path-input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const parent = input.closest('.space-y-4');
-                const preview = parent.querySelector('.preview-container');
-                const img = preview.querySelector('img');
-                if (e.target.value) {
-                    img.src = normalizeSrc(e.target.value);
+            input.addEventListener('input', (e: Event) => {
+                const trg = e.target as HTMLInputElement;
+                const parent = trg.closest('.space-y-4') as HTMLElement;
+                const preview = parent.querySelector('.preview-container') as HTMLElement;
+                const img = preview.querySelector('img') as HTMLImageElement;
+                if (trg.value) {
+                    img.src = normalizeSrc(trg.value);
                     preview.style.display = 'block';
                 } else {
                     preview.style.display = 'none';
@@ -270,11 +273,11 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
         });
 
         document.querySelectorAll('.upload-trigger-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const parentDiv = btn.closest('.space-y-4');
-                const textInput = parentDiv.querySelector('input[type="text"]');
-                const previewContainer = parentDiv.querySelector('.preview-container');
-                const imgPreview = previewContainer.querySelector('img');
+            btn.addEventListener('click', () => {
+                const parentDiv = btn.closest('.space-y-4') as HTMLElement;
+                const textInput = parentDiv.querySelector('input[type="text"]') as HTMLInputElement;
+                const previewContainer = parentDiv.querySelector('.preview-container') as HTMLElement;
+                const imgPreview = previewContainer.querySelector('img') as HTMLImageElement;
                 
                 const fileInput = document.createElement('input');
                 fileInput.type = 'file';
@@ -285,15 +288,16 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                 fileInput.click();
                 
                 fileInput.onchange = async () => {
-                    const file = fileInput.files[0];
-                    if (!file) return;
+                    const files = fileInput.files;
+                    if (!files || files.length === 0) return;
+                    const file = files[0];
                     
                     const formData = new FormData();
                     formData.append('file', file);
                     
                     const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Загрузка...</span>';
-                    btn.disabled = true;
+                    btn.innerHTML = '⏳';
+                    (btn as HTMLButtonElement).disabled = true;
                     
                     try {
                         const res = await fetch('/api/upload', {
@@ -310,32 +314,31 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                         } else {
                             showToast('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
                         }
-                    } catch (e) {
-                        console.error(e);
+                    } catch {
                         showToast('Ошибка сети при загрузке', 'error');
                     } finally {
                         btn.innerHTML = originalHTML;
-                        btn.disabled = false;
+                        (btn as HTMLButtonElement).disabled = false;
                         document.body.removeChild(fileInput);
                     }
                 };
             });
         });
 
-        form.addEventListener('submit', async (e) => {
+        form.addEventListener('submit', async (e: Event) => {
             e.preventDefault();
             
             submitBtn.disabled = true;
             submitText.textContent = 'Сохранение...';
             
             const formData = new FormData(form);
-            const data = {};
+            const data: Record<string, unknown> = {};
 
-            for (let [key, value] of formData.entries()) {
+            for (const [key, value] of formData.entries()) {
                 if (key.includes('.')) {
                     const [parent, child] = key.split('.');
                     if (!data[parent]) data[parent] = {};
-                    data[parent][child] = value;
+                    (data[parent] as Record<string, unknown>)[child] = value;
                 } else {
                     data[key] = value;
                 }
@@ -343,25 +346,28 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
 
             const checkboxes = form.querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(cb => {
-                if (cb.name.includes('.')) {
-                    const [parent, child] = cb.name.split('.');
+                const input = cb as HTMLInputElement;
+                const name = input.name;
+                const checked = input.checked;
+                if (name.includes('.')) {
+                    const [parent, child] = name.split('.');
                     if (!data[parent]) data[parent] = {};
-                    data[parent][child] = cb.checked;
+                    (data[parent] as Record<string, unknown>)[child] = checked;
                 } else {
-                    data[cb.name] = cb.checked;
+                    data[name] = checked;
                 }
             });
             
-            let url;
+            let url: string;
             if (isSiteMeta) {
                 url = `/api/${collection}/settings`;
             } else {
                 if (!isCreate) {
                     data.id = id;
                 } else if (!data.id) {
-                    data.id = (data.slug || String(Date.now()));
+                    data.id = (data.slug as string || String(Date.now()));
                 }
-                url = `/api/${collection}/${data.id}`;
+                url = `/api/${collection}/${data.id as string}`;
             }
 
             try {
@@ -374,17 +380,14 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                 if (res.ok) {
                     showToast('Успешно сохранено!');
                     setTimeout(() => {
-                        window.location.href = `/admin/${collection}`;
+                        window.location.href = `/admin/${collection as string}`;
                     }, 1000);
                 } else {
-                    const errData = await res.json();
-                    const errorMsg = errData.details ? errData.details.join(', ') : (errData.error || 'Проверьте данные');
-                    showToast('Ошибка: ' + errorMsg, 'error');
+                    showToast('Ошибка сохранения', 'error');
                     submitBtn.disabled = false;
                     submitText.textContent = 'Сохранить';
                 }
-            } catch (err) {
-                console.error(err);
+            } catch {
                 showToast('Ошибка сети', 'error');
                 submitBtn.disabled = false;
                 submitText.textContent = 'Сохранить';

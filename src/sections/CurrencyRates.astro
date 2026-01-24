@@ -150,7 +150,7 @@ const formatNumber = (num: number) => {
 
         function calculate() {
             if (!input) return;
-            let val = input.value.replace(/[^0-9.]/g, ''); // Simple cleanup
+            const val = input.value.replace(/[^0-9.]/g, ''); // Simple cleanup
             let amount = parseFloat(val);
             if (isNaN(amount)) amount = 0;
             

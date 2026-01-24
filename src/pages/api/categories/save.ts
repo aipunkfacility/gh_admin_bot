@@ -11,8 +11,8 @@ function generateId() {
 function slugify(text: string) {
     return text.toString().toLowerCase()
         .replace(/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-        .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+        .replace(/[^\w-]+/g, '')        // Remove all non-word chars
+        .replace(/--+/g, '-')           // Replace multiple - with single -
         .replace(/^-+/, '')             // Trim - from start of text
         .replace(/-+$/, '');            // Trim - from end of text
 }
@@ -48,8 +48,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         await saveItem(`${collection}.json`, item);
 
         return new Response(JSON.stringify({ success: true, item }), { status: 200 });
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('Category Save API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
     }
 }

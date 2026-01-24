@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { readJsonFile, writeJsonFile } from '../../../lib/bot/utils.js';
+import { writeJsonFile } from '../../../lib/bot/utils.js';
 import { checkAuth, unauthorizedResponse } from '../../../lib/auth';
 
 export const prerender = false;
@@ -36,9 +36,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
 
         return new Response(JSON.stringify({ error: 'Invalid type' }), { status: 400 });
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('Settings API error:', error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
     }
 }
 

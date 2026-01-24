@@ -18,12 +18,19 @@ if (!isAuth) {
 
 const { collection } = Astro.params;
 
+// Redirect old category pages to new Sections view
+if (collection === 'excursion-categories' || collection === 'transport-categories') {
+    return Astro.redirect('/admin/sections');
+}
+
 const collectionNames = {
     'excursions': 'Экскурсии',
     'transport-items': 'Транспорт',
     'accommodations': 'Жилье',
     'services': 'Услуги',
-    'site-meta': 'Настройки'
+    'site-meta': 'Настройки',
+    'excursion-categories': 'Категории туров',
+    'transport-categories': 'Категории транспорта'
 };
 
 const collectionIcons = {
@@ -31,7 +38,9 @@ const collectionIcons = {
     'transport-items': '<i class="ri-roadster-fill text-action"></i>',
     'accommodations': '<i class="ri-hotel-fill text-action"></i>',
     'services': '<i class="ri-customer-service-2-fill text-action"></i>',
-    'site-meta': '<i class="ri-settings-4-fill text-action"></i>'
+    'site-meta': '<i class="ri-settings-4-fill text-action"></i>',
+    'excursion-categories': '<i class="ri-folders-fill text-action"></i>',
+    'transport-categories': '<i class="ri-list-settings-fill text-action"></i>'
 };
 
 const title = collectionNames[collection] || collection;
@@ -40,6 +49,52 @@ const icon = collectionIcons[collection] || '<i class="ri-folder-fill"></i>';
 const items = await getCollection(`${collection}.json`);
 const isArray = Array.isArray(items);
 const activeCount = isArray ? items.filter(i => i.isActive).length : 0;
+
+// Группировка для транспорта
+let groupedItems = null;
+
+const transportTitlesMap = {
+    'standard': 'Стандарт',
+    'comfort': 'Комфорт',
+    'maxi': 'Макси-скутеры',
+    'moto': 'Мотоциклы',
+    'car': 'Автомобили'
+};
+
+if (collection === 'transport-items' && isArray) {
+    const categories = await getCollection('transport-categories.json');
+    groupedItems = categories.map(cat => ({
+        ...cat,
+        title: transportTitlesMap[cat.slug] || cat.title,
+        items: items.filter(i => i.categoryId === cat.id)
+    }));
+    // Добавляем байки без категорий, если есть
+    const uncategorizedItems = items.filter(i => !i.categoryId || !categories.find(c => c.id === i.categoryId));
+    if (uncategorizedItems.length > 0) {
+        groupedItems.push({
+            id: 'uncategorized',
+            title: 'Без категории',
+            items: uncategorizedItems
+        });
+    }
+}
+
+// Группировка для экскурсий
+if (collection === 'excursions' && isArray) {
+    const categories = await getCollection('excursion-categories.json');
+    groupedItems = categories.map(cat => ({
+        ...cat,
+        items: items.filter(i => i.categoryId === cat.id)
+    }));
+    const uncategorizedItems = items.filter(i => !i.categoryId || !categories.find(c => c.id === i.categoryId));
+    if (uncategorizedItems.length > 0) {
+        groupedItems.push({
+            id: 'uncategorized',
+            title: 'Без категории',
+            items: uncategorizedItems
+        });
+    }
+}
 
 if (!isArray) {
     return Astro.redirect(`/admin/${collection}/edit`);
@@ -116,7 +171,7 @@ if (!isArray) {
             </div>
         )}
 
-        {/* Content Section */}
+        <!-- Content Section -->
         {!isArray ? (
             <div class="bg-white p-16 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 text-center relative overflow-hidden group">
                 <div class="absolute top-0 right-0 p-8 opacity-[0.03] grayscale pointer-events-none group-hover:scale-110 transition-transform duration-1000">
@@ -134,93 +189,180 @@ if (!isArray) {
             </div>
         ) : (
             <>
-            {items.length === 0 ? (
-                <div class="bg-white p-20 rounded-[2.5rem] shadow-sm border border-slate-100 text-center">
-                    <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
-                        <span class="text-3xl text-slate-300 italic block -rotate-12">Empty</span>
-                    </div>
-                    <p class="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Каталог пока пуст</p>
-                    <p class="text-slate-500 text-xl font-bold mt-4">Добавьте свой первый элемент, чтобы начать</p>
-                </div>
-            ) : (
-                <div id="sortable-list" class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width, 320px), 1fr));">
-                    {items.map((item) => (
-                        <div class="item-row bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden group hover:shadow-xl hover:border-action/20 transition-all duration-300 flex flex-col" 
-                            data-id={item.id} 
-                            data-title={(item.title || item.name || '').toLowerCase()}
-                            data-active={String(item.isActive !== false)}
-                            data-popular={String(item.isPopular === true)}>
-                            
-                            <div class="handle cursor-grab active:cursor-grabbing bg-slate-50/50 border-b border-slate-100 px-6 py-3 flex items-center justify-between">
-                                <div class="flex items-center gap-2 text-slate-300 group-hover:text-slate-400 transition-colors">
-                                    <i class="ri-draggable text-xl"></i>
-                                    <span class="text-[9px] font-black uppercase tracking-[0.2em]">Упорядочить</span>
-                                </div>
-                                <span class={`text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border shadow-sm ${item.isActive !== false ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-500 border-rose-100'}`}>
-                                    {item.isActive !== false ? 'Активен' : 'Скрыт'}
-                                </span>
-                            </div>
-                            
-                            <!-- Image with Edit Button Overlay -->
-                            <a href={`/admin/${collection}/${item.id}`} class="relative overflow-hidden aspect-[4/3] bg-slate-100 block group/edit">
-                                {item.image ? (
-                                    <img src={item.image} alt="" class="w-full h-full object-cover group-hover/edit:scale-110 transition-transform duration-1000" loading="lazy" />
-                                ) : (
-                                    <div class="w-full h-full flex items-center justify-center opacity-20 text-slate-400 text-6xl">
-                                        <i class="ri-image-2-line"></i>
-                                    </div>
-                                )}
-                                
-                                {/* Hover Overlay with Edit Button */}
-                                <div class="absolute inset-0 bg-dark/90 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center justify-center">
-                                    <div class="flex flex-col items-center gap-2 text-white">
-                                        <i class="ri-edit-2-fill text-4xl"></i>
-                                        <span class="text-[10px] font-black uppercase tracking-[.3em]">Редактировать</span>
-                                    </div>
-                                </div>
-                                
-                                {item.isPopular === true && (
-                                    <div class="absolute top-4 right-4 bg-amber-400 text-white px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5 animate-pulse z-10">
-                                        <i class="ri-star-fill text-[10px]"></i>
-                                        <span class="text-[8px] font-black uppercase tracking-widest">TOP</span>
-                                    </div>
-                                )}
-                            </a>
-                            
-                            <div class="p-4 flex flex-col flex-1">
-                                <h3 class="font-bold text-base text-dark group-hover:text-action transition-colors line-clamp-2 leading-snug mb-3">
-                                    {item.title || item.name || 'Без названия'}
-                                </h3>
-                                
-                                {/* Toggle Status Buttons */}
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <button 
-                                        onclick={`toggleStatus(event, '${item.id}', 'isActive', ${item.isActive !== false})`}
-                                        class={item.isActive !== false 
-                                            ? 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200' 
-                                            : 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200'}
-                                    >
-                                        {item.isActive !== false ? '✓ Активен' : '× Скрыт'}
-                                    </button>
-                                    
-                                    <button 
-                                        onclick={`toggleStatus(event, '${item.id}', 'isPopular', ${item.isPopular === true})`}
-                                        class={item.isPopular === true 
-                                            ? 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200' 
-                                            : 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200'}
-                                    >
-                                        {item.isPopular === true ? '★ Популярное' : '☆'}
-                                    </button>
-                                </div>
-                            </div>
+                {items.length === 0 ? (
+                    <div class="bg-white p-20 rounded-[2.5rem] shadow-sm border border-slate-100 text-center">
+                        <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                            <span class="text-3xl text-slate-300 italic block -rotate-12">Empty</span>
                         </div>
-                    ))}
-                </div>
-            )}
+                        <p class="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Каталог пока пуст</p>
+                        <p class="text-slate-500 text-xl font-bold mt-4">Добавьте свой первый элемент, чтобы начать</p>
+                    </div>
+                ) : (
+                    <div id="content-areas">
+                        {(collection === 'transport-items' || collection === 'excursions') && groupedItems ? (
+                            groupedItems.map((group) => {
+                                if (group.items.length === 0) return null;
+                                return (
+                                    <div class="category-group mb-12 last:mb-0">
+                                        <div class="flex items-center gap-4 mb-6 py-4 transition-all">
+                                            <div class="h-px flex-1 bg-slate-200"></div>
+                                            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                                                <i class="ri-folder-open-fill text-action"></i>
+                                                {group.title}
+                                                <span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[9px]">{group.items.length}</span>
+                                            </h2>
+                                            <div class="h-px flex-1 bg-slate-200"></div>
+                                        </div>
+                                        
+                                        <div class="sortable-list grid gap-4" data-group-id={group.id} style="grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width, 320px), 1fr));">
+                                            {group.items.map((item) => (
+                                                <div class="item-row bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden group hover:shadow-xl hover:border-action/20 transition-all duration-300 flex flex-col" 
+                                                    data-id={item.id} 
+                                                    data-title={(item.title || item.name || '').toLowerCase()}
+                                                    data-active={String(item.isActive !== false)}
+                                                    data-popular={String(item.isPopular === true)}>
+                                                    
+                                                    <div class="handle cursor-grab active:cursor-grabbing bg-slate-50/50 border-b border-slate-100 px-6 py-3 flex items-center justify-between">
+                                                        <div class="flex items-center gap-2 text-slate-300 group-hover:text-slate-400 transition-colors">
+                                                            <i class="ri-draggable text-xl"></i>
+                                                            <span class="text-[9px] font-black uppercase tracking-[0.2em]">Упорядочить</span>
+                                                        </div>
+                                                        <span class={`text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border shadow-sm ${item.isActive !== false ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-500 border-rose-100'}`}>
+                                                            {item.isActive !== false ? 'Активен' : 'Скрыт'}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <a href={`/admin/${collection}/${item.id}`} class="relative overflow-hidden aspect-card bg-slate-100 block group/edit">
+                                                        {item.image ? (
+                                                            <img src={item.image} alt="" class="w-full h-full object-cover group-hover/edit:scale-110 transition-transform duration-1000" loading="lazy" />
+                                                        ) : (
+                                                            <div class="w-full h-full flex items-center justify-center opacity-20 text-slate-400 text-6xl">
+                                                                <i class="ri-image-2-line"></i>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        <div class="absolute inset-0 bg-dark/90 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <div class="flex flex-col items-center gap-2 text-white">
+                                                                <i class="ri-edit-2-fill text-4xl"></i>
+                                                                <span class="text-[10px] font-black uppercase tracking-[.3em]">Редактировать</span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {item.isPopular === true && (
+                                                            <div class="absolute top-4 right-4 bg-amber-400 text-white px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5 animate-pulse z-10">
+                                                                <i class="ri-star-fill text-[10px]"></i>
+                                                                <span class="text-[8px] font-black uppercase tracking-widest">TOP</span>
+                                                            </div>
+                                                        )}
+                                                    </a>
+                                                    
+                                                    <div class="p-4 flex flex-col flex-1">
+                                                        <h3 class="font-bold text-base text-dark group-hover:text-action transition-colors line-clamp-2 leading-snug mb-3">
+                                                            {item.title || item.name || 'Без названия'}
+                                                        </h3>
+                                                        
+                                                        <div class="flex items-center gap-2 flex-wrap">
+                                                            <button 
+                                                                onclick={`toggleStatus(event, '${item.id}', 'isActive', ${item.isActive !== false})`}
+                                                                class={item.isActive !== false 
+                                                                    ? 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200' 
+                                                                    : 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200'}
+                                                            >
+                                                                {item.isActive !== false ? '✓ Активен' : '× Скрыт'}
+                                                            </button>
+                                                            
+                                                            <button 
+                                                                onclick={`toggleStatus(event, '${item.id}', 'isPopular', ${item.isPopular === true})`}
+                                                                class={item.isPopular === true 
+                                                                    ? 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200' 
+                                                                    : 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200'}
+                                                            >
+                                                                {item.isPopular === true ? '★ Популярное' : '☆'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div id="sortable-list" class="sortable-list grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width, 320px), 1fr));">
+                                {items.map((item) => (
+                                    <div class="item-row bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden group hover:shadow-xl hover:border-action/20 transition-all duration-300 flex flex-col" 
+                                        data-id={item.id} 
+                                        data-title={(item.title || item.name || '').toLowerCase()}
+                                        data-active={String(item.isActive !== false)}
+                                        data-popular={String(item.isPopular === true)}>
+                                        
+                                        <div class="handle cursor-grab active:cursor-grabbing bg-slate-50/50 border-b border-slate-100 px-6 py-3 flex items-center justify-between">
+                                            <div class="flex items-center gap-2 text-slate-300 group-hover:text-slate-400 transition-colors">
+                                                <i class="ri-draggable text-xl"></i>
+                                                <span class="text-[9px] font-black uppercase tracking-[0.2em]">Упорядочить</span>
+                                            </div>
+                                            <span class={`text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border shadow-sm ${item.isActive !== false ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-500 border-rose-100'}`}>
+                                                {item.isActive !== false ? 'Активен' : 'Скрыт'}
+                                            </span>
+                                        </div>
+                                        
+                                        <a href={`/admin/${collection}/${item.id}`} class="relative overflow-hidden aspect-card bg-slate-100 block group/edit">
+                                            {item.image ? (
+                                                <img src={item.image} alt="" class="w-full h-full object-cover group-hover/edit:scale-110 transition-transform duration-1000" loading="lazy" />
+                                            ) : (
+                                                <div class="w-full h-full flex items-center justify-center opacity-20 text-slate-400 text-6xl">
+                                                    <i class="ri-image-2-line"></i>
+                                                </div>
+                                            )}
+                                            
+                                            <div class="absolute inset-0 bg-dark/90 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center justify-center">
+                                                <div class="flex flex-col items-center gap-2 text-white">
+                                                    <i class="ri-edit-2-fill text-4xl"></i>
+                                                    <span class="text-[10px] font-black uppercase tracking-[.3em]">Редактировать</span>
+                                                </div>
+                                            </div>
+                                            
+                                            {item.isPopular === true && (
+                                                <div class="absolute top-4 right-4 bg-amber-400 text-white px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5 animate-pulse z-10">
+                                                    <i class="ri-star-fill text-[10px]"></i>
+                                                    <span class="text-[8px] font-black uppercase tracking-widest">TOP</span>
+                                                </div>
+                                            )}
+                                        </a>
+                                        
+                                        <div class="p-4 flex flex-col flex-1">
+                                            <h3 class="font-bold text-base text-dark group-hover:text-action transition-colors line-clamp-2 leading-snug mb-3">
+                                                {item.title || item.name || 'Без названия'}
+                                            </h3>
+                                            
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <button 
+                                                    onclick={`toggleStatus(event, '${item.id}', 'isActive', ${item.isActive !== false})`}
+                                                    class={item.isActive !== false 
+                                                        ? 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200' 
+                                                        : 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200'}
+                                                >
+                                                    {item.isActive !== false ? '✓ Активен' : '× Скрыт'}
+                                                </button>
+                                                
+                                                <button 
+                                                    onclick={`toggleStatus(event, '${item.id}', 'isPopular', ${item.isPopular === true})`}
+                                                    class={item.isPopular === true 
+                                                        ? 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200' 
+                                                        : 'px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all shadow-sm bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200'}
+                                                >
+                                                    {item.isPopular === true ? '★ Популярное' : '☆'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </>
         )}
-    </div>
-
     </div>
 
     <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
@@ -240,10 +382,10 @@ if (!isArray) {
         };
         
         function setCardSize(size) {
-            const grid = document.getElementById('sortable-list');
-            if (grid) {
+            const grids = document.querySelectorAll('.sortable-list');
+            grids.forEach(grid => {
                 grid.style.setProperty('--card-min-width', cardSizes[size]);
-            }
+            });
             
             // Update button states
             document.querySelectorAll('.size-btn').forEach(btn => {
@@ -307,6 +449,12 @@ if (!isArray) {
                     
                     row.style.display = matchesSearch && matchesFilter ? '' : 'none';
                 });
+
+                // Скрываем пустые группы
+                document.querySelectorAll('.category-group').forEach(group => {
+                    const visibleRows = group.querySelectorAll('.item-row:not([style*="display: none"])');
+                    group.style.display = visibleRows.length > 0 ? '' : 'none';
+                });
             }
 
             searchInput?.addEventListener('input', applyFilters);
@@ -324,30 +472,35 @@ if (!isArray) {
                 });
             });
 
-            const list = document.getElementById('sortable-list');
-            if (list && list.querySelectorAll('.item-row').length > 0 && typeof Sortable !== 'undefined') {
-                new Sortable(list, {
-                    handle: '.handle',
-                    animation: 150,
-                    ghostClass: 'bg-orange-50',
-                    onEnd: async function (evt) {
-                        const itemIds = Array.from(list.querySelectorAll('.item-row')).map(li => li.getAttribute('data-id'));
-                        
-                        try {
-                            const res = await fetch(`/api/${collection}/reorder`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ order: itemIds })
-                            });
-                            if (!res.ok) throw new Error('Failed to save order');
-                            showToast('Порядок сохранён');
-                        } catch (err) {
-                            console.error(err);
-                            showToast('Ошибка сохранения', 'error');
-                        }
-                    },
-                });
-            }
+            const lists = document.querySelectorAll('.sortable-list');
+            lists.forEach(list => {
+                if (list && list.querySelectorAll('.item-row').length > 0 && typeof Sortable !== 'undefined') {
+                    new Sortable(list, {
+                        handle: '.handle',
+                        animation: 150,
+                        ghostClass: 'bg-orange-50',
+                        onEnd: async function (evt) {
+                            const allLists = document.querySelectorAll('.sortable-list');
+                            const allItemIds = Array.from(allLists).flatMap(l => 
+                                Array.from(l.querySelectorAll('.item-row')).map(row => row.getAttribute('data-id'))
+                            );
+                            
+                            try {
+                                const res = await fetch(`/api/${collection}/reorder`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ order: allItemIds })
+                                });
+                                if (!res.ok) throw new Error('Failed to save order');
+                                showToast('Порядок сохранён');
+                            } catch (err) {
+                                console.error(err);
+                                showToast('Ошибка сохранения', 'error');
+                            }
+                        },
+                    });
+                }
+            });
 
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {

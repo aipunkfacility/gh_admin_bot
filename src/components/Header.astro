@@ -1,10 +1,19 @@
 ---
+import { getCollection } from '../lib/data-store';
+
 interface Props {
   sections?: Array<{id: string; label: string; icon: string; enabled: boolean}>;
 }
 
 const { sections = [] } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL;
+
+// Fetch categories for dropdowns
+const allExcursionCats = (await getCollection('excursion-categories.json')) || [];
+const allTransportCats = (await getCollection('transport-categories.json')) || [];
+
+const excursionCats = allExcursionCats.filter(c => c.isActive !== false);
+const transportCats = allTransportCats.filter(c => c.isActive !== false);
 
 // Маппинг ID разделов на якоря и названия
 const sectionLabels: Record<string, string> = {
@@ -33,36 +42,128 @@ const enabledSections = sections.filter(s => s.enabled);
       </span>
     </a>
     
-    <!-- Central Nav (takes available space, centered) -->
-    <nav class="hidden lg:flex items-center justify-center gap-6 flex-1 px-4">
-      {enabledSections.map(section => (
-        <a href={`#${section.id}`} class="text-slate-600 font-bold hover:text-action transition-colors text-lg whitespace-nowrap">
-          {section.label || sectionLabels[section.id] || section.id}
-        </a>
-      ))}
+    <!-- Central Nav (Desktop) -->
+    <nav class="hidden lg:flex items-center justify-center gap-1 xl:gap-2 flex-1 px-2">
+      {enabledSections.map(section => {
+        const label = section.label || sectionLabels[section.id] || section.id;
+        
+        // Dropdown for Excursions
+        if (section.id === 'excursions' && excursionCats.length > 0) {
+            return (
+                <div class="relative group">
+                    <a href={`#${section.id}`} class="flex items-center gap-1 px-3 py-2 text-slate-600 font-bold hover:text-action transition-colors text-base whitespace-nowrap">
+                        {label}
+                        <i class="ri-arrow-down-s-line text-xs opacity-50 group-hover:opacity-100 transition-opacity"></i>
+                    </a>
+                    <div class="absolute top-full left-0 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+                        <div class="bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden py-1">
+                            {excursionCats.map(cat => (
+                                <a href={`#excursion-${cat.slug}`} class="block px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-orange-50 hover:text-action transition-colors flex items-center gap-2">
+                                    <i class={`${cat.icon || 'ri-map-pin-line'} text-action opacity-70`}></i>
+                                    {cat.title}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Dropdown for Transport
+        if (section.id === 'transport' && transportCats.length > 0) {
+             return (
+                <div class="relative group">
+                     <a href={`#${section.id}`} class="flex items-center gap-1 px-3 py-2 text-slate-600 font-bold hover:text-action transition-colors text-base whitespace-nowrap">
+                        {label}
+                        <i class="ri-arrow-down-s-line text-xs opacity-50 group-hover:opacity-100 transition-opacity"></i>
+                    </a>
+                    <div class="absolute top-full left-0 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+                        <div class="bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden py-1">
+                            {transportCats.map(cat => (
+                                <a href={`#transport-${cat.slug}`} class="block px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-green-50 hover:text-brand transition-colors flex items-center gap-2">
+                                     <i class="ri-motorbike-line text-brand opacity-70"></i>
+                                    {cat.title}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <a href={`#${section.id}`} class="px-3 py-2 text-slate-600 font-bold hover:text-action transition-colors text-base whitespace-nowrap">
+            {label}
+            </a>
+        );
+      })}
     </nav>
 
-    <!-- WhatsApp Button (far right) -->
-    <button onclick="openWhatsApp()" class="hidden sm:flex items-center gap-2 bg-[#00D95F] hover:bg-[#00c054] text-white px-5 py-2 rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 flex-shrink-0">
-      <i class="ri-whatsapp-line text-xl"></i>
-      <span>Написать</span>
-    </button>
-    
-    <!-- Mobile Menu Button -->
-    <button id="mobileMenuBtn" class="lg:hidden p-2 text-slate-600 hover:text-action transition-colors flex items-center justify-center">
-        <i class="ri-menu-right-line text-3xl"></i>
-    </button>
+    <!-- Right Side Actions -->
+    <div class="flex items-center gap-4">
+      <!-- WhatsApp Button -->
+      <button onclick="openWhatsApp()" class="hidden sm:flex items-center gap-2 bg-[#00D95F] hover:bg-[#00c054] text-white px-5 py-2 rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 flex-shrink-0">
+        <i class="ri-whatsapp-line text-xl"></i>
+        <span>Написать</span>
+      </button>
+      
+      <!-- Mobile Menu Button -->
+      <button id="mobileMenuBtn" class="lg:hidden p-2 text-slate-600 hover:text-action transition-colors flex items-center justify-center" aria-label="Menu">
+          <i class="ri-menu-line text-3xl"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Mobile Menu Dropdown -->
-  <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-100 bg-white absolute w-full left-0 shadow-lg">
-    <div class="px-6 py-4 flex flex-col gap-4">
-      {enabledSections.map(section => (
-        <a href={`#${section.id}`} class="text-lg font-bold text-slate-600 hover:text-action">
-          {section.label || sectionLabels[section.id] || section.id}
-        </a>
-      ))}
-      <button onclick="openWhatsApp()" class="flex items-center justify-center gap-2 bg-[#00D95F] text-white py-3 rounded-xl font-bold mt-2">
+  <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-100 bg-white absolute w-full left-0 shadow-lg max-h-[80vh] overflow-y-auto">
+    <div class="px-6 py-4 flex flex-col gap-2">
+      {enabledSections.map(section => {
+         const label = section.label || sectionLabels[section.id] || section.id;
+         
+         if (section.id === 'excursions' && excursionCats.length > 0) {
+             return (
+                 <div class="mobile-dropdown-coontainer">
+                     <button onclick="toggleMobileDropdown(this)" class="w-full text-left flex items-center justify-between text-lg font-bold text-slate-600 hover:text-action py-2">
+                        {label}
+                        <i class="ri-arrow-down-s-line transition-transform duration-300"></i>
+                     </button>
+                     <div class="hidden pl-4 space-y-1 bg-slate-50/50 rounded-xl mb-2 overflow-hidden transition-all">
+                        {excursionCats.map(cat => (
+                            <a href={`#excursion-${cat.slug}`} class="block px-3 py-2 text-sm font-semibold text-slate-500 hover:text-action mobile-link">
+                                • {cat.title}
+                            </a>
+                        ))}
+                     </div>
+                 </div>
+             )
+         }
+
+          if (section.id === 'transport' && transportCats.length > 0) {
+             return (
+                 <div class="mobile-dropdown-coontainer">
+                     <button onclick="toggleMobileDropdown(this)" class="w-full text-left flex items-center justify-between text-lg font-bold text-slate-600 hover:text-brand py-2">
+                        {label}
+                        <i class="ri-arrow-down-s-line transition-transform duration-300"></i>
+                     </button>
+                     <div class="hidden pl-4 space-y-1 bg-slate-50/50 rounded-xl mb-2 overflow-hidden transition-all">
+                        {transportCats.map(cat => (
+                            <a href={`#transport-${cat.slug}`} class="block px-3 py-2 text-sm font-semibold text-slate-500 hover:text-brand mobile-link">
+                                • {cat.title}
+                            </a>
+                        ))}
+                     </div>
+                 </div>
+             )
+         }
+
+         return (
+            <a href={`#${section.id}`} class="text-lg font-bold text-slate-600 hover:text-action py-2 mobile-link">
+                {label}
+            </a>
+         );
+      })}
+      
+      <button onclick="openWhatsApp()" class="flex items-center justify-center gap-2 bg-[#00D95F] text-white py-3 rounded-xl font-bold mt-4">
          <i class="ri-whatsapp-line text-xl"></i>
          <span>Написать в WhatsApp</span>
       </button>
@@ -85,12 +186,25 @@ const enabledSections = sections.filter(s => s.enabled);
           }
       });
 
-      // Close on link click
-      menu.querySelectorAll('a').forEach(link => {
-          link.addEventListener('click', () => {
+      // Close on link click (using event delegation for dynamically shown items)
+      menu.addEventListener('click', (e) => {
+          if (e.target.closest('.mobile-link')) {
               menu.classList.add('hidden');
               btn.querySelector('i').className = 'ri-menu-right-line text-3xl';
-          });
+          }
       });
+  }
+
+  // Mobile Accordion Toggle
+  window.toggleMobileDropdown = function(btn) {
+      const content = btn.nextElementSibling;
+      const arrow = btn.querySelector('i');
+      
+      content.classList.toggle('hidden');
+      if (content.classList.contains('hidden')) {
+          arrow.style.transform = 'rotate(0deg)';
+      } else {
+          arrow.style.transform = 'rotate(180deg)';
+      }
   }
 </script>

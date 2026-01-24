@@ -3,6 +3,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getCollection } from '../../lib/data-store';
 
 const siteMeta = await getCollection('site-meta.json');
+const transportCategories = await getCollection('transport-categories.json');
+const excursionCategories = await getCollection('excursion-categories.json');
 
 // Дефолтные разделы если sections не существует
 const defaultSections = [
@@ -19,85 +21,387 @@ const sections = siteMeta.sections || defaultSections;
 ---
 
 <AdminLayout title="Разделы главной">
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-xl text-action">
+        <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-2xl text-action">
                 <i class="ri-layout-grid-fill"></i>
             </div>
             <div>
-                <h1 class="text-xl font-extrabold text-dark tracking-tight uppercase leading-none">Разделы</h1>
+                <h1 class="text-2xl font-extrabold text-dark tracking-tight uppercase leading-none">Разделы и Справочники</h1>
+                <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Управление структурой сайта</p>
             </div>
         </div>
 
-        <!-- Sections List -->
-        <div id="sections-list" class="space-y-2">
-            {sections.map((section, index) => (
-                <div 
-                    class="section-item bg-white rounded-xl border border-slate-200 p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing hover:shadow hover:border-action/30 transition-all"
-                    data-id={section.id}
-                    data-label={section.label}
-                    data-icon={section.icon}
-                >
-                    <div class="handle flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 transition-colors">
-                        <i class="ri-draggable text-lg"></i>
-                    </div>
-                    
-                    <div class="flex items-center gap-3 flex-1">
-                        <div class="w-8 h-8 rounded-lg bg-action/10 flex items-center justify-center text-action text-lg">
-                            <i class={section.icon}></i>
-                        </div>
-                        <span class="font-bold text-dark text-sm">{section.label}</span>
-                    </div>
-                    
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input 
-                            type="checkbox" 
-                            class="sr-only peer section-toggle" 
-                            checked={section.enabled}
-                            data-id={section.id}
-                        />
-                        <div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-action"></div>
-                    </label>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            
+            <!-- LEFT COLUMN: SECTIONS -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 mb-2 px-1">
+                    <span class="w-1.5 h-5 bg-action rounded-full"></span>
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Разделы главной</h2>
                 </div>
-            ))}
-        </div>
 
-        <!-- Info -->
-        <div class="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-100">
-            <div class="flex items-start gap-3">
-                <i class="ri-information-line text-blue-500 text-xl mt-0.5"></i>
-                <div>
-                    <p class="text-blue-800 font-semibold text-sm">Автосохранение</p>
-                    <p class="text-blue-600 text-sm mt-1">Изменения сохраняются автоматически при перетаскивании или переключении.</p>
+                <div id="sections-list" class="space-y-3">
+                    {sections.map((section, index) => (
+                        <div 
+                            class="section-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-action/30 transition-all group"
+                            data-id={section.id}
+                            data-label={section.label}
+                            data-icon={section.icon}
+                        >
+                            <div class="handle flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-300 group-hover:bg-slate-100 group-hover:text-slate-500 transition-colors">
+                                <i class="ri-draggable text-lg"></i>
+                            </div>
+                            
+                            <div class="flex items-center gap-4 flex-1">
+                                <div class="w-10 h-10 rounded-xl bg-action/5 group-hover:bg-action/10 flex items-center justify-center text-action text-xl transition-colors">
+                                    <i class={section.icon}></i>
+                                </div>
+                                <span class="font-bold text-dark text-base">{section.label}</span>
+                            </div>
+                            
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    class="sr-only peer section-toggle" 
+                                    checked={section.enabled}
+                                    data-id={section.id}
+                                />
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-action"></div>
+                            </label>
+                        </div>
+                    ))}
+                </div>
+
+                <!-- Info -->
+                <div class="p-5 bg-blue-50/50 rounded-2xl border border-blue-100 flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                        <i class="ri-information-fill"></i>
+                    </div>
+                    <div>
+                        <p class="text-blue-900 font-bold text-xs uppercase tracking-wide mb-1">Автосохранение</p>
+                        <p class="text-blue-700/80 text-sm leading-relaxed">Порядок и видимость разделов сохраняются автоматически при любом изменении.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: DICTIONARIES -->
+            <div class="space-y-10">
+                
+                {/* Excursion Categories */}
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <div class="flex items-center gap-3">
+                            <span class="w-1.5 h-5 bg-action rounded-full"></span>
+                            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Категории туров</h2>
+                        </div>
+                        <button onclick="openAddModal('excursion-categories', 'Категория экскурсий')" class="text-xs font-bold text-action hover:text-action-hover uppercase tracking-wider flex items-center gap-1 transition-colors">
+                            <i class="ri-add-line"></i> Добавить
+                        </button>
+                    </div>
+
+                    <div id="excursions-list" class="space-y-3" data-collection="excursion-categories">
+                        {excursionCategories.map((cat) => (
+                            <div 
+                                class="category-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-action/30 transition-all group"
+                                data-id={cat.id}
+                                data-title={cat.title}
+                                data-slug={cat.slug}
+                                data-icon={cat.icon}
+                                data-isactive={cat.isActive !== false}
+                            >
+                                <div class="handle flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-300 group-hover:bg-slate-100 group-hover:text-slate-500 transition-colors">
+                                    <i class="ri-draggable text-lg"></i>
+                                </div>
+                                
+                                <div class="flex items-center gap-4 flex-1">
+                                    <div class="w-10 h-10 rounded-xl bg-orange-50 group-hover:bg-orange-100 flex items-center justify-center text-action text-xl transition-colors">
+                                        <i class={cat.icon || 'ri-folder-fill'}></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-dark text-base leading-tight">{cat.title}</span>
+                                            <button 
+                                                class="w-6 h-6 rounded-md bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-action transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                onclick={`openEditModal('excursion-categories', '${cat.id}')`}
+                                                title="Редактировать"
+                                            >
+                                                <i class="ri-pencil-fill text-xs"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        class="sr-only peer category-toggle" 
+                                        checked={cat.isActive !== false}
+                                        data-id={cat.id}
+                                    />
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-action"></div>
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Transport Categories */}
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                         <div class="flex items-center gap-3">
+                            <span class="w-1.5 h-5 bg-brand rounded-full"></span>
+                            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Категории транспорта</h2>
+                        </div>
+                        <button onclick="openAddModal('transport-categories', 'Категория транспорта')" class="text-xs font-bold text-brand hover:text-green-800 uppercase tracking-wider flex items-center gap-1 transition-colors">
+                            <i class="ri-add-line"></i> Добавить
+                        </button>
+                    </div>
+
+                    <div id="transport-list" class="space-y-3" data-collection="transport-categories">
+                        {transportCategories.map((cat) => (
+                            <div 
+                                class="category-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-brand/30 transition-all group"
+                                data-id={cat.id}
+                                data-title={cat.title}
+                                data-slug={cat.slug}
+                                data-badge={cat.badgeTitle}
+                                data-isactive={cat.isActive !== false}
+                            >
+                                <div class="handle flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-300 group-hover:bg-slate-100 group-hover:text-slate-500 transition-colors">
+                                    <i class="ri-draggable text-lg"></i>
+                                </div>
+                                
+                                <div class="flex items-center gap-4 flex-1">
+                                    <div class="w-10 h-10 rounded-xl bg-green-50 group-hover:bg-green-100 flex items-center justify-center text-brand text-xl transition-colors">
+                                        <i class="ri-roadster-fill"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-dark text-base leading-tight">{cat.title}</span>
+                                            <button 
+                                                class="w-6 h-6 rounded-md bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-brand transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                onclick={`openEditModal('transport-categories', '${cat.id}')`}
+                                                title="Редактировать"
+                                            >
+                                                <i class="ri-pencil-fill text-xs"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        class="sr-only peer category-toggle" 
+                                        checked={cat.isActive !== false}
+                                        data-id={cat.id}
+                                    />
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    {/* EDIT MODAL */}
+    <div id="category-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100">
+                    
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                             <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-50 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="ri-edit-2-fill text-blue-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-base font-semibold leading-6 text-slate-900" id="modal-title">Редактирование</h3>
+                                <div class="mt-4 space-y-4">
+                                    <form id="category-form" onsubmit="saveCategory(event)">
+                                        <input type="hidden" name="id" id="modal-id">
+                                        <input type="hidden" name="collection" id="modal-collection">
+                                        
+                                        <input type="hidden" name="slug" id="modal-slug-input">
+                                        
+                                        <!-- Hidden extra fields for preservation, handled by JS -->
+                                        <div id="modal-extra-fields" class="hidden"></div>
+                                        
+                                        <div>
+                                            <label for="modal-title-input" class="block text-sm font-medium leading-6 text-slate-900">Название категории</label>
+                                            <div class="mt-2">
+                                                <input type="text" name="title" id="modal-title-input" required class="block w-full rounded-xl border-0 py-3 px-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-action sm:text-base font-bold bg-slate-50">
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-3 mt-6 pt-6 border-t border-slate-100">
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" name="isActive" id="modal-active" class="sr-only peer">
+                                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-action"></div>
+                                            </label>
+                                            <span class="text-sm font-medium text-slate-700">Показывать на сайте</span>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="submit" form="category-form" class="inline-flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto">Сохранить</button>
+                        <button type="button" onclick="closeModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">Отмена</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script is:inline>
+        // SortableJS handled in previous script block... merging logic
+    </script>
+
+    <script define:vars={{ excursionCategories, transportCategories }}>
+        // --- Modal Logic ---
+        const modal = document.getElementById('category-modal');
+        const form = document.getElementById('category-form');
+        
+        // Helper to find category data safely
+        function findCategory(collection, id) {
+            const list = collection === 'transport-categories' ? transportCategories : excursionCategories;
+            return list.find(c => c.id === id);
+        }
+
+        window.openAddModal = function(collectionName, title) {
+            document.getElementById('modal-title').textContent = title || 'Новая категория';
+            document.getElementById('modal-id').value = '';
+            document.getElementById('modal-collection').value = collectionName;
+            document.getElementById('modal-title-input').value = '';
+            document.getElementById('modal-slug-input').value = '';
+            document.getElementById('modal-active').checked = true;
+            
+            setupExtraFields(collectionName, null);
+            modal.classList.remove('hidden');
+        }
+
+        window.openEditModal = function(collectionName, id) {
+            const category = findCategory(collectionName, id);
+            if (!category) return;
+
+            document.getElementById('modal-title').textContent = 'Редактировать категорию';
+            document.getElementById('modal-id').value = category.id;
+            document.getElementById('modal-collection').value = collectionName;
+            document.getElementById('modal-title-input').value = category.title;
+            document.getElementById('modal-slug-input').value = category.slug;
+            document.getElementById('modal-active').checked = category.isActive !== false;
+
+            setupExtraFields(collectionName, category);
+            modal.classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            modal.classList.add('hidden');
+        }
+
+        function setupExtraFields(collection, data) {
+            const container = document.getElementById('modal-extra-fields');
+            container.innerHTML = '';
+
+            if (collection === 'excursion-categories') {
+                const iconVal = data ? (data.icon || '') : '';
+                container.innerHTML = `<input type="hidden" name="icon" value="${iconVal}">`;
+            } else {
+                 const badgeVal = data ? (data.badgeTitle || '') : '';
+                 container.innerHTML = `<input type="hidden" name="badgeTitle" value="${badgeVal}">`;
+            }
+        }
+
+        window.saveCategory = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Handle checkbox (if unchecked it's missing from entries)
+            data.isActive = document.getElementById('modal-active').checked;
+            
+            const collection = data.collection;
+            delete data.collection; // API expects separated collection
+
+            try {
+                const res = await fetch('/api/categories/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ collection, data })
+                });
+
+                if (res.ok) {
+                    window.location.reload(); // Simple reload to reflect changes
+                } else {
+                    const err = await res.json();
+                    alert('Ошибка: ' + err.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Ошибка сети');
+            }
+        }
+    </script>
 
     <script>
         // Dynamically load SortableJS
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
         script.onload = function() {
-            const list = document.getElementById('sections-list');
-            
-            // Initialize Sortable
-            new Sortable(list, {
+            // 1. Sections List
+            const sectionsList = document.getElementById('sections-list');
+            new Sortable(sectionsList, {
                 handle: '.handle',
                 animation: 200,
                 ghostClass: 'opacity-50',
-                onEnd: saveOrder
+                onEnd: saveSectionsOrder
             });
             
-            // Toggle handlers
+            // 2. Excursion Categories List
+            const excursionsList = document.getElementById('excursions-list');
+            new Sortable(excursionsList, {
+                handle: '.handle',
+                animation: 200,
+                ghostClass: 'opacity-50',
+                onEnd: () => saveCategoriesOrder('excursions-list')
+            });
+
+            // 3. Transport Categories List
+            const transportList = document.getElementById('transport-list');
+            new Sortable(transportList, {
+                handle: '.handle',
+                animation: 200,
+                ghostClass: 'opacity-50',
+                onEnd: () => saveCategoriesOrder('transport-list')
+            });
+            
+            // 4. Toggle handlers
             document.querySelectorAll('.section-toggle').forEach(toggle => {
-                toggle.addEventListener('change', saveOrder);
+                toggle.addEventListener('change', saveSectionsOrder);
+            });
+            
+            document.querySelectorAll('.category-toggle').forEach(toggle => {
+                toggle.addEventListener('change', function(e) {
+                    const listId = this.closest('[id$="-list"]').id;
+                    saveCategoriesOrder(listId);
+                });
             });
         };
         document.head.appendChild(script);
         
-        async function saveOrder() {
+        // --- Save Functions ---
+
+        async function saveSectionsOrder() {
             const sections = [];
             document.querySelectorAll('.section-item').forEach(item => {
                 const id = item.dataset.id;
@@ -110,15 +414,53 @@ const sections = siteMeta.sections || defaultSections;
                 });
             });
             
+            await sendReorderRequest('sections', sections);
+        }
+
+        async function saveCategoriesOrder(listId) {
+            const container = document.getElementById(listId);
+            const collectionName = container.dataset.collection;
+            const items = [];
+
+            container.querySelectorAll('.category-item').forEach(item => {
+                const id = item.dataset.id;
+                const toggle = item.querySelector('.category-toggle');
+                
+                // Reconstruct the full object as simple schema implies generic items
+                // But for reordering we mostly just need to preserve existing data + new order + active status
+                // Since our API overwrites the file, we should ideally send full objects.
+                // However, we don't have full objects in DOM. 
+                // TRICKY: The API expects full objects if we overwrite.
+                // SOLUTION: We should construct minimal objects with what we have, 
+                // BUT this might accept data loss for fields not in DOM (like useCases etc if they were in categories? No, categories are simple).
+                // Let's assume categories only have id, title, slug, icon/badge, isActive.
+                
+                const obj = {
+                    id: id,
+                    title: item.dataset.title,
+                    slug: item.dataset.slug,
+                    isActive: toggle.checked
+                };
+                
+                if (item.dataset.icon) obj.icon = item.dataset.icon;
+                if (item.dataset.badge) obj.badgeTitle = item.dataset.badge;
+                
+                items.push(obj);
+            });
+
+            await sendReorderRequest(collectionName, items);
+        }
+
+        async function sendReorderRequest(collection, items) {
             try {
-                const res = await fetch('/api/site-meta/sections', {
+                const res = await fetch('/api/categories/reorder', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sections })
+                    body: JSON.stringify({ collection, items })
                 });
                 
                 if (res.ok) {
-                    showToast('Порядок сохранён', 'success');
+                    showToast('Сохранено', 'success');
                 } else {
                     showToast('Ошибка сохранения', 'error');
                 }

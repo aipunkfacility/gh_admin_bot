@@ -7,6 +7,7 @@ import '@fontsource/montserrat/500.css';
 import '@fontsource/montserrat/600.css';
 import '@fontsource/montserrat/700.css';
 import '@fontsource/montserrat/800.css';
+import '../styles/global.css';
 
 interface Props {
   title: string;
@@ -49,11 +50,7 @@ const siteMeta = await getItem('site-meta.json', 'settings') || {};
       --color-brand: #2D5F3E;
       --color-brand-hover: #1f422b;
       --color-dark: #1A2F5A;
-    }
-
-    html {
-      scroll-behavior: smooth !important;
-      scroll-padding-top: 5rem;
+      --aspect-card: 4 / 3;
     }
 
     /* Base Styles */

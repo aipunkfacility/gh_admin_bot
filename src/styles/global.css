@@ -1,1 +1,5 @@
-﻿/* EMPTY */
+﻿html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 64px;
+  /* Exact Header Height (py-3 + h-10 = 24+40=64px) */
+}

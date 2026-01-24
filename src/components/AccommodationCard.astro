@@ -29,12 +29,12 @@ const safeMessage = message.replace(/'/g, "\\'");
   aria-expanded={hasDetails ? "false" : null}
 >
   {image && (
-    <div class="aspect-video overflow-hidden relative flex-shrink-0">
+    <div class="aspect-card overflow-hidden relative flex-shrink-0">
       <img 
         src={image} 
         alt={title} 
         width="600"
-        height="338"
+        height="450"
         class="w-full h-full object-cover object-center block hover:scale-105 transition-transform duration-700" 
         loading="lazy"
       />

@@ -24,19 +24,19 @@
       "id": "currency",
       "label": "Обмен валюты",
       "icon": "ri-exchange-dollar-line",
-      "enabled": true
-    },
-    {
-      "id": "services",
-      "label": "Услуги",
-      "icon": "ri-customer-service-2-fill",
-      "enabled": true
+      "enabled": false
     },
     {
       "id": "popular",
       "label": "Популярное",
       "icon": "ri-fire-fill",
       "enabled": false
+    },
+    {
+      "id": "services",
+      "label": "Услуги",
+      "icon": "ri-customer-service-2-fill",
+      "enabled": true
     },
     {
       "id": "transport",
@@ -63,6 +63,6 @@
       "enabled": true
     }
   ],
-  "id": "general",
+  "id": "1769272443038",
   "copyrightYear": ""
 }

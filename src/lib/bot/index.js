@@ -56,23 +56,56 @@ bot.use(stage.middleware());
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 
 async function showMainMenu(ctx) {
-    const message = `👋 Добро пожаловать в Green Hill Tours!
+    try {
+        const meta = await readJsonFile('site-meta.json');
+        const services = await readJsonFile('services.json');
+
+        const enabledSections = meta.sections?.filter(s => s.enabled) || [];
+        const activeServices = services.filter(s => s.isActive);
+
+        const keyboard = [];
+
+        // 1. Сервисы из services.json
+        const serviceMap = {
+            'money-exchange': { text: '💰 Обмен валют', callback_data: 'calc_exchange' },
+            'transfer': { text: '🚖 Трансфер', callback_data: 'transfer_info' },
+            'visa-run': { text: '🛂 Визаран', callback_data: 'visarun_info' }
+        };
+
+        // Сохраняем порядок как в services.json
+        for (const service of activeServices) {
+            if (serviceMap[service.id]) {
+                keyboard.push([serviceMap[service.id]]);
+            }
+        }
+
+        // 2. Разделы из site-meta
+        const sectionMap = {
+            'transport': { text: '🏍 Транспорт', callback_data: 'cat_transport' },
+            'excursions': { text: '🌴 Экскурсии', callback_data: 'cat_excursions' },
+            'accommodations': { text: '🏨 Жилье', callback_data: 'cat_accommodations' },
+            'contacts': { text: '📞 Контакты', callback_data: 'contacts' }
+        };
+
+        for (const section of enabledSections) {
+            if (sectionMap[section.id]) {
+                keyboard.push([sectionMap[section.id]]);
+            }
+        }
+
+        const message = `👋 Добро пожаловать в Green Hill Tours!
 
 Выберите интересующий раздел:`;
 
-    await ctx.reply(message, {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: '💰 Обмен валют', callback_data: 'calc_exchange' }],
-                [{ text: '🚖 Трансфер', callback_data: 'transfer_info' }],
-                [{ text: '🛂 Визаран', callback_data: 'visarun_info' }],
-                [{ text: '🏍 Транспорт', callback_data: 'cat_transport' }],
-                [{ text: '🌴 Экскурсии', callback_data: 'cat_excursions' }],
-                [{ text: '🏨 Жилье', callback_data: 'cat_accommodations' }],
-                [{ text: '📞 Контакты', callback_data: 'contacts' }],
-            ],
-        },
-    });
+        await ctx.reply(message, {
+            reply_markup: {
+                inline_keyboard: keyboard,
+            },
+        });
+    } catch (error) {
+        logger.error('Error in showMainMenu', { error: error.message });
+        await ctx.reply('👋 Добро пожаловать!');
+    }
 }
 
 
@@ -102,28 +135,26 @@ bot.action('noop', wrapHandler('noop', async (ctx) => {
 
 // ========== ТРАНСПОРТ ==========
 
-// Категории транспорта
-const transportCategories = [
-    { id: 'standard', name: '🛵 Стандарт', slug: 'standard' },
-    { id: 'comfort', name: '⚡️ Комфорт', slug: 'comfort' },
-    { id: 'maxi', name: '🏍 Макси', slug: 'maxi' },
-    { id: 'moto', name: '🏁 Мото', slug: 'moto' },
-    { id: 'car', name: '🚗 Авто', slug: 'car' },
-];
-
 bot.action('cat_transport', wrapHandler('cat_transport', async (ctx) => {
     ctx.session = ctx.session || {};
     ctx.session.transportCategory = null;
 
-    await ctx.reply('🏍 Выберите категорию транспорта:', {
-        reply_markup: {
-            inline_keyboard: [
-                ...transportCategories.map(cat => [{ text: cat.name, callback_data: `transport_cat_${cat.id}` }]),
-                [{ text: '📋 Все категории', callback_data: 'transport_all_1' }],
-                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-            ],
-        },
-    });
+    try {
+        const categories = await readJsonFile('transport-categories.json');
+
+        await ctx.reply('🏍 Выберите категорию транспорта:', {
+            reply_markup: {
+                inline_keyboard: [
+                    ...categories.map(cat => [{ text: cat.badgeTitle || cat.title, callback_data: `transport_cat_${cat.id}` }]),
+                    [{ text: '📋 Все категории', callback_data: 'transport_all_1' }],
+                    [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                ],
+            },
+        });
+    } catch (error) {
+        logger.error('Error loading transport categories', { error: error.message });
+        await ctx.reply('❌ Ошибка загрузки категорий.');
+    }
 }));
 
 // Выбор категории транспорта
@@ -155,7 +186,8 @@ bot.action(/^transport_page_(\d+)$/, wrapHandler('transport_page', async (ctx) =
 async function showTransportList(ctx, page, categoryId) {
     try {
         let items = await readJsonFile('transport-items.json');
-        items = items.filter(i => i.isActive !== false);
+        // Строгая проверка на активность
+        items = items.filter(i => i.isActive === true);
 
         if (categoryId) {
             items = items.filter(i => i.categoryId === categoryId);
@@ -176,7 +208,7 @@ async function showTransportList(ctx, page, categoryId) {
         const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
 
         const categoryName = categoryId
-            ? transportCategories.find(c => c.id === categoryId)?.name || 'Транспорт'
+            ? (await readJsonFile('transport-categories.json')).find(c => c.id === categoryId)?.title || 'Транспорт'
             : '🏍 Весь транспорт';
 
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
@@ -237,8 +269,8 @@ bot.action(/^transport_detail_(.+)$/, wrapHandler('transport_detail', async (ctx
         const items = await readJsonFile('transport-items.json');
         const item = items.find(i => i.id === itemId);
 
-        if (!item) {
-            await ctx.reply('❌ Товар не найден.');
+        if (!item || item.isActive === false) {
+            await ctx.reply('❌ К сожалению, этот товар сейчас недоступен.');
             return;
         }
 
@@ -273,23 +305,67 @@ bot.action(/^transport_detail_(.+)$/, wrapHandler('transport_detail', async (ctx
 // ========== ЭКСКУРСИИ ==========
 
 bot.action('cat_excursions', wrapHandler('cat_excursions', async (ctx) => {
-    await showExcursionsList(ctx, 1);
+    ctx.session = ctx.session || {};
+    ctx.session.excursionCategory = null;
+
+    try {
+        const categories = await readJsonFile('excursion-categories.json');
+
+        await ctx.reply('🌴 Выберите категорию экскурсий:', {
+            reply_markup: {
+                inline_keyboard: [
+                    ...categories.map(cat => [{ text: cat.title, callback_data: `excursion_cat_${cat.id}` }]),
+                    [{ text: '📋 Все экскурсии', callback_data: 'excursions_all_1' }],
+                    [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+                ],
+            },
+        });
+    } catch (error) {
+        logger.error('Error loading excursion categories', { error: error.message });
+        await ctx.reply('❌ Ошибка загрузки категорий.');
+    }
 }));
 
+// Выбор категории экскурсий
+bot.action(/^excursion_cat_(.+)$/, wrapHandler('excursion_cat', async (ctx) => {
+    const categoryId = ctx.match[1];
+    ctx.session = ctx.session || {};
+    ctx.session.excursionCategory = categoryId;
+
+    await showExcursionsList(ctx, 1, categoryId);
+}));
+
+// Все экскурсии с пагинацией
+bot.action(/^excursions_all_(\d+)$/, wrapHandler('excursions_all', async (ctx) => {
+    const page = parseInt(ctx.match[1]);
+    ctx.session = ctx.session || {};
+    ctx.session.excursionCategory = null;
+
+    await showExcursionsList(ctx, page, null);
+}));
+
+// Пагинация экскурсий по категории
 bot.action(/^excursions_page_(\d+)$/, wrapHandler('excursions_page', async (ctx) => {
     const page = parseInt(ctx.match[1]);
-    await showExcursionsList(ctx, page);
+    const category = ctx.session?.excursionCategory || null;
+
+    await showExcursionsList(ctx, page, category);
 }));
 
-async function showExcursionsList(ctx, page) {
+async function showExcursionsList(ctx, page, categoryId) {
     try {
         let items = await readJsonFile('excursions.json');
-        items = items.filter(i => i.isActive !== false);
+        items = items.filter(i => i.isActive === true);
+
+        if (categoryId) {
+            items = items.filter(i => i.categoryId === categoryId);
+        }
 
         if (!items || items.length === 0) {
-            await ctx.reply('🔍 Экскурсии временно недоступны.', {
+            await ctx.reply('🔍 Экскурсии не найдены.', {
                 reply_markup: {
                     inline_keyboard: [
+                        [{ text: '◀️ Назад к категориям', callback_data: 'cat_excursions' }],
                         [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
                     ],
                 },
@@ -299,7 +375,11 @@ async function showExcursionsList(ctx, page) {
 
         const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
 
-        await ctx.reply(`🌴 Экскурсии (${currentPage}/${totalPages}):`);
+        const categoryName = categoryId
+            ? (await readJsonFile('excursion-categories.json')).find(c => c.id === categoryId)?.title || 'Экскурсии'
+            : '🌴 Все экскурсии';
+
+        await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
             const imageUrl = getFullImageUrl(item.image);
@@ -326,10 +406,11 @@ async function showExcursionsList(ctx, page) {
 
         // Навигация (Новая система!)
         const navButtons = buildPaginationKeyboard('excursions', { currentPage, totalPages, hasNext, hasPrev }, [
+            { text: '◀️ Назад к категориям', callback_data: 'cat_excursions' },
             { text: '🏠 Главное меню', callback_data: 'back_to_start' }
         ]);
 
-        await ctx.reply('📄 Навигация:', {
+        await ctx.reply('📄 Управление списком:', {
             reply_markup: { inline_keyboard: navButtons },
         });
 
@@ -354,8 +435,8 @@ bot.action(/^excursion_detail_(.+)$/, wrapHandler('excursion_detail', async (ctx
         const items = await readJsonFile('excursions.json');
         const item = items.find(i => i.id === itemId);
 
-        if (!item) {
-            await ctx.reply('❌ Экскурсия не найдена.');
+        if (!item || item.isActive === false) {
+            await ctx.reply('❌ К сожалению, эта экскурсия сейчас недоступна.');
             return;
         }
 
@@ -406,7 +487,7 @@ bot.action(/^accommodations_page_(\d+)$/, wrapHandler('accommodations_page', asy
 async function showAccommodationsList(ctx, page) {
     try {
         let items = await readJsonFile('accommodations.json');
-        items = items.filter(i => i.isActive !== false);
+        items = items.filter(i => i.isActive === true);
 
         if (!items || items.length === 0) {
             await ctx.reply('🔍 Жилье временно недоступно.', {
@@ -476,8 +557,8 @@ bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', as
         const items = await readJsonFile('accommodations.json');
         const item = items.find(i => i.id === itemId);
 
-        if (!item) {
-            await ctx.reply('❌ Жилье не найдено.');
+        if (!item || item.isActive === false) {
+            await ctx.reply('❌ К сожалению, это жилье сейчас недоступно.');
             return;
         }
 
@@ -499,6 +580,13 @@ bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', as
 
 // Визаран
 bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
+    const services = await readJsonFile('services.json');
+    const service = services.find(s => s.id === 'visa-run');
+
+    if (!service || !service.isActive) {
+        return ctx.reply('❌ Эта услуга временно недоступна.');
+    }
+
     await ctx.reply(`🛂 *Визаран*
 
 Поможем с оформлением визаранов во Вьетнаме.
@@ -525,7 +613,14 @@ bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
 
 // Трансфер
 bot.action('transfer_info', wrapHandler('transfer_info', async (ctx) => {
-    await ctx.reply(`🚖 *Трансфер*
+    const services = await readJsonFile('services.json');
+    const service = services.find(s => s.id === 'transfer');
+
+    if (!service || !service.isActive) {
+        return ctx.reply('❌ Эта услуга временно недоступна.');
+    }
+
+    await ctx.reply(`🚖 *Трасфер*
 
 Организуем трансферы по всему Вьетнаму.
 
@@ -571,6 +666,12 @@ bot.action('contacts', wrapHandler('contacts', async (ctx) => {
 
 // Калькулятор валют
 bot.action('calc_exchange', wrapHandler('calc_exchange', async (ctx) => {
+    const services = await readJsonFile('services.json');
+    const service = services.find(s => s.id === 'money-exchange');
+
+    if (!service || !service.isActive) {
+        return ctx.reply('❌ Эта услуга временно недоступна.');
+    }
     return ctx.scene.enter('exchange_calculator');
 }));
 
@@ -690,6 +791,10 @@ bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, wrapHandler('book_
         const items = await readJsonFile(files[type]);
         const item = items.find(i => i.id === itemId);
         if (item) {
+            if (item.isActive === false) {
+                await ctx.reply('❌ К сожалению, этот товар более недоступен для бронирования.');
+                return;
+            }
             itemName = item.title;
         }
     } catch (e) {

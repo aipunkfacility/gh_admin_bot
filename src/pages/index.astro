@@ -18,14 +18,9 @@ const transport = (await getCollection('transport-items.json')) || [];
 const accommodations = (await getCollection('accommodations.json')) || [];
 const services = (await getCollection('services.json')) || [];
 
-// Категории транспорта (с полем id для совместимости с TransportCard)
-const transportCategories = [
-    { id: 'standard', slug: 'standard', title: 'Стандарт', badgeTitle: 'Стандарт', isActive: true },
-    { id: 'comfort', slug: 'comfort', title: 'Комфорт', badgeTitle: 'Комфорт', isActive: true },
-    { id: 'maxi', slug: 'maxi', title: 'Макси-скутер', badgeTitle: 'Макси', isActive: true },
-    { id: 'moto', slug: 'moto', title: 'Мотоцикл', badgeTitle: 'Мото', isActive: true },
-    { id: 'car', slug: 'car', title: 'Авто', badgeTitle: 'Авто', isActive: true }
-];
+// Категории транспорта
+const allTransportCategories = (await getCollection('transport-categories.json')) || [];
+const transportCategories = allTransportCategories.filter(c => c.isActive !== false);
 
 // Популярные элементы (все отмеченные как популярные)
 const popularItems = [

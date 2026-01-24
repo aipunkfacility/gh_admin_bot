@@ -45,7 +45,7 @@ const activeCategories = categories.filter(c => c.isActive !== false);
       if (items.length === 0) return null;
 
       return (
-        <div class="mb-16 border-t border-gray-200 pt-16 first:border-0 first:pt-0">
+        <div id={`transport-${category.slug}`} class="mb-16 border-t border-gray-200 pt-16 first:border-0 first:pt-0">
           <div class="bg-white rounded-lg p-6 mb-8 shadow-md flex items-center gap-4 border-l-4 border-orange-500">
             <i class={`${category.icon || 'ri-motorbike-line'} text-3xl text-orange-500`}></i>
             <div>

@@ -1,8 +1,10 @@
 ---
 import ServiceCard from '../components/ServiceCard.astro';
+import { getCollection } from '../lib/data-store';
 
 interface Excursion {
   id: string;
+  categoryId?: string;
   title: string;
   image?: string;
   shortDescription?: string;
@@ -21,33 +23,62 @@ interface Props {
 }
 
 const { excursions } = Astro.props;
+const allCategories = await getCollection('excursion-categories.json') || [];
+const categories = allCategories.filter(c => c.isActive !== false);
+
 const activeExcursions = excursions.filter(e => e.isActive !== false);
-const popularExcursions = activeExcursions.filter(e => e.isPopular === true);
-const regularExcursions = activeExcursions.filter(e => !e.isPopular);
+
+const groupedExcursions = categories.map(cat => ({
+  ...cat,
+  items: activeExcursions.filter(e => e.categoryId === cat.id)
+})).filter(group => group.items.length > 0);
+
+// Добавляем без категории, если есть - УБРАНО ПО ТРЕБОВАНИЮ
+// const uncategorized = activeExcursions.filter(e => !e.categoryId || !categories.find(c => c.id === e.categoryId));
+// if (uncategorized.length > 0) { ... }
 ---
 
-{activeExcursions.length > 0 && (
-  <section id="excursions" class="py-16 bg-white">
-    <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12 flex items-center justify-center gap-3 text-gray-800">
-        <i class="ri-map-2-line text-blue-600"></i> Все экскурсии
+<section id="excursions" class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-16 space-y-4">
+      <h2 class="text-4xl font-black text-dark tracking-tight uppercase flex items-center justify-center gap-4">
+        <span class="w-12 h-1 bg-action rounded-full hidden sm:block"></span>
+        Наши экскурсии
+        <span class="w-12 h-1 bg-action rounded-full hidden sm:block"></span>
       </h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-        {activeExcursions.map(excursion => (
-          <ServiceCard 
-            title={excursion.title}
-            image={excursion.image}
-            shortDescription={excursion.shortDescription}
-            details={excursion.details}
-            priceFrom={excursion.priceFrom}
-            duration={excursion.duration}
-            highlights={excursion.highlights}
-            schedule={excursion.schedule}
-            included={excursion.included}
-          />
-        ))}
-      </div>
+      <p class="text-slate-500 font-medium max-w-2xl mx-auto text-lg">
+        Откройте для себя аутентичный Вьетнам: от марсианских пейзажей пустыни до прохладных горных водопадов.
+      </p>
     </div>
-  </section>
-)}
+
+    <div class="space-y-20">
+      {groupedExcursions.map(group => (
+        <div id={`excursion-${group.slug}`} class="category-block">
+          <div class="flex items-center gap-6 mb-10 overflow-hidden">
+             <div class="flex items-center gap-3 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 shadow-sm flex-shrink-0">
+                <i class={`${group.icon || 'ri-map-pin-line'} text-2xl text-action`}></i>
+                <h3 class="text-xl font-black text-dark uppercase tracking-wide whitespace-nowrap">{group.title}</h3>
+             </div>
+             <div class="h-px bg-slate-100 flex-1"></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+            {group.items.map(excursion => (
+              <ServiceCard 
+                title={excursion.title}
+                image={excursion.image}
+                shortDescription={excursion.shortDescription}
+                details={excursion.details}
+                priceFrom={excursion.priceFrom}
+                duration={excursion.duration}
+                highlights={excursion.highlights}
+                schedule={excursion.schedule}
+                included={excursion.included}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

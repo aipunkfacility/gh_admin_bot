@@ -41,6 +41,7 @@ export const AccommodationSchema = BaseItemSchema.extend({
 });
 
 export const ExcursionSchema = BaseItemSchema.extend({
+    categoryId: z.string(),
     shortDescription: z.string().optional(),
     priceFrom: z.string().optional(),
     duration: z.string().optional(),
@@ -118,6 +119,13 @@ export const schemas: Record<string, any> = {
         schema: ExcursionSchema,
         fields: [
             { name: 'title', label: 'Название', type: 'text', required: true },
+            {
+                name: 'categoryId', label: 'Категория', type: 'select', options: [
+                    { value: 'nature', label: 'Приключения и Природа' },
+                    { value: 'history', label: 'История и Города' },
+                    { value: 'islands', label: 'Острова и Парки' }
+                ], required: true
+            },
             { name: 'image', label: 'Фото', type: 'image' },
             { name: 'priceFrom', label: 'Цена от', type: 'text' },
             { name: 'duration', label: 'Длительность', type: 'text' },
@@ -203,6 +211,40 @@ export const schemas: Record<string, any> = {
             { name: 'heroImage', label: 'Фон Hero', type: 'image' },
             { name: 'isActive', label: 'Активно', type: 'checkbox', default: true },
         ]
+    },
+    'transport-categories': {
+        name: 'Категории транспорта',
+        schema: z.object({
+            id: z.string(),
+            title: z.string(),
+            slug: z.string(),
+            badgeTitle: z.string().optional(),
+            isActive: z.boolean().default(true),
+        }),
+        fields: [
+            { name: 'title', label: 'Название (Заголовок)', type: 'text', required: true },
+            { name: 'slug', label: 'Slug (ID)', type: 'text', required: true },
+            { name: 'badgeTitle', label: 'Короткое название (для кнопок)', type: 'text' },
+            { name: 'isActive', label: 'Активно', type: 'checkbox', default: true },
+        ],
+        showInMenu: true
+    },
+    'excursion-categories': {
+        name: 'Категории экскурсий',
+        schema: z.object({
+            id: z.string(),
+            title: z.string(),
+            slug: z.string(),
+            icon: z.string().optional(),
+            isActive: z.boolean().default(true),
+        }),
+        fields: [
+            { name: 'title', label: 'Название', type: 'text', required: true },
+            { name: 'slug', label: 'Slug (ID)', type: 'text', required: true },
+            { name: 'icon', label: 'Иконка (RemixIcon)', type: 'text', placeholder: 'ri-landscape-line' },
+            { name: 'isActive', label: 'Активно', type: 'checkbox', default: true },
+        ],
+        showInMenu: false
     }
 };
 

@@ -1,7 +1,7 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { schemas } from '../../../lib/schemas';
-import { getItem } from '../../../lib/data-store';
+import { getItem, getCollection } from '../../../lib/data-store';
 
 const cookies = Astro.cookies;
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
@@ -21,9 +21,25 @@ const { collection, id } = Astro.params;
 const isCreate = !id || id === 'create';
 
 // Redirect if schema not found
-const schema = schemas[collection];
-if (!schema) {
+const schemaSource = schemas[collection];
+if (!schemaSource) {
     return Astro.redirect('/admin');
+}
+
+// Clone schema to avoid mutating global registry
+const schema = JSON.parse(JSON.stringify(schemaSource));
+
+// Load dynamic categories if needed
+if (collection === 'transport-items' || collection === 'excursions') {
+    const catFile = collection === 'transport-items' ? 'transport-categories.json' : 'excursion-categories.json';
+    const categories = await getCollection(catFile);
+    const catField = schema.fields.find(f => f.name === 'categoryId');
+    if (catField && Array.isArray(categories)) {
+        catField.options = categories.map(c => ({
+            value: c.id,
+            label: c.title
+        }));
+    }
 }
 
 let item = {};

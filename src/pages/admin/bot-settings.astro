@@ -203,13 +203,13 @@ try {
                 });
                 
                 if (res.ok) {
-                    alert('✅ Курсы успешно обновлены!');
+                    showToast('✅ Курсы успешно обновлены!', 'success');
                 } else {
-                    alert('❌ Ошибка сохранения курсов');
+                    showToast('❌ Ошибка сохранения курсов', 'error');
                 }
             } catch (error) {
                 console.error(error);
-                alert('❌ Ошибка сети');
+                showToast('❌ Ошибка сети', 'error');
             }
         });
 
@@ -219,7 +219,7 @@ try {
             const newId = parseInt(document.getElementById('newAdminId').value);
             
             if (currentAdmins.includes(newId)) {
-                alert('⚠️ Этот администратор уже добавлен');
+                showToast('⚠️ Этот администратор уже добавлен', 'info');
                 return;
             }
             
@@ -230,7 +230,8 @@ try {
 
         // Удаление администратора
         window.removeAdmin = async (adminId) => {
-            if (!confirm(`Удалить администратора ${adminId}?`)) return;
+            const confirmed = await showConfirm(`Удалить администратора ${adminId}?`, 'Удаление');
+            if (!confirmed) return;
             
             currentAdmins = currentAdmins.filter(id => id !== adminId);
             await saveAdmins();
@@ -248,11 +249,11 @@ try {
                 if (res.ok) {
                     location.reload();
                 } else {
-                    alert('❌ Ошибка сохранения администраторов');
+                    showToast('❌ Ошибка сохранения администраторов', 'error');
                 }
             } catch (error) {
                 console.error(error);
-                alert('❌ Ошибка сети');
+                showToast('❌ Ошибка сети', 'error');
             }
         }
     </script>

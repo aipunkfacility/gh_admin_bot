@@ -1,0 +1,812 @@
+[
+  {
+    "name": "accessibility_testing",
+    "description": "Guide for conducting comprehensive accessibility audits of code to identify WCAG compliance issues and barriers to inclusive design. This skill should be used when reviewing accessibility, ARIA implementation, keyboard navigation, or screen reader compatibility.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\accessibility_testing\\SKILL.md"
+  },
+  {
+    "name": "agents_md",
+    "description": "AGENTS.md dosyaları oluşturma, monorepo yapılandırma ve agent instruction yönetimi rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\agents_md\\SKILL.md"
+  },
+  {
+    "name": "agent_orchestration",
+    "description": "Transform clarified user requests into structured delegation prompts optimized for specialist agents (cto-architect, strategic-cto-mentor, cv-ml-architect). Use after clarification is complete, before routing to specialist agents. Ensures agents receive complete context for effective work.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\agent_orchestration\\SKILL.md"
+  },
+  {
+    "name": "algorithmic_art",
+    "description": "p5.js ile generative art, flow fields ve interactive visuals oluşturma rehberi.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\algorithmic_art\\SKILL.md"
+  },
+  {
+    "name": "api_design",
+    "description": "API tasarımı, GraphQL schema, OpenAPI spec, versioning. ⚠️ Tasarım aşaması için kullan. Uygulama/security için → backend-api.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\api_design\\SKILL.md"
+  },
+  {
+    "name": "arch_decisions",
+    "description": "ADR template, database selection, capacity planning ve scalability.",
+    "category": "thinking",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\arch_decisions\\SKILL.md"
+  },
+  {
+    "name": "arch_patterns",
+    "description": "Architecture patterns - monolith vs microservices, layered, event-driven, CQRS.",
+    "category": "thinking",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\arch_patterns\\SKILL.md"
+  },
+  {
+    "name": "audience_intelligence",
+    "description": "Analyzes target audience demographics, psychographics, behaviors, and platform preferences to inform influencer selection and campaign strategy. Essential foundation for effective influencer marketing.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\audience_intelligence\\SKILL.md"
+  },
+  {
+    "name": "auth_patterns",
+    "description": "Master authentication and authorization patterns including JWT, OAuth2, session management, and RBAC to build secure, scalable access control systems. Use when implementing auth systems, securing APIs, or debugging security issues.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\auth_patterns\\SKILL.md"
+  },
+  {
+    "name": "aws_architect",
+    "description": "Expert AWS solution architecture for startups focusing on serverless, scalable, and cost-effective cloud infrastructure with modern DevOps practices and infrastructure-as-code",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\aws_architect\\SKILL.md"
+  },
+  {
+    "name": "backend_api",
+    "description": "REST uygulama, validation, security headers, auth patterns. ⚠️ Kod yazarken kullan. API tasarımı/GraphQL için → api-design.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\backend_api\\SKILL.md"
+  },
+  {
+    "name": "backend_core",
+    "description": "Node.js/TypeScript temel prensipler, proje yapısı ve TypeScript strict mode kuralları.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\backend_core\\SKILL.md"
+  },
+  {
+    "name": "backend_database",
+    "description": "Repository pattern, transactions, caching ve query optimization.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\backend_database\\SKILL.md"
+  },
+  {
+    "name": "better_auth",
+    "description": "The ultimate authentication and authorization skill. Implement login, signin, signup, registration, OAuth, 2FA, MFA, passkeys, and user session management. Secure your application with RBAC and access control.",
+    "category": "cybersecurity",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\better_auth\\SKILL.md"
+  },
+  {
+    "name": "cache_patterns",
+    "description": "Instruction set for enabling and operating the Spring Cache abstraction in Spring Boot when implementing application-level caching for performance-sensitive workloads.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\cache_patterns\\SKILL.md"
+  },
+  {
+    "name": "canvas_design",
+    "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\canvas_design\\SKILL.md"
+  },
+  {
+    "name": "clerk_auth",
+    "description": "Clerk modern authentication, WebAuthn, passkeys ve social auth entegrasyonu rehberi.",
+    "category": "authentication",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\clerk_auth\\SKILL.md"
+  },
+  {
+    "name": "code_formatter",
+    "description": "Otomatik kod formatlama, Prettier/ESLint entegrasyonu ve kod stil tutarlılığı rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\code_formatter\\SKILL.md"
+  },
+  {
+    "name": "code_review",
+    "description": "PR review, code smell detection, best practice kontrolü. ⚠️ Kod incelerken kullan. Deliverable kontrolü için → quality-validator, doküman review için → peer-review.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\code_review\\SKILL.md"
+  },
+  {
+    "name": "cold_email",
+    "description": "Generate personalized cold email sequences (7-14 emails) with A/B test subject lines, follow-up timing recommendations, and integrated social proof. Creates multi-touch campaigns optimized for response rates. Use when users need outbound email campaigns, sales sequences, or lead generation emails.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\cold_email\\SKILL.md"
+  },
+  {
+    "name": "competitor_analysis",
+    "description": "Rakip analizi, SEO/strateji karşılaştırma ve pazar pozisyonlama rehberi.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\competitor_analysis\\SKILL.md"
+  },
+  {
+    "name": "competitor_intelligence",
+    "description": "Analyzes competitor SEO and GEO strategies including their ranking keywords, content approaches, backlink profiles, and AI citation patterns. Reveals opportunities to outperform competition.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\competitor_intelligence\\SKILL.md"
+  },
+  {
+    "name": "compliance_analyst",
+    "description": "Sertifikasyon, uyumluluk gereksinimleri ve regulatory pathway araştırma rehberi.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\compliance_analyst\\SKILL.md"
+  },
+  {
+    "name": "content_strategist",
+    "description": "Creates high-quality, SEO-optimized content that ranks in search engines. Applies on-page SEO best practices, keyword optimization, and content structure for maximum visibility and engagement.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\content_strategist\\SKILL.md"
+  },
+  {
+    "name": "context_engineering",
+    "description": "Apply optimization techniques to extend effective context capacity. Use when context limits constrain agent performance, when optimizing for cost or latency, or when implementing long-running agent systems.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\context_engineering\\SKILL.md"
+  },
+  {
+    "name": "database_design",
+    "description": "Schema tasarımı, migration stratejileri, indexing, query optimization ve database best practices.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\database_design\\SKILL.md"
+  },
+  {
+    "name": "database_migration",
+    "description": "Execute database migrations across ORMs and platforms with zero-downtime strategies, data transformation, and rollback procedures. Use when migrating databases, changing schemas, performing data transformations, or implementing zero-downtime deployment strategies.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\database_migration\\SKILL.md"
+  },
+  {
+    "name": "data_transform",
+    "description": "Transform raw data into analytical assets using ETL/ELT patterns, SQL (dbt), Python (pandas/polars/PySpark), and orchestration (Airflow). Use when building data pipelines, implementing incremental models, migrating from pandas to polars, or orchestrating multi-step transformations with testing and quality checks.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\data_transform\\SKILL.md"
+  },
+  {
+    "name": "data_visualization",
+    "description": "Generate data visualizations, plots, and charts. Analyzes data structure to select optimal visualization types. supports bar charts, line graphs, and scatter plots for clarity.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\data_visualization\\SKILL.md"
+  },
+  {
+    "name": "debugging_methodology",
+    "description": "Sistematik debugging döngüsü - reproduce, isolate, hypothesize, fix.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\debugging_methodology\\SKILL.md"
+  },
+  {
+    "name": "debugging_tools",
+    "description": "Debugging araçları - console, debugger, network, profiling.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\debugging_tools\\SKILL.md"
+  },
+  {
+    "name": "deploy_cicd",
+    "description": "CI/CD pipeline, GitHub Actions, automated deployment, release management, production shipping, and software delivery.",
+    "category": "operations",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\deploy_cicd\\SKILL.md"
+  },
+  {
+    "name": "deploy_monitoring",
+    "description": "Health checks, metrics, alerting ve rollback stratejileri.",
+    "category": "operations",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\deploy_monitoring\\SKILL.md"
+  },
+  {
+    "name": "deps_npm",
+    "description": "npm/yarn dependency management, package.json best practices ve version control.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\deps_npm\\SKILL.md"
+  },
+  {
+    "name": "design_components",
+    "description": "Button, card, input ve icon sizing kuralları. Component boyutlandırma standartları.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\design_components\\SKILL.md"
+  },
+  {
+    "name": "design_patterns",
+    "description": "Visual hierarchy, z-index, shadows, animations ve white space kuralları.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\design_patterns\\SKILL.md"
+  },
+  {
+    "name": "design_responsive",
+    "description": "Breakpoints, fluid typography, container queries ve modern CSS features.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\design_responsive\\SKILL.md"
+  },
+  {
+    "name": "design_tokens",
+    "description": "8-point grid spacing, typography scale ve color system. Temel tasarım değişkenleri.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\design_tokens\\SKILL.md"
+  },
+  {
+    "name": "docker_optimization",
+    "description": "Docker image optimization patterns including multi-stage builds, layer caching, security hardening, and size reduction techniques. Use when building Docker images, optimizing container size, improving build performance, or implementing Docker security best practices. Reduces image sizes by 70-90% and build times by 50-80%.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\docker_optimization\\SKILL.md"
+  },
+  {
+    "name": "docs_api",
+    "description": "OpenAPI/Swagger API documentation ve endpoint belgeleme şablonları.",
+    "category": "operations",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\docs_api\\SKILL.md"
+  },
+  {
+    "name": "docs_code",
+    "description": "Code comments, JSDoc/TSDoc ve changelog best practices.",
+    "category": "operations",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\docs_code\\SKILL.md"
+  },
+  {
+    "name": "docs_readme",
+    "description": "README best practices ve proje dokümantasyon şablonları.",
+    "category": "operations",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\docs_readme\\SKILL.md"
+  },
+  {
+    "name": "docx",
+    "description": "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. When Claude needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\docx\\SKILL.md"
+  },
+  {
+    "name": "drizzle_orm",
+    "description": "Type-safe ORM for Cloudflare D1 databases using Drizzle. Provides patterns for schema definition, migrations, and type-safe queries. Prevents transaction errors and schema mismatches. Includes templates for strict TypeScript usage.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\drizzle_orm\\SKILL.md"
+  },
+  {
+    "name": "email_composer",
+    "description": "Profesyonel e-posta yazma, business communication ve template oluşturma rehberi.",
+    "category": "business",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\email_composer\\SKILL.md"
+  },
+  {
+    "name": "error_handling",
+    "description": "Master error handling patterns across languages including exceptions, Result types, error propagation, and graceful degradation to build resilient applications. Use when implementing error handling, designing APIs, or improving application reliability.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\error_handling\\SKILL.md"
+  },
+  {
+    "name": "event_driven",
+    "description": "Structure systems around asynchronous, event-based communication to decouple producers and consumers for improved scalability and resilience. Use when building loosely coupled systems with asynchronous message-based communication.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\event_driven\\SKILL.md"
+  },
+  {
+    "name": "figma_integration",
+    "description": "Figma design-to-code, design system extraction ve component generation rehberi.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\figma_integration\\SKILL.md"
+  },
+  {
+    "name": "firestore_patterns",
+    "description": "Firebase Firestore NoSQL patterns, real-time sync ve security rules rehberi.",
+    "category": "database",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\firestore_patterns\\SKILL.md"
+  },
+  {
+    "name": "form_builder",
+    "description": "Builds form components and data collection interfaces including contact forms, registration flows, checkout processes, surveys, and settings pages. Includes 50+ input types, validation strategies, accessibility patterns (WCAG 2.1), multi-step wizards, and UX best practices. Provides decision trees from data type to component selection, validation timing guidance, and error handling patterns. Use when creating forms, collecting user input, building surveys, implementing validation, designing multi-step workflows, or ensuring form accessibility.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\form_builder\\SKILL.md"
+  },
+  {
+    "name": "frontend_design",
+    "description": "Premium/yaratıcı UI tasarım. ⚠️ Distinctive, memorable interface için kullan. Temel UI için → design-patterns.",
+    "category": "frontend",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\frontend_design\\SKILL.md"
+  },
+  {
+    "name": "github_project_automation",
+    "description": "Comprehensive GitHub project management with swarm-coordinated issue tracking, project board automation, and sprint planning",
+    "category": "uncategorized",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\github_project_automation\\SKILL.md"
+  },
+  {
+    "name": "git_workflow",
+    "description": "Branch stratejisi, commit conventions, merge conflict çözümü ve Git best practices rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\git_workflow\\SKILL.md"
+  },
+  {
+    "name": "huggingface_transformers",
+    "description": "Hugging Face Transformers best practices including model loading, tokenization, fine-tuning workflows, and inference optimization. Use when working with transformer models, fine-tuning LLMs, implementing NLP tasks, or optimizing transformer inference.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\huggingface_transformers\\SKILL.md"
+  },
+  {
+    "name": "hypothesis_generation",
+    "description": "Bilimsel hipotez oluşturma, deney tasarımı ve test metodolojisi rehberi.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\hypothesis_generation\\SKILL.md"
+  },
+  {
+    "name": "image_enhancer",
+    "description": "Improves the quality of images, especially screenshots, by enhancing resolution, sharpness, and clarity. Perfect for preparing images for presentations, documentation, or social media posts.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\image_enhancer\\SKILL.md"
+  },
+  {
+    "name": "incident_response",
+    "description": "Coordinate security incident response efforts. Includes classification, playbook generation, evidence gathering, and remediation planning. Validates response strategies against best practices.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\incident_response\\SKILL.md"
+  },
+  {
+    "name": "keyword_research",
+    "description": "SEO keyword araştırma, arama hacmi analizi ve içerik stratejisi rehberi.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\keyword_research\\SKILL.md"
+  },
+  {
+    "name": "langchain_patterns",
+    "description": "Implement Retrieval-Augmented Generation (RAG) systems with LangChain4j. Build document ingestion pipelines, embedding stores, vector search strategies, and knowledge-enhanced AI applications. Use when creating question-answering systems over document collections or AI assistants with external knowledge bases.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\langchain_patterns\\SKILL.md"
+  },
+  {
+    "name": "llm_evaluation",
+    "description": "Implement comprehensive evaluation strategies for LLM applications using automated metrics, human feedback, and benchmarking. Use when testing LLM performance, measuring AI application quality, or establishing evaluation frameworks.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\llm_evaluation\\SKILL.md"
+  },
+  {
+    "name": "market_analyst",
+    "description": "Pazar analizi, TAM/SAM/SOM hesaplama, rekabet analizi ve müşteri segmentasyonu rehberi.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\market_analyst\\SKILL.md"
+  },
+  {
+    "name": "mcp_builder",
+    "description": "MCP (Model Context Protocol) server oluşturma, FastMCP/TypeScript SDK kullanımı ve API entegrasyonu rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\mcp_builder\\SKILL.md"
+  },
+  {
+    "name": "mcp_server_developer",
+    "description": "Model Context Protocol (MCP) server implementation specialist for Claude Desktop integration. Handles TypeScript/Node.js server scaffolding, endpoint creation, telemetry setup, npx distribution, and comprehensive documentation. Follows MCP specification and best practices for production-grade server deployment.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\mcp_server_developer\\SKILL.md"
+  },
+  {
+    "name": "message_queues",
+    "description": "Async communication patterns using message brokers and task queues. Use when building event-driven systems, background job processing, or service decoupling. Covers Kafka (event streaming), RabbitMQ (complex routing), NATS (cloud-native), Redis Streams, Celery (Python), BullMQ (TypeScript), Temporal (workflows), and event sourcing patterns.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\message_queues\\SKILL.md"
+  },
+  {
+    "name": "microservices_patterns",
+    "description": "Design microservices architectures with service boundaries, event-driven communication, and resilience patterns. Use when building distributed systems, decomposing monoliths, or implementing microservices.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\microservices_patterns\\SKILL.md"
+  },
+  {
+    "name": "mobile_flutter",
+    "description": "Flutter/Dart best practices, Riverpod state management ve performance optimization.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\mobile_flutter\\SKILL.md"
+  },
+  {
+    "name": "mobile_react_native",
+    "description": "React Native best practices, hooks, navigation ve performance optimization.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\mobile_react_native\\SKILL.md"
+  },
+  {
+    "name": "model_finetuning",
+    "description": "Fine-tune LLMs using reinforcement learning with TRL - SFT for instruction tuning, DPO for preference alignment, PPO/GRPO for reward optimization, and reward model training. Use when need RLHF, align model with preferences, or train from human feedback. Works with HuggingFace Transformers.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\model_finetuning\\SKILL.md"
+  },
+  {
+    "name": "mongodb_usage",
+    "description": "This skill should be used when user asks to \"query MongoDB\", \"show database collections\", \"get collection schema\", \"list MongoDB databases\", \"search records in MongoDB\", or \"check database indexes\".",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\mongodb_usage\\SKILL.md"
+  },
+  {
+    "name": "multi_agent_patterns",
+    "description": "Çoklu agent mimarisi tasarımı, orchestration patterns ve agent collaboration rehberi.",
+    "category": "architecture",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\multi_agent_patterns\\SKILL.md"
+  },
+  {
+    "name": "nestjs_specialist",
+    "description": "Comprehensive NestJS framework guide with Drizzle ORM integration. Use when building NestJS applications, setting up APIs, implementing authentication, working with databases, or integrating Drizzle ORM. Covers controllers, providers, modules, middleware, guards, interceptors, testing, microservices, GraphQL, and database patterns.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\nestjs_specialist\\SKILL.md"
+  },
+  {
+    "name": "nextjs_specialist",
+    "description": "Next.js 15 App Router, Server Components, SSR/SSG optimizasyonu ve modern Next.js best practices.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\nextjs_specialist\\SKILL.md"
+  },
+  {
+    "name": "notion_integration",
+    "description": "Notion workspace entegrasyonu - bilgi yönetimi, toplantı hazırlığı, araştırma dokümantasyonu ve spec-to-implementation workflow'ları.",
+    "category": "documentation",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\notion_integration\\SKILL.md"
+  },
+  {
+    "name": "openapi_docs",
+    "description": "Generate comprehensive REST API documentation using SpringDoc OpenAPI 3.0 and Swagger UI in Spring Boot 3.x applications. Use when setting up API documentation, configuring Swagger UI, adding OpenAPI annotations, implementing security documentation, or enhancing REST endpoints with examples and schemas.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\openapi_docs\\SKILL.md"
+  },
+  {
+    "name": "opportunity_scorer",
+    "description": "Fırsat puanlama, scoring rubric ve go/no-go karar verme rehberi.",
+    "category": "business",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\opportunity_scorer\\SKILL.md"
+  },
+  {
+    "name": "optimization",
+    "description": "Sistem ve akış optimizasyonu rehberi. 2025 AI-driven optimizasyon, darboğaz tespiti ve kullanıcı akış iyileştirmeleri.",
+    "category": "operations",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\optimization\\SKILL.md"
+  },
+  {
+    "name": "opus_4_5_migration",
+    "description": "Migrate prompts and code from Claude Sonnet 4.0, Sonnet 4.5, or Opus 4.1 to Opus 4.5. Use when the user wants to update their codebase, prompts, or API calls to use Opus 4.5. Handles model string updates and prompt adjustments for known Opus 4.5 behavioral differences. Does NOT migrate Haiku 4.5.",
+    "category": "context-engineering",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\opus_4_5_migration\\SKILL.md"
+  },
+  {
+    "name": "payment_integration",
+    "description": "Expert payment integration specialist mastering payment gateway integration, PCI compliance, and financial transaction processing. Specializes in secure payment flows, multi-currency support, and fraud prevention with focus on reliability, compliance, and seamless user experience.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\payment_integration\\SKILL.md"
+  },
+  {
+    "name": "pdf",
+    "description": "Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. When Claude needs to fill in a PDF form or programmatically process, generate, or analyze PDF documents at scale.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\pdf\\SKILL.md"
+  },
+  {
+    "name": "peer_review",
+    "description": "Akademik/teknik doküman review, methodology değerlendirme. ⚠️ Doküman/araştırma için kullan. Kod review için → code-review.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\peer_review\\SKILL.md"
+  },
+  {
+    "name": "performance_engineering",
+    "description": "When validating system performance under load, identifying bottlenecks through profiling, or optimizing application responsiveness. Covers load testing (k6, Locust), profiling (CPU, memory, I/O), and optimization strategies (caching, query optimization, Core Web Vitals). Use for capacity planning, regression detection, and establishing performance SLOs.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\performance_engineering\\SKILL.md"
+  },
+  {
+    "name": "performance_profiling",
+    "description": "CPU/Memory profiling, bottleneck analizi, benchmark teknikleri ve performans optimizasyonu rehberi.",
+    "category": "optimization",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\performance_profiling\\SKILL.md"
+  },
+  {
+    "name": "plan_work",
+    "description": "Koddan önce planlama, repo araştırması, risk analizi ve implementation plan oluşturma rehberi.",
+    "category": "planning",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\plan_work\\SKILL.md"
+  },
+  {
+    "name": "platform_engineering",
+    "description": "Design and implement Internal Developer Platforms (IDPs) with self-service capabilities, golden paths, and developer experience optimization. Covers platform strategy, IDP architecture (Backstage, Port), infrastructure orchestration (Crossplane), GitOps (Argo CD), and adoption patterns. Use when building developer platforms, improving DevEx, or establishing platform teams.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\platform_engineering\\SKILL.md"
+  },
+  {
+    "name": "pptx",
+    "description": "Presentation creation, editing, and analysis. When Claude needs to work with presentations (.pptx files) for: (1) Creating new presentations, (2) Modifying or editing content, (3) Working with layouts, (4) Adding comments or speaker notes, or any other presentation tasks",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\pptx\\SKILL.md"
+  },
+  {
+    "name": "prisma_orm",
+    "description": "Prisma ORM patterns including Prisma Client usage, queries, mutations, relations, transactions, and schema management. Use when working with Prisma database operations or schema definitions.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\prisma_orm\\SKILL.md"
+  },
+  {
+    "name": "prisma_specialist",
+    "description": "Prisma ORM, schema design, migrations ve type-safe database access.",
+    "category": "database",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\prisma_specialist\\SKILL.md"
+  },
+  {
+    "name": "product_designer",
+    "description": "Kullanıcı deneyimi (UX), arayüz tasarımı (UI) ve ürün stratejisi geliştirme.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\product_designer\\SKILL.md"
+  },
+  {
+    "name": "professional_docs",
+    "description": "Kurumsal belgeler, raporlar ve teklifler için profesyonel dokümantasyon standartları.",
+    "category": "documentation",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\professional_docs\\SKILL.md"
+  },
+  {
+    "name": "project_bootstrapper",
+    "description": "Sets up new projects or improves existing projects with development best practices, tooling, documentation, and workflow automation. Use when user wants to start a new project, improve project structure, add development tooling, or establish professional workflows.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\project_bootstrapper\\SKILL.md"
+  },
+  {
+    "name": "project_management",
+    "description": "This skill should be used when creating or updating PROJECT.md files, planning sprints, defining project goals, or managing project scope. It provides templates and best practices for PROJECT.md-first development.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\project_management\\SKILL.md"
+  },
+  {
+    "name": "project_manager",
+    "description": "Agile/Scrum süreçleri, backlog yönetimi ve paydaş iletişimi.",
+    "category": "management",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\project_manager\\SKILL.md"
+  },
+  {
+    "name": "prompt_engineering",
+    "description": "Engineer effective LLM prompts using zero-shot, few-shot, chain-of-thought, and structured output techniques. Use when building LLM applications requiring reliable outputs, implementing RAG systems, creating AI agents, or optimizing prompt quality and cost. Covers OpenAI, Anthropic, and open-source models with multi-language examples (Python/TypeScript).",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\prompt_engineering\\SKILL.md"
+  },
+  {
+    "name": "prompt_optimizer",
+    "description": "Mevcut promptların token kullanımını ve başarı oranını optimize etme.",
+    "category": "ai",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\prompt_optimizer\\SKILL.md"
+  },
+  {
+    "name": "python_data_stack",
+    "description": "Statistical modeling toolkit. OLS, GLM, logistic, ARIMA, time series, hypothesis tests, diagnostics, AIC/BIC, for rigorous statistical inference and econometric analysis.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\python_data_stack\\SKILL.md"
+  },
+  {
+    "name": "python_developer",
+    "description": "Python best practices, FastAPI, Pandas ve veri bilimi kütüphaneleri kullanımı.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\python_developer\\SKILL.md"
+  },
+  {
+    "name": "python_pro",
+    "description": "Expert Python developer specializing in modern Python 3.11+ with deep expertise in type safety, async programming, testing, and production-grade code. Invoke for Pythonic patterns, type hints, pytest, async/await, dataclasses.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\python_pro\\SKILL.md"
+  },
+  {
+    "name": "quality_validator",
+    "description": "Ship öncesi son kontrol, deliverable validation, compliance. ⚠️ Son kalite kontrolü için kullan. Kod inceleme için → code-review.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\quality_validator\\SKILL.md"
+  },
+  {
+    "name": "rag_architecture",
+    "description": "Design LLM applications using the LangChain framework with agents, memory, and tool integration patterns. Use when building LangChain applications, implementing AI agents, or creating complex LLM workflows.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\rag_architecture\\SKILL.md"
+  },
+  {
+    "name": "rag_implementation",
+    "description": "Build Retrieval-Augmented Generation (RAG) systems for LLM applications with vector databases and semantic search. Use when implementing knowledge-grounded AI, building document Q&A systems, or integrating LLMs with external knowledge bases.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\rag_implementation\\SKILL.md"
+  },
+  {
+    "name": "redis_expert",
+    "description": "Redis caching stratejileri, Pub/Sub ve veri yapıları (Streams, Lists, Hashes).",
+    "category": "database",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\redis_expert\\SKILL.md"
+  },
+  {
+    "name": "refactoring_patterns",
+    "description": "Common refactoring patterns - Extract, Rename, Move ve code smell çözümleri.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\refactoring_patterns\\SKILL.md"
+  },
+  {
+    "name": "refactoring_strategies",
+    "description": "Safe refactoring süreci - test-first, incremental changes ve güvenlik ağı.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\refactoring_strategies\\SKILL.md"
+  },
+  {
+    "name": "regex_builder",
+    "description": "Regular expression oluşturma, test etme, debug ve açıklama rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\regex_builder\\SKILL.md"
+  },
+  {
+    "name": "report_generator",
+    "description": "Executive rapor, stakeholder presentation ve comprehensive documentation oluşturma rehberi.",
+    "category": "business",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\report_generator\\SKILL.md"
+  },
+  {
+    "name": "research_synthesizer",
+    "description": "Araştırma bulgularını özetleme, insight çıkarma ve actionable recommendations oluşturma rehberi.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\research_synthesizer\\SKILL.md"
+  },
+  {
+    "name": "responsive_design",
+    "description": "Build responsive, mobile-first layouts using fluid containers, flexible units, media queries, and touch-friendly design that works across all screen sizes. Use this skill when creating or modifying UI layouts, responsive grids, breakpoint styles, mobile navigation, or any interface that needs to adapt to different screen sizes. Apply when working with responsive CSS, media queries, viewport settings, flexbox/grid layouts, mobile-first styling, breakpoint definitions (mobile, tablet, desktop), touch target sizing, relative units (rem, em, %), image optimization for different screens, or testing layouts across multiple devices. Use for any task involving multi-device support, responsive design patterns, or adaptive layouts.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\responsive_design\\SKILL.md"
+  },
+  {
+    "name": "roadmap_planner",
+    "description": "Implementation roadmap, timeline oluşturma, risk yönetimi ve kaynak planlaması rehberi.",
+    "category": "planning",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\roadmap_planner\\SKILL.md"
+  },
+  {
+    "name": "rust_development",
+    "description": "Rust systems programming, memory safety, Axum/Tokio ve WebAssembly rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\rust_development\\SKILL.md"
+  },
+  {
+    "name": "scientific_thinking",
+    "description": "Bilimsel metod, hipotez, kanıt değerlendirme, bias analizi. ⚠️ Araştırma/analiz için kullan. Mimari karar için → ultrathink-core.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\scientific_thinking\\SKILL.md"
+  },
+  {
+    "name": "scrum_master",
+    "description": "Comprehensive Scrum Master assistant for sprint planning, backlog grooming, retrospectives, capacity planning, and daily standups with intelligent context-aware reporting",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\scrum_master\\SKILL.md"
+  },
+  {
+    "name": "secops_core",
+    "description": "Comprehensive SecOps skill for application security, vulnerability management, compliance, and secure development practices. Includes security scanning, vulnerability assessment, compliance checking, and security automation. Use when implementing security controls, conducting security audits, responding to vulnerabilities, or ensuring compliance requirements.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\secops_core\\SKILL.md"
+  },
+  {
+    "name": "seo_technical",
+    "description": "Performs technical SEO audits covering site speed, crawlability, indexability, mobile-friendliness, security, and structured data. Identifies technical issues preventing optimal search performance.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\seo_technical\\SKILL.md"
+  },
+  {
+    "name": "skill_creator",
+    "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+    "category": "skills",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\skill_creator\\SKILL.md"
+  },
+  {
+    "name": "skill_evaluator",
+    "description": "Evaluates agent skills against Anthropic's best practices. Use when asked to review, evaluate, assess, or audit a skill for quality. Analyzes SKILL.md structure, naming conventions, description quality, content organization, and identifies anti-patterns. Produces actionable improvement recommendations.",
+    "category": "skills",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\skill_evaluator\\SKILL.md"
+  },
+  {
+    "name": "sparc_methodology",
+    "description": "SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) comprehensive development methodology with multi-agent orchestration",
+    "category": "uncategorized",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\sparc_methodology\\SKILL.md"
+  },
+  {
+    "name": "specification_validation",
+    "description": "Spec doğrulama, implementation karşılaştırma ve completeness kontrolü rehberi.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\specification_validation\\SKILL.md"
+  },
+  {
+    "name": "spring_boot",
+    "description": "Expert Spring Boot engineer mastering Spring Boot 3+ with cloud-native patterns. Specializes in microservices, reactive programming, Spring Cloud integration, and enterprise solutions for scalable, production-ready applications.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\spring_boot\\SKILL.md"
+  },
+  {
+    "name": "state_management",
+    "description": "State persistence patterns for autonomous-dev including JSON persistence, atomic writes, file locking, crash recovery, and state versioning. Use when implementing stateful libraries or features requiring persistent state.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\state_management\\SKILL.md"
+  },
+  {
+    "name": "stripe_integration",
+    "description": "Implement Stripe payment processing for robust, PCI-compliant payment flows including checkout, subscriptions, and webhooks. Use when integrating Stripe payments, building subscription systems, or implementing secure checkout flows.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\stripe_integration\\SKILL.md"
+  },
+  {
+    "name": "supabase_patterns",
+    "description": "Guides implementation of Next.js 15 App Router features with Supabase SSR. Helps choose between Server/Client Components, select correct Supabase client, and follow security patterns. Use when building pages, components, or API routes.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\supabase_patterns\\SKILL.md"
+  },
+  {
+    "name": "sync_core",
+    "description": "Multi-file sync - atomic changes, dependency tracking ve conflict resolution.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\sync_core\\SKILL.md"
+  },
+  {
+    "name": "tailwind_mastery",
+    "description": "Tailwind CSS v4, design tokens, responsive patterns ve utility-first CSS best practices.",
+    "category": "design",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\tailwind_mastery\\SKILL.md"
+  },
+  {
+    "name": "tdd_workflow",
+    "description": "Comprehensive Test Driven Development guide. Master testing, debugging, fixing bugs, QA workflows, unit tests, integration tests, and coverage analysis.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\tdd_workflow\\SKILL.md"
+  },
+  {
+    "name": "terraform_engineer",
+    "description": "Senior Terraform engineer for infrastructure as code, multi-cloud provisioning, and modular architecture. Invoke for Terraform modules, state management, provider configuration, and enterprise IaC patterns.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\terraform_engineer\\SKILL.md"
+  },
+  {
+    "name": "testing",
+    "description": "Kapsamlı test stratejileri ve 2025 test araçları. Unit, integration, e2e ve visual testing.",
+    "category": "quality",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\testing\\SKILL.md"
+  },
+  {
+    "name": "typescript_advanced",
+    "description": "TypeScript 5+ advanced patterns, type utilities ve best practices rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\typescript_advanced\\SKILL.md"
+  },
+  {
+    "name": "ultrathink_core",
+    "description": "Derin analiz protokolü - meta-planlama, hipotez üretimi ve kritik değerlendirme.",
+    "category": "thinking",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\ultrathink_core\\SKILL.md"
+  },
+  {
+    "name": "ultrathink_templates",
+    "description": "UltraThink analiz şablonları - hipotez, alternatif, karar ve risk matrisleri.",
+    "category": "thinking",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\ultrathink_templates\\SKILL.md"
+  },
+  {
+    "name": "user_research",
+    "description": "Kullanıcı araştırma metodları, interview teknikleri, persona oluşturma ve usability testing rehberi.",
+    "category": "research",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\user_research\\SKILL.md"
+  },
+  {
+    "name": "vitest_runner",
+    "description": "Modern JavaScript/TypeScript testing with Vitest including mocking and coverage.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\vitest_runner\\SKILL.md"
+  },
+  {
+    "name": "webapp_testing",
+    "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\webapp_testing\\SKILL.md"
+  },
+  {
+    "name": "web_artifacts_builder",
+    "description": "React, Tailwind, shadcn/ui ile karmaşık web artifacts oluşturma rehberi.",
+    "category": "development",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\web_artifacts_builder\\SKILL.md"
+  },
+  {
+    "name": "xlsx",
+    "description": "Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. When Claude needs to work with spreadsheets (.xlsx, .xlsm, .csv, .tsv, etc) for: (1) Creating new spreadsheets with formulas and formatting, (2) Reading or analyzing data, (3) Modify existing spreadsheets while preserving formulas, (4) Data analysis and visualization in spreadsheets, or (5) Recalculating formulas",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\xlsx\\SKILL.md"
+  },
+  {
+    "name": "zustand_state",
+    "description": "Production-tested setup for Zustand state management in React. Includes patterns for persistence, devtools, and TypeScript patterns. Prevents hydration mismatches and render loops.",
+    "category": "auto-healed",
+    "path": "d:\\Downloads\\gh_site_adminka\\.agent\\antigravity-agentic-skills\\skills\\zustand_state\\SKILL.md"
+  }
+]

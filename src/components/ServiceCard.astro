@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { formatServiceDetails } from '../js/utils.js';
 
 interface Props {
@@ -32,13 +33,14 @@ const safeMessage = message.replace(/'/g, "\\'");
 >
   {image && (
     <div class="aspect-card overflow-hidden border-b border-slate-100 flex-shrink-0 relative">
-      <img 
+      <Image 
         src={image} 
         alt={title} 
-        width="600"
-        height="450"
+        width={600}
+        height={450}
         class="w-full h-full object-cover object-center block hover:scale-105 transition-transform duration-700" 
         loading="lazy"
+        decoding="async"
       />
       {priceFrom && (
         <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5">

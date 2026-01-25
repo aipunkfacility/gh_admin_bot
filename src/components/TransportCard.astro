@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { formatServiceDetails } from '../js/utils.js';
 import type { Category } from '../lib/schemas';
 
@@ -44,13 +45,14 @@ function getCategoryColor(slug: string) {
 >
   {image && (
     <div class="aspect-card overflow-hidden relative group flex-shrink-0">
-      <img 
+      <Image 
         src={image} 
         alt={title} 
-        width="600"
-        height="400"
+        width={600}
+        height={400}
         class="w-full h-full object-cover object-center block group-hover:scale-105 transition-transform duration-700" 
         loading="lazy"
+        decoding="async"
       />
       {category && (
         <span class={`absolute top-4 left-4 px-3 py-1 text-xs font-black rounded-lg shadow-sm uppercase tracking-wider ${getCategoryColor(category.slug)}`}>

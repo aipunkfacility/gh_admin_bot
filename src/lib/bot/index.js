@@ -60,37 +60,47 @@ async function showMainMenu(ctx) {
         const meta = await readJsonFile('site-meta.json');
         const services = await readJsonFile('services.json');
 
-        const enabledSections = meta.sections?.filter(s => s.enabled) || [];
-        const activeServices = services.filter(s => s.isActive);
+        const isServiceActive = (id) => services.find(s => s.id === id)?.isActive;
+        const isSectionEnabled = (id) => meta.sections?.find(s => s.id === id)?.enabled ?? true;
 
         const keyboard = [];
 
-        // 1. Сервисы из services.json
-        const serviceMap = {
-            'money-exchange': { text: '💰 Обмен валют', callback_data: 'calc_exchange' },
-            'transfer': { text: '🚖 Трансфер', callback_data: 'transfer_info' },
-            'visa-run': { text: '🛂 Визаран', callback_data: 'visarun_info' }
+        // Определяем все возможные кнопки
+        const buttons = {
+            // Services
+            'money-exchange': { text: '💰 Обмен валют', callback_data: 'calc_exchange', active: isServiceActive('money-exchange') },
+            'visa-run': { text: '🛂 Визаран', callback_data: 'visarun_info', active: isServiceActive('visa-run') },
+            'transfer': { text: '🚖 Трансфер', callback_data: 'transfer_info', active: isServiceActive('transfer') },
+
+            // Sections
+            'transport': { text: '🏍 Аренда байков', callback_data: 'cat_transport', active: isSectionEnabled('transport') },
+            'excursions': { text: '🌴 Экскурсии', callback_data: 'cat_excursions', active: isSectionEnabled('excursions') },
+            'accommodations': { text: '🏨 Жилье', callback_data: 'cat_accommodations', active: isSectionEnabled('accommodations') },
+            'contacts': { text: '📞 Контакты', callback_data: 'contacts', active: isSectionEnabled('contacts') },
+
+            // Static
+            'leave_feedback': { text: '📝 Оставить отзыв', callback_data: 'leave_feedback', active: true }
         };
 
-        // Сохраняем порядок как в services.json
-        for (const service of activeServices) {
-            if (serviceMap[service.id]) {
-                keyboard.push([serviceMap[service.id]]);
-            }
-        }
+        // Макет сетки (Grid Layout)
+        const layout = [
+            ['money-exchange', 'transport'],
+            ['transfer', 'visa-run'],
+            ['excursions', 'accommodations'],
+            ['contacts'],
+            ['leave_feedback']
+        ];
 
-        // 2. Разделы из site-meta
-        const sectionMap = {
-            'transport': { text: '🏍 Транспорт', callback_data: 'cat_transport' },
-            'excursions': { text: '🌴 Экскурсии', callback_data: 'cat_excursions' },
-            'accommodations': { text: '🏨 Жилье', callback_data: 'cat_accommodations' },
-            'contacts': { text: '📞 Контакты', callback_data: 'contacts' }
-        };
-
-        for (const section of enabledSections) {
-            if (sectionMap[section.id]) {
-                keyboard.push([sectionMap[section.id]]);
+        // Генерация клавиатуры по макету
+        for (const rowIds of layout) {
+            const row = [];
+            for (const id of rowIds) {
+                const btn = buttons[id];
+                if (btn && btn.active) {
+                    row.push({ text: btn.text, callback_data: btn.callback_data });
+                }
             }
+            if (row.length > 0) keyboard.push(row);
         }
 
         const message = `👋 Добро пожаловать в Green Hill Tours!

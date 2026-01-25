@@ -57,7 +57,8 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
             <div class="lg:col-span-2 space-y-6">
                 
                 <form id="postForm" class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative">
-                     <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-action via-orange-400 to-amber-500"></div>
+                     <!-- Brand Line -->
+                     <div class="absolute top-0 left-0 w-full h-1.5 bg-[#204732]"></div>
                     
                     <div class="p-8 space-y-8">
                         <!-- Message Text -->
@@ -69,7 +70,7 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                                 name="text" 
                                 required
                                 placeholder="Введите текст поста... Используйте Markdown: *жирный*, _курсив_, [ссылка](url)"
-                                class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-action/50 focus:bg-white focus:shadow-lg focus:shadow-action/10 transition-all font-medium text-dark min-h-[300px] resize-y leading-relaxed"
+                                class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-[#204732]/50 focus:bg-white focus:shadow-lg focus:shadow-[#204732]/10 transition-all font-medium text-dark min-h-[300px] resize-y leading-relaxed"
                             >{item.text}</textarea>
                         </div>
                     </div>
@@ -85,31 +86,30 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                         <i class="ri-image-fill"></i> Медиа
                     </label>
                     
-                    <div class="relative group cursor-pointer" id="imageUploadArea">
+                    <div class="relative group" id="imageUploadArea">
                         <input type="hidden" name="image" id="imageInput" value={item.image}>
                         
-                        <div id="imagePreview" class={`w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-all ${item.image ? 'border-none' : 'hover:border-action/50 hover:bg-orange-50/50'}`}>
+                        <div id="imagePreview" class="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-all mb-4">
                             {item.image ? (
                                 <img src={item.image} class="w-full h-full object-cover" />
                             ) : (
-                                <div class="text-center p-6">
-                                    <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-300 flex items-center justify-center mx-auto mb-3 group-hover:bg-white group-hover:text-action group-hover:scale-110 transition-all shadow-sm">
-                                        <i class="ri-upload-cloud-2-fill text-2xl"></i>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-400 group-hover:text-action transition-colors">Нажмите для загрузки</span>
+                                <div class="text-center p-6 text-slate-300">
+                                    <i class="ri-image-2-line text-4xl"></i>
                                 </div>
                             )}
-                            
-                            <!-- Overlay actions -->
-                             <div class={`absolute inset-0 bg-dark/60 opacity-0 ${item.image ? 'group-hover:opacity-100' : ''} transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm`}>
-                                <button type="button" id="changeImgBtn" class="px-4 py-2 bg-white/20 hover:bg-white text-white hover:text-dark rounded-xl font-bold text-xs backdrop-blur-md transition-all">
-                                    Изменить
-                                </button>
-                                <button type="button" id="removeImgBtn" class="w-9 h-9 bg-rose-500/80 hover:bg-rose-500 text-white rounded-xl flex items-center justify-center transition-all">
-                                    <i class="ri-delete-bin-fill"></i>
-                                </button>
-                            </div>
                         </div>
+
+                        <!-- Explicit Upload Button -->
+                        <button type="button" id="uploadBtn" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                            <i class="ri-upload-2-line text-lg"></i>
+                            {item.image ? 'Заменить фото' : 'Загрузить фото'}
+                        </button>
+
+                        {item.image && (
+                            <button type="button" id="removeImgBtn" class="mt-2 w-full py-2 text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all">
+                                Удалить фото
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -117,8 +117,8 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                 <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 p-6 space-y-6">
                     <div class="flex items-center justify-between">
                          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Статус</label>
-                         <span id="statusBadge" class={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${item.status === 'sent' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
-                            {item.status === 'sent' ? 'Отправлено' : 'Черновик'}
+                         <span id="statusBadge" class={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${item.status === 'sent' ? 'bg-[#204732]/10 text-[#204732]' : 'bg-slate-100 text-slate-500'}`}>
+                            {item.status === 'sent' ? 'Опубликовано' : 'Черновик'}
                          </span>
                     </div>
 
@@ -126,7 +126,7 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                          <button 
                             type="button" 
                             id="saveBtn"
-                            class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[98%] flex items-center justify-center gap-2"
+                            class="w-full py-4 bg-[#204732] hover:bg-[#1f422b] text-white rounded-2xl font-bold shadow-lg shadow-[#204732]/20 transition-all active:scale-[98%] flex items-center justify-center gap-2"
                         >
                             <i class="ri-save-line text-lg"></i>    
                             Сохранить
@@ -136,16 +136,11 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                             <button 
                                 type="button" 
                                 id="sendTgBtn"
-                                class="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[98%] flex items-center justify-center gap-2 group/tg"
+                                class="w-full py-4 bg-[#FF6400] hover:bg-[#ea580c] text-white rounded-2xl font-bold shadow-lg shadow-orange-500/30 transition-all active:scale-[98%] flex items-center justify-center gap-2 group/tg"
                             >
                                 <i class="ri-telegram-fill text-xl group-hover/tg:-translate-y-0.5 group-hover/tg:translate-x-0.5 transition-transform"></i>
-                                {item.status === 'sent' ? 'Отправить повторно' : 'Отправить в Telegram'}
+                                {item.status === 'sent' ? 'Опубликовать повторно' : 'Опубликовать в TG'}
                             </button>
-                        )}
-                         {isCreate && (
-                            <p class="text-center text-[10px] text-slate-400 font-medium px-4">
-                                Сохраните пост, чтобы отправить его в Telegram
-                            </p>
                         )}
                     </div>
                 </div>
@@ -161,31 +156,24 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
         let currentItem = initialItem;
         
         // --- Elements ---
-        const imageUploadArea = document.getElementById('imageUploadArea');
         const fileInput = document.getElementById('fileInput');
         const imageInput = document.getElementById('imageInput');
         const imagePreview = document.getElementById('imagePreview');
-        const changeImgBtn = document.getElementById('changeImgBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
         const removeImgBtn = document.getElementById('removeImgBtn');
         const saveBtn = document.getElementById('saveBtn');
         const sendTgBtn = document.getElementById('sendTgBtn');
         const deleteBtn = document.getElementById('deleteBtn');
-        const form = document.getElementById('postForm');
+        const statusBadge = document.getElementById('statusBadge');
 
         // --- Image Upload Logic ---
         const triggerUpload = () => fileInput.click();
         
-        imageUploadArea.addEventListener('click', (e) => {
-            if (!e.target.closest('button')) triggerUpload();
-        });
+        uploadBtn?.addEventListener('click', triggerUpload);
         
-        changeImgBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            triggerUpload();
-        });
-
+        // Removed area click to prevent accidental uploads, rely on button
+        
         removeImgBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
             updateImage('');
         });
 
@@ -193,12 +181,14 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
             if (!fileInput.files.length) return;
             const file = fileInput.files[0];
             
-            // Show loading state
-            imagePreview.innerHTML = '<div class="animate-pulse"><i class="ri-loader-4-line text-3xl text-action animate-spin"></i></div>';
+            // Show loading state in button
+            const originalBtnText = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Загрузка...';
+            uploadBtn.disabled = true;
             
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('folder', 'posts'); // Organize posts images
+            formData.append('folder', 'posts'); 
 
             try {
                 const res = await fetch('/api/upload', { method: 'POST', body: formData });
@@ -209,12 +199,15 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                     window.showToast('Изображение загружено');
                 } else {
                     window.showToast('Ошибка загрузки', 'error');
-                    updateImage(''); // Reset on error
+                    updateImage('');
                 }
             } catch (err) {
                 console.error(err);
                 window.showToast('Ошибка сети', 'error');
                 updateImage('');
+            } finally {
+                uploadBtn.innerHTML = originalBtnText;
+                uploadBtn.disabled = false;
             }
         });
 
@@ -223,30 +216,34 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
             currentItem.image = url;
             
             if (url) {
-                imagePreview.innerHTML = `
-                    <img src="${url}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
-                        <button type="button" id="changeImgBtn" class="px-4 py-2 bg-white/20 hover:bg-white text-white hover:text-dark rounded-xl font-bold text-xs backdrop-blur-md transition-all">Изменить</button>
-                        <button type="button" id="removeImgBtn" class="w-9 h-9 bg-rose-500/80 hover:bg-rose-500 text-white rounded-xl flex items-center justify-center transition-all"><i class="ri-delete-bin-fill"></i></button>
-                    </div>
-                `;
-                // Re-bind events to new buttons
-                imagePreview.querySelector('#changeImgBtn').addEventListener('click', (e) => { e.stopPropagation(); triggerUpload(); });
-                imagePreview.querySelector('#removeImgBtn').addEventListener('click', (e) => { e.stopPropagation(); updateImage(''); });
+                imagePreview.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
                 
-                imagePreview.classList.add('border-none');
-                imagePreview.classList.remove('hover:border-action/50', 'hover:bg-orange-50/50');
+                // Update buttons state
+                if (uploadBtn) {
+                     uploadBtn.innerHTML = '<i class="ri-upload-2-line text-lg"></i> Заменить фото';
+                }
+                
+                // Check if remove button exists or needs to be added
+                 const container = document.getElementById('imageUploadArea');
+                 if (!container.querySelector('#removeImgBtn')) {
+                     const removeBtn = document.createElement('button');
+                     removeBtn.type = 'button';
+                     removeBtn.id = 'removeImgBtn';
+                     removeBtn.className = 'mt-2 w-full py-2 text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all';
+                     removeBtn.textContent = 'Удалить фото';
+                     removeBtn.onclick = () => updateImage('');
+                     container.appendChild(removeBtn);
+                 }
             } else {
                 imagePreview.innerHTML = `
-                    <div class="text-center p-6">
-                        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-300 flex items-center justify-center mx-auto mb-3 group-hover:bg-white group-hover:text-action group-hover:scale-110 transition-all shadow-sm">
-                            <i class="ri-upload-cloud-2-fill text-2xl"></i>
-                        </div>
-                        <span class="text-xs font-bold text-slate-400 group-hover:text-action transition-colors">Нажмите для загрузки</span>
+                    <div class="text-center p-6 text-slate-300">
+                        <i class="ri-image-2-line text-4xl"></i>
                     </div>
                 `;
-                imagePreview.classList.remove('border-none');
-                imagePreview.classList.add('hover:border-action/50', 'hover:bg-orange-50/50');
+                 if (uploadBtn) {
+                     uploadBtn.innerHTML = '<i class="ri-upload-2-line text-lg"></i> Загрузить фото';
+                }
+                document.getElementById('removeImgBtn')?.remove();
             }
         }
 
@@ -314,11 +311,11 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
-                    window.showToast('✅ Успешно отправлено!', 'success');
-                    // Update UI status
-                    document.getElementById('statusBadge').className = 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-600';
-                    document.getElementById('statusBadge').textContent = 'Отправлено';
-                    sendTgBtn.innerHTML = '<i class="ri-telegram-fill text-xl"></i> Отправить повторно';
+                    window.showToast('✅ Успешно опубликовано!', 'success');
+                    // Update UI status using Brand Green
+                    statusBadge.className = 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#204732]/10 text-[#204732]';
+                    statusBadge.textContent = 'Опубликовано';
+                    sendTgBtn.innerHTML = '<i class="ri-telegram-fill text-xl"></i> Опубликовать повторно';
                 } else {
                     window.showToast(data.error || 'Ошибка отправки', 'error');
                     sendTgBtn.innerHTML = originalText;

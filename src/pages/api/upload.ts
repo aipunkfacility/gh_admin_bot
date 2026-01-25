@@ -6,7 +6,7 @@ import { checkAuth, unauthorizedResponse } from '../../lib/auth';
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_FOLDERS = ['uploads', 'tours', 'hotels', 'rentals', 'services', 'transport'];
+const ALLOWED_FOLDERS = ['uploads', 'tours', 'hotels', 'rentals', 'services', 'transport', 'posts'];
 
 export const POST: APIRoute = async ({ request }) => {
     if (!checkAuth(request)) {

@@ -1,0 +1,353 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getItem } from '../../../lib/data-store';
+
+const { id } = Astro.params;
+const isCreate = !id || id === 'create';
+
+let item = {
+    id: isCreate ? '' : id,
+    text: '',
+    image: '',
+    status: 'draft',
+    tgMessageId: ''
+};
+
+if (!isCreate) {
+    const data = await getItem('posts.json', id);
+    if (!data) {
+        return Astro.redirect('/admin/posts');
+    }
+    item = { ...item, ...data };
+}
+
+const pageTitle = isCreate ? 'Новый пост' : 'Редактирование поста';
+---
+
+<AdminLayout title={pageTitle}>
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <a href="/admin/posts" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-action transition-colors mb-3">
+                    <i class="ri-arrow-left-line"></i>
+                    Назад к списку
+                </a>
+                <h1 class="text-3xl font-black text-dark tracking-tight leading-none flex items-center gap-3">
+                    <span class="text-action"><i class="ri-telegram-fill"></i></span>
+                    {isCreate ? 'Создание поста' : 'Редактирование поста'}
+                </h1>
+                <div class="h-1.5 w-20 bg-gradient-to-r from-action to-amber-500 rounded-full mt-4"></div>
+            </div>
+            
+            {!isCreate && (
+                <button 
+                    id="deleteBtn" 
+                    data-id={id} 
+                    class="group px-6 py-4 bg-rose-50 hover:bg-rose-100 text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center gap-2 border-2 border-rose-100 hover:border-rose-200"
+                >
+                    <i class="ri-delete-bin-fill text-lg group-hover:scale-110 transition-transform"></i>
+                    Удалить
+                </button>
+            )}
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Editor -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <form id="postForm" class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative">
+                     <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-action via-orange-400 to-amber-500"></div>
+                    
+                    <div class="p-8 space-y-8">
+                        <!-- Message Text -->
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                Текст поста (Markdown) <span class="text-rose-500">*</span>
+                            </label>
+                            <textarea 
+                                name="text" 
+                                required
+                                placeholder="Введите текст поста... Используйте Markdown: *жирный*, _курсив_, [ссылка](url)"
+                                class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-action/50 focus:bg-white focus:shadow-lg focus:shadow-action/10 transition-all font-medium text-dark min-h-[300px] resize-y leading-relaxed"
+                            >{item.text}</textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Column: Media, Status & Actions -->
+            <div class="space-y-6">
+                
+                <!-- Image Upload -->
+                <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 p-6 space-y-4">
+                    <label class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i class="ri-image-fill"></i> Медиа
+                    </label>
+                    
+                    <div class="relative group cursor-pointer" id="imageUploadArea">
+                        <input type="hidden" name="image" id="imageInput" value={item.image}>
+                        
+                        <div id="imagePreview" class={`w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-all ${item.image ? 'border-none' : 'hover:border-action/50 hover:bg-orange-50/50'}`}>
+                            {item.image ? (
+                                <img src={item.image} class="w-full h-full object-cover" />
+                            ) : (
+                                <div class="text-center p-6">
+                                    <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-300 flex items-center justify-center mx-auto mb-3 group-hover:bg-white group-hover:text-action group-hover:scale-110 transition-all shadow-sm">
+                                        <i class="ri-upload-cloud-2-fill text-2xl"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-400 group-hover:text-action transition-colors">Нажмите для загрузки</span>
+                                </div>
+                            )}
+                            
+                            <!-- Overlay actions -->
+                             <div class={`absolute inset-0 bg-dark/60 opacity-0 ${item.image ? 'group-hover:opacity-100' : ''} transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm`}>
+                                <button type="button" id="changeImgBtn" class="px-4 py-2 bg-white/20 hover:bg-white text-white hover:text-dark rounded-xl font-bold text-xs backdrop-blur-md transition-all">
+                                    Изменить
+                                </button>
+                                <button type="button" id="removeImgBtn" class="w-9 h-9 bg-rose-500/80 hover:bg-rose-500 text-white rounded-xl flex items-center justify-center transition-all">
+                                    <i class="ri-delete-bin-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Publish -->
+                <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 p-6 space-y-6">
+                    <div class="flex items-center justify-between">
+                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Статус</label>
+                         <span id="statusBadge" class={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${item.status === 'sent' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                            {item.status === 'sent' ? 'Отправлено' : 'Черновик'}
+                         </span>
+                    </div>
+
+                    <div class="space-y-3">
+                         <button 
+                            type="button" 
+                            id="saveBtn"
+                            class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[98%] flex items-center justify-center gap-2"
+                        >
+                            <i class="ri-save-line text-lg"></i>    
+                            Сохранить
+                        </button>
+                        
+                        {!isCreate && (
+                            <button 
+                                type="button" 
+                                id="sendTgBtn"
+                                class="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[98%] flex items-center justify-center gap-2 group/tg"
+                            >
+                                <i class="ri-telegram-fill text-xl group-hover/tg:-translate-y-0.5 group-hover/tg:translate-x-0.5 transition-transform"></i>
+                                {item.status === 'sent' ? 'Отправить повторно' : 'Отправить в Telegram'}
+                            </button>
+                        )}
+                         {isCreate && (
+                            <p class="text-center text-[10px] text-slate-400 font-medium px-4">
+                                Сохраните пост, чтобы отправить его в Telegram
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="fileInput" accept="image/*" class="hidden" />
+
+    <script define:vars={{ initialItem: item, isCreate }}>
+        let currentItem = initialItem;
+        
+        // --- Elements ---
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const changeImgBtn = document.getElementById('changeImgBtn');
+        const removeImgBtn = document.getElementById('removeImgBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const sendTgBtn = document.getElementById('sendTgBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const form = document.getElementById('postForm');
+
+        // --- Image Upload Logic ---
+        const triggerUpload = () => fileInput.click();
+        
+        imageUploadArea.addEventListener('click', (e) => {
+            if (!e.target.closest('button')) triggerUpload();
+        });
+        
+        changeImgBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            triggerUpload();
+        });
+
+        removeImgBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updateImage('');
+        });
+
+        fileInput.addEventListener('change', async () => {
+            if (!fileInput.files.length) return;
+            const file = fileInput.files[0];
+            
+            // Show loading state
+            imagePreview.innerHTML = '<div class="animate-pulse"><i class="ri-loader-4-line text-3xl text-action animate-spin"></i></div>';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'posts'); // Organize posts images
+
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if (data.success) {
+                    updateImage(data.url);
+                    window.showToast('Изображение загружено');
+                } else {
+                    window.showToast('Ошибка загрузки', 'error');
+                    updateImage(''); // Reset on error
+                }
+            } catch (err) {
+                console.error(err);
+                window.showToast('Ошибка сети', 'error');
+                updateImage('');
+            }
+        });
+
+        function updateImage(url) {
+            imageInput.value = url;
+            currentItem.image = url;
+            
+            if (url) {
+                imagePreview.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
+                        <button type="button" id="changeImgBtn" class="px-4 py-2 bg-white/20 hover:bg-white text-white hover:text-dark rounded-xl font-bold text-xs backdrop-blur-md transition-all">Изменить</button>
+                        <button type="button" id="removeImgBtn" class="w-9 h-9 bg-rose-500/80 hover:bg-rose-500 text-white rounded-xl flex items-center justify-center transition-all"><i class="ri-delete-bin-fill"></i></button>
+                    </div>
+                `;
+                // Re-bind events to new buttons
+                imagePreview.querySelector('#changeImgBtn').addEventListener('click', (e) => { e.stopPropagation(); triggerUpload(); });
+                imagePreview.querySelector('#removeImgBtn').addEventListener('click', (e) => { e.stopPropagation(); updateImage(''); });
+                
+                imagePreview.classList.add('border-none');
+                imagePreview.classList.remove('hover:border-action/50', 'hover:bg-orange-50/50');
+            } else {
+                imagePreview.innerHTML = `
+                    <div class="text-center p-6">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-300 flex items-center justify-center mx-auto mb-3 group-hover:bg-white group-hover:text-action group-hover:scale-110 transition-all shadow-sm">
+                            <i class="ri-upload-cloud-2-fill text-2xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400 group-hover:text-action transition-colors">Нажмите для загрузки</span>
+                    </div>
+                `;
+                imagePreview.classList.remove('border-none');
+                imagePreview.classList.add('hover:border-action/50', 'hover:bg-orange-50/50');
+            }
+        }
+
+        // --- Save Logic ---
+        saveBtn.addEventListener('click', async () => {
+             const form = document.querySelector('form');
+             if (!form.reportValidity()) return;
+
+             const text = form.querySelector('[name="text"]').value;
+             const image = imageInput.value;
+             const id = currentItem.id || (isCreate ? Date.now().toString() : '');
+
+             const payload = {
+                 ...currentItem,
+                 id,
+                 text,
+                 image
+             };
+
+             saveBtn.disabled = true;
+             saveBtn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Сохранение...';
+
+             try {
+                 const res = await fetch(`/api/posts/${payload.id}`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify(payload)
+                 });
+                 
+                 if (res.ok) {
+                     window.showToast('Пост сохранен!');
+                     if (isCreate) {
+                         setTimeout(() => window.location.href = `/admin/posts/${payload.id}`, 500);
+                     }
+                 } else {
+                     window.showToast('Ошибка сохранения', 'error');
+                 }
+             } catch (err) {
+                 window.showToast('Ошибка сети', 'error');
+             } finally {
+                 saveBtn.disabled = false;
+                 saveBtn.innerHTML = '<i class="ri-save-line text-lg"></i> Сохранить';
+             }
+        });
+
+        // --- Send to Telegram Logic ---
+        sendTgBtn?.addEventListener('click', async () => {
+            const confirmed = await window.showConfirm(
+                'Вы уверены, что хотите опубликовать этот пост в Telegram канале?',
+                'Публикация'
+            );
+            if (!confirmed) return;
+
+            sendTgBtn.disabled = true;
+            const originalText = sendTgBtn.innerHTML;
+            sendTgBtn.innerHTML = '<i class="ri-loader-4-line animate-spin text-xl"></i> Отправка...';
+
+            try {
+                const res = await fetch('/api/bot/send-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ postId: currentItem.id })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
+                    window.showToast('✅ Успешно отправлено!', 'success');
+                    // Update UI status
+                    document.getElementById('statusBadge').className = 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-600';
+                    document.getElementById('statusBadge').textContent = 'Отправлено';
+                    sendTgBtn.innerHTML = '<i class="ri-telegram-fill text-xl"></i> Отправить повторно';
+                } else {
+                    window.showToast(data.error || 'Ошибка отправки', 'error');
+                    sendTgBtn.innerHTML = originalText;
+                }
+            } catch (err) {
+                console.error(err);
+                window.showToast('Ошибка сети', 'error');
+                sendTgBtn.innerHTML = originalText;
+            } finally {
+                sendTgBtn.disabled = false;
+            }
+        });
+
+        // --- Delete Logic ---
+        deleteBtn?.addEventListener('click', async () => {
+             const confirmed = await window.showConfirm('Точно удалить этот пост?', 'Удаление');
+             if (!confirmed) return;
+
+             try {
+                 const res = await fetch(`/api/posts/${currentItem.id}`, { method: 'DELETE' });
+                 if (res.ok) {
+                     window.location.href = '/admin/posts';
+                 } else {
+                     window.showToast('Ошибка удаления', 'error');
+                 }
+             } catch {
+                 window.showToast('Ошибка сети', 'error');
+             }
+        });
+
+    </script>
+</AdminLayout>

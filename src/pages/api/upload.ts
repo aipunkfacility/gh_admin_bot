@@ -42,14 +42,10 @@ export const POST: APIRoute = async ({ request }) => {
 
         const buffer = Buffer.from(await file.arrayBuffer());
 
-        // Sanitize filename: remove .., /, \ and special characters, keep only letters, numbers, dashes, dots
-        const baseName = path.basename(file.name);
-        const sanitizedName = baseName
-            .replace(/[\\/]/g, '') // Remove slashes
-            .replace(/\.\.+/g, '.') // Remove multiple dots
-            .replace(/[^a-zA-Z0-9.-]/g, ''); // Keep only safe characters
+        // Generate safe unique filename
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const filename = `file-${uniqueSuffix}${ext}`;
 
-        const filename = sanitizedName;
         const uploadDir = path.join(process.cwd(), 'public/images', folder);
 
         try {

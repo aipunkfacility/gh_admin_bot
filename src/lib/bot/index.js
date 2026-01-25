@@ -214,6 +214,7 @@ async function showTransportList(ctx, page, categoryId) {
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
+            const imageUrl = getFullImageUrl(item.image);
             const caption = `🏍 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.useCases || '')}\n\n💰 ${escapeMarkdown(item.pricePerDay || 'уточняйте')}/день`;
 
             const keyboard = [
@@ -221,10 +222,18 @@ async function showTransportList(ctx, page, categoryId) {
                 [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
             ];
 
-            await ctx.reply(caption, {
-                parse_mode: 'Markdown',
-                reply_markup: { inline_keyboard: keyboard },
-            });
+            try {
+                await ctx.replyWithPhoto(imageUrl, {
+                    caption,
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            } catch {
+                await ctx.reply(caption, {
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: keyboard },
+                });
+            }
         }
 
         // Навигация (Новая система!)

@@ -3,3 +3,33 @@ dist/
 .DS_Store
 *.log
 .env*
+.agent/
+.vscode/
+
+# Build caches
+.astro/
+.orchids/
+.pytest_cache/
+__pycache__/
+
+# Temporary/Backup files
+*.bak
+*.tmp
+deploy.zip
+
+# Lighthouse reports
+lighthouse-report*/
+*.report.html
+*.report.json
+
+# Local scripts
+debug_*.py
+debug_*.ps1
+check_*.ps1
+install_*.ps1
+deploy.ps1
+extract_skills_meta.py
+fix_skills_yaml.py
+generate_md_directory.py
+ANTIGRAVITY_SKILLS.md
+skills_data.json

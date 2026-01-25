@@ -667,6 +667,11 @@ bot.action('calc_exchange', wrapHandler('calc_exchange', async (ctx) => {
     return ctx.scene.enter('exchange_calculator');
 }));
 
+// Оставить отзыв
+bot.action('leave_feedback', wrapHandler('leave_feedback', async (ctx) => {
+    return ctx.scene.enter('feedback_wizard');
+}));
+
 // ========== БРОНИРОВАНИЕ ==========
 
 // Бронирование обмена валют

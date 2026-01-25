@@ -143,5 +143,74 @@ ${formatNumber(amount)} ${currency.code} = ${formatNumber(result)} VND${addition
     })
 );
 
+// ========== ОТЗЫВЫ (WizardScene) ==========
+
+const feedbackWizard = new Scenes.WizardScene(
+    'feedback_wizard',
+
+    // ===== ШАГ 1: Запрос отзыва =====
+    wrapHandler('feedback_step1', async (ctx) => {
+        await ctx.reply('📝 Напишите ваш отзыв или предложение одним сообщением:', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '❌ Отмена', callback_data: 'cancel_feedback' }],
+                ],
+            },
+        });
+        return ctx.wizard.next();
+    }),
+
+    // ===== ШАГ 2: Обработка и отправка =====
+    wrapHandler('feedback_step2', async (ctx) => {
+        if (ctx.callbackQuery && ctx.callbackQuery.data === 'cancel_feedback') {
+            await ctx.reply('❌ Оставление отзыва отменено.');
+            return ctx.scene.leave();
+        }
+
+        if (!ctx.message || !ctx.message.text) {
+            await ctx.reply('⚠️ Пожалуйста, отправьте текстовое сообщение.');
+            return;
+        }
+
+        const feedbackText = ctx.message.text;
+        const username = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+        const userId = ctx.from.id;
+
+        const adminMessage = `📝 НОВЫЙ ОТЗЫВ
+        
+👤 От: ${username} (ID: ${userId})
+💬 Текст:
+${feedbackText}`;
+
+        try {
+            // Отправка админам
+            let admins = [];
+            try {
+                admins = await readJsonFile('admins.json');
+            } catch {
+                if (process.env.TELEGRAM_CHANNEL_ID) admins = [process.env.TELEGRAM_CHANNEL_ID];
+            }
+
+            for (const adminId of admins) {
+                await ctx.telegram.sendMessage(adminId, adminMessage).catch(err => console.error('Failed to send feedback to admin:', err));
+            }
+
+            await ctx.reply('✅ Спасибо большое! Ваш отзыв отправлен команде Green Hill Tours. Нам важно ваше мнение!', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🏠 Главное меню', callback_data: 'back_to_menu' }],
+                    ],
+                },
+            });
+        } catch (error) {
+            console.error('Error sending feedback:', error);
+            await ctx.reply('❌ Произошла ошибка при отправке. Попробуйте позже.');
+        }
+
+        return ctx.scene.leave();
+    })
+);
+
+
 // Экспорт сцены
-export const stage = new Scenes.Stage([exchangeWizard]);
+export const stage = new Scenes.Stage([exchangeWizard, feedbackWizard]);

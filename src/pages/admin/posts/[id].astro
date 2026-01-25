@@ -7,6 +7,7 @@ const isCreate = !id || id === 'create';
 
 let item = {
     id: isCreate ? '' : id,
+    title: '', // Added title field
     text: '',
     image: '',
     status: 'draft',
@@ -25,126 +26,150 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
 ---
 
 <AdminLayout title={pageTitle}>
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <a href="/admin/posts" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-action transition-colors mb-3">
-                    <i class="ri-arrow-left-line"></i>
-                    Назад к списку
-                </a>
-                <h1 class="text-3xl font-black text-dark tracking-tight leading-none flex items-center gap-3">
-                    <span class="text-action"><i class="ri-telegram-fill"></i></span>
-                    {isCreate ? 'Создание поста' : 'Редактирование поста'}
-                </h1>
-                <div class="h-1.5 w-20 bg-gradient-to-r from-action to-amber-500 rounded-full mt-4"></div>
-            </div>
-            
-            {!isCreate && (
-                <button 
-                    id="deleteBtn" 
-                    data-id={id} 
-                    class="group px-6 py-4 bg-rose-50 hover:bg-rose-100 text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center gap-2 border-2 border-rose-100 hover:border-rose-200"
-                >
-                    <i class="ri-delete-bin-fill text-lg group-hover:scale-110 transition-transform"></i>
-                    Удалить
-                </button>
-            )}
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Editor -->
-            <div class="lg:col-span-2 space-y-6">
-                
-                <form id="postForm" class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative">
-                     <!-- Brand Line -->
-                     <div class="absolute top-0 left-0 w-full h-1.5 bg-[#204732]"></div>
-                    
-                    <div class="p-8 space-y-8">
-                        <!-- Message Text -->
-                        <div class="space-y-3">
-                            <label class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                Текст поста (Markdown) <span class="text-rose-500">*</span>
-                            </label>
-                            <textarea 
-                                name="text" 
-                                required
-                                placeholder="Введите текст поста... Используйте Markdown: *жирный*, _курсив_, [ссылка](url)"
-                                class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-[#204732]/50 focus:bg-white focus:shadow-lg focus:shadow-[#204732]/10 transition-all font-medium text-dark min-h-[300px] resize-y leading-relaxed"
-                            >{item.text}</textarea>
+    <div class="max-w-7xl mx-auto pb-20 relative">
+        <!-- Sticky Header -->
+        <div class="max-w-6xl mx-auto">
+            <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 -mx-6 px-6 py-4 mb-8 flex items-center justify-between transition-all">
+                <div class="flex items-center gap-4">
+                    <a href="/admin/posts" class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
+                        <i class="ri-arrow-left-line text-lg"></i>
+                    </a>
+                    <div>
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">
+                            Посты
                         </div>
+                        <h1 class="text-xl font-extrabold text-dark tracking-tight leading-none flex items-center gap-2">
+                             {isCreate ? '✨ Новый пост' : '✏️ Редактирование'}
+                        </h1>
                     </div>
-                </form>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                     {!isCreate && (
+                        <button 
+                            type="button" 
+                            id="headerSyncBtn"
+                            class="px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-[98%] flex items-center justify-center border border-blue-400"
+                            title="Отправить в Telegram"
+                        >
+                            <i class="ri-telegram-fill text-xl"></i>
+                            <span class="hidden sm:inline ml-2 text-xs uppercase tracking-widest">TG Sync</span>
+                        </button>
+                    )}
+
+                    <button 
+                        type="button" 
+                        id="headerSaveBtn" 
+                        class="px-8 py-3 bg-action hover:bg-action-hover text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-xl shadow-orange-500/20 transition-all active:scale-[98%] flex items-center gap-2"
+                    >
+                        <i class="ri-save-line text-lg"></i>
+                        <span>Сохранить</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Right Column: Media, Status & Actions -->
-            <div class="space-y-6">
-                
-                <!-- Image Upload -->
-                <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 p-6 space-y-4">
-                    <label class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <i class="ri-image-fill"></i> Медиа
-                    </label>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column: Editor -->
+                <div class="lg:col-span-2 space-y-6">
                     
-                    <div class="relative group" id="imageUploadArea">
-                        <input type="hidden" name="image" id="imageInput" value={item.image}>
+                    <form id="postForm" class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative">
+                         <!-- Brand Line -->
+                         <div class="absolute top-0 left-0 w-full h-1.5 bg-[#204732]"></div>
                         
-                        <div id="imagePreview" class="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-all mb-4">
-                            {item.image ? (
-                                <img src={item.image} class="w-full h-full object-cover" />
-                            ) : (
-                                <div class="text-center p-6 text-slate-300">
-                                    <i class="ri-image-2-line text-4xl"></i>
-                                </div>
+                        <div class="p-8 space-y-8">
+                            <!-- Title Input -->
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Заголовок (для админки)
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="title" 
+                                    value={item.title || ''}
+                                    placeholder="Например: Акция на майские"
+                                    class="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-[#204732]/50 focus:bg-white focus:shadow-lg focus:shadow-[#204732]/10 transition-all font-bold text-dark"
+                                />
+                            </div>
+
+                            <!-- Message Text -->
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Текст поста (Markdown) <span class="text-rose-500">*</span>
+                                </label>
+                                <textarea 
+                                    name="text" 
+                                    required
+                                    placeholder="Введите текст поста... Используйте Markdown: *жирный*, _курсив_, [ссылка](url)"
+                                    class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-[#204732]/50 focus:bg-white focus:shadow-lg focus:shadow-[#204732]/10 transition-all font-medium text-dark min-h-[300px] resize-y leading-relaxed"
+                                >{item.text}</textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+    
+                <!-- Right Column: Media, Status & Actions -->
+                <div class="space-y-6">
+                    
+                    <!-- Image Upload -->
+                    <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 p-6 space-y-4">
+                        <label class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <i class="ri-image-fill"></i> Медиа
+                        </label>
+                        
+                        <div class="relative group" id="imageUploadArea">
+                            <input type="hidden" name="image" id="imageInput" value={item.image}>
+                            
+                            <div id="imagePreview" class="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-all mb-4">
+                                {item.image ? (
+                                    <img src={item.image} class="w-full h-full object-cover" />
+                                ) : (
+                                    <div class="text-center p-6 text-slate-300">
+                                        <i class="ri-image-2-line text-4xl"></i>
+                                    </div>
+                                )}
+                            </div>
+    
+                            <!-- Explicit Upload Button -->
+                            <button type="button" id="uploadBtn" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                                <i class="ri-upload-2-line text-lg"></i>
+                                {item.image ? 'Заменить фото' : 'Загрузить фото'}
+                            </button>
+    
+                            {item.image && (
+                                <button type="button" id="removeImgBtn" class="mt-2 w-full py-2 text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all">
+                                    Удалить фото
+                                </button>
                             )}
                         </div>
-
-                        <!-- Explicit Upload Button -->
-                        <button type="button" id="uploadBtn" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
-                            <i class="ri-upload-2-line text-lg"></i>
-                            {item.image ? 'Заменить фото' : 'Загрузить фото'}
-                        </button>
-
-                        {item.image && (
-                            <button type="button" id="removeImgBtn" class="mt-2 w-full py-2 text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all">
-                                Удалить фото
-                            </button>
-                        )}
                     </div>
-                </div>
-
-                <!-- Status & Publish -->
-                <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 p-6 space-y-6">
-                    <div class="flex items-center justify-between">
-                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Статус</label>
-                         <span id="statusBadge" class={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${item.status === 'sent' ? 'bg-[#204732]/10 text-[#204732]' : 'bg-slate-100 text-slate-500'}`}>
-                            {item.status === 'sent' ? 'Опубликовано' : 'Черновик'}
-                         </span>
+    
+                    <!-- Status -->
+                    <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 p-6 space-y-6">
+                        <div class="flex items-center justify-between">
+                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Статус</label>
+                             <span id="statusBadge" class={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${item.status === 'sent' ? 'bg-[#204732]/10 text-[#204732]' : 'bg-slate-100 text-slate-500'}`}>
+                                {item.status === 'sent' ? 'Опубликовано' : 'Черновик'}
+                             </span>
+                        </div>
                     </div>
 
-                    <div class="space-y-3">
-                         <button 
-                            type="button" 
-                            id="saveBtn"
-                            class="w-full py-4 bg-[#204732] hover:bg-[#1f422b] text-white rounded-2xl font-bold shadow-lg shadow-[#204732]/20 transition-all active:scale-[98%] flex items-center justify-center gap-2"
-                        >
-                            <i class="ri-save-line text-lg"></i>    
-                            Сохранить
-                        </button>
-                        
-                        {!isCreate && (
+                     <!-- Delete Zone -->
+                    {!isCreate && (
+                        <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 space-y-4">
+                            <h3 class="text-xs font-black text-rose-400 uppercase tracking-widest">Опасная зона</h3>
                             <button 
                                 type="button" 
-                                id="sendTgBtn"
-                                class="w-full py-4 bg-[#FF6400] hover:bg-[#ea580c] text-white rounded-2xl font-bold shadow-lg shadow-orange-500/30 transition-all active:scale-[98%] flex items-center justify-center gap-2 group/tg"
+                                id="deleteBtn" 
+                                data-id={id} 
+                                class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
                             >
-                                <i class="ri-telegram-fill text-xl group-hover/tg:-translate-y-0.5 group-hover/tg:translate-x-0.5 transition-transform"></i>
-                                {item.status === 'sent' ? 'Опубликовать повторно' : 'Опубликовать в TG'}
+                                <i class="ri-delete-bin-fill text-lg"></i>
+                                Удалить пост
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
+    
                 </div>
-
             </div>
         </div>
     </div>
@@ -161,17 +186,19 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
         const imagePreview = document.getElementById('imagePreview');
         const uploadBtn = document.getElementById('uploadBtn');
         const removeImgBtn = document.getElementById('removeImgBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const sendTgBtn = document.getElementById('sendTgBtn');
+        
+        // Header Buttons
+        const headerSaveBtn = document.getElementById('headerSaveBtn');
+        const headerSyncBtn = document.getElementById('headerSyncBtn');
+        
         const deleteBtn = document.getElementById('deleteBtn');
         const statusBadge = document.getElementById('statusBadge');
+        const form = document.getElementById('postForm');
 
         // --- Image Upload Logic ---
         const triggerUpload = () => fileInput.click();
         
         uploadBtn?.addEventListener('click', triggerUpload);
-        
-        // Removed area click to prevent accidental uploads, rely on button
         
         removeImgBtn?.addEventListener('click', (e) => {
             updateImage('');
@@ -218,12 +245,10 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
             if (url) {
                 imagePreview.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
                 
-                // Update buttons state
                 if (uploadBtn) {
                      uploadBtn.innerHTML = '<i class="ri-upload-2-line text-lg"></i> Заменить фото';
                 }
                 
-                // Check if remove button exists or needs to be added
                  const container = document.getElementById('imageUploadArea');
                  if (!container.querySelector('#removeImgBtn')) {
                      const removeBtn = document.createElement('button');
@@ -247,24 +272,26 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
             }
         }
 
-        // --- Save Logic ---
-        saveBtn.addEventListener('click', async () => {
-             const form = document.querySelector('form');
+        // --- Save Logic (Header) ---
+        headerSaveBtn?.addEventListener('click', async () => {
              if (!form.reportValidity()) return;
 
              const text = form.querySelector('[name="text"]').value;
+             const title = form.querySelector('[name="title"]').value; // Capture title
              const image = imageInput.value;
              const id = currentItem.id || (isCreate ? Date.now().toString() : '');
 
              const payload = {
                  ...currentItem,
                  id,
+                 title,
                  text,
                  image
              };
 
-             saveBtn.disabled = true;
-             saveBtn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Сохранение...';
+             headerSaveBtn.disabled = true;
+             const originalText = headerSaveBtn.innerHTML;
+             headerSaveBtn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Сохранение...';
 
              try {
                  const res = await fetch(`/api/posts/${payload.id}`, {
@@ -284,22 +311,22 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
              } catch (err) {
                  window.showToast('Ошибка сети', 'error');
              } finally {
-                 saveBtn.disabled = false;
-                 saveBtn.innerHTML = '<i class="ri-save-line text-lg"></i> Сохранить';
+                 headerSaveBtn.disabled = false;
+                 headerSaveBtn.innerHTML = originalText;
              }
         });
 
-        // --- Send to Telegram Logic ---
-        sendTgBtn?.addEventListener('click', async () => {
+        // --- Sync/Send to Telegram Logic (Header) ---
+        headerSyncBtn?.addEventListener('click', async () => {
             const confirmed = await window.showConfirm(
                 'Вы уверены, что хотите опубликовать этот пост в Telegram канале?',
                 'Публикация'
             );
             if (!confirmed) return;
 
-            sendTgBtn.disabled = true;
-            const originalText = sendTgBtn.innerHTML;
-            sendTgBtn.innerHTML = '<i class="ri-loader-4-line animate-spin text-xl"></i> Отправка...';
+            headerSyncBtn.disabled = true;
+            const originalText = headerSyncBtn.innerHTML;
+            headerSyncBtn.innerHTML = '<i class="ri-loader-4-line animate-spin text-xl"></i>';
 
             try {
                 const res = await fetch('/api/bot/send-post', {
@@ -312,20 +339,20 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                 
                 if (res.ok && data.success) {
                     window.showToast('✅ Успешно опубликовано!', 'success');
-                    // Update UI status using Brand Green
-                    statusBadge.className = 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#204732]/10 text-[#204732]';
-                    statusBadge.textContent = 'Опубликовано';
-                    sendTgBtn.innerHTML = '<i class="ri-telegram-fill text-xl"></i> Опубликовать повторно';
+                    // Update UI status
+                    if (statusBadge) {
+                        statusBadge.className = 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#204732]/10 text-[#204732]';
+                        statusBadge.textContent = 'Опубликовано';
+                    }
                 } else {
                     window.showToast(data.error || 'Ошибка отправки', 'error');
-                    sendTgBtn.innerHTML = originalText;
                 }
             } catch (err) {
                 console.error(err);
                 window.showToast('Ошибка сети', 'error');
-                sendTgBtn.innerHTML = originalText;
             } finally {
-                sendTgBtn.disabled = false;
+                headerSyncBtn.disabled = false;
+                headerSyncBtn.innerHTML = originalText;
             }
         });
 

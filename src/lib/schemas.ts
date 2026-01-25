@@ -53,6 +53,7 @@ export const ExcursionSchema = BaseItemSchema.extend({
 
 export const PostSchema = z.object({
     id: z.string(),
+    title: z.string().optional(), // Admin-only title
     text: z.string().min(1, "Текст поста обязателен"),
     image: z.string().optional(),
     createdAt: z.string().optional(),
@@ -60,6 +61,9 @@ export const PostSchema = z.object({
     status: z.enum(['draft', 'sent']).default('draft'),
     tgMessageId: z.string().nullable().optional(),
 });
+
+// ...
+
 
 export const ServiceSchema = BaseItemSchema.extend({
     shortDescription: z.string().optional(),
@@ -103,6 +107,7 @@ export const schemas: Record<string, SchemaMetadata> = {
         name: 'Посты (Telegram)',
         schema: PostSchema,
         fields: [
+            { name: 'title', label: 'Заголовок (для админки)', type: 'text', placeholder: 'Например: Акция на Визаран' },
             { name: 'text', label: 'Текст поста (Markdown)', type: 'textarea', required: true },
             { name: 'image', label: 'Фото к посту', type: 'image' },
             {

@@ -24,7 +24,7 @@
     ],
     "details": "",
     "image": "/images/transport/sym.webp",
-    "isPopular": true,
+    "isPopular": false,
     "isActive": true,
     "pricePerDay": "150к",
     "tgMessageId": "301",

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { saveItem } from '../../../lib/data-store.js';
-import { unauthorizedResponse } from '../../../lib/auth';
+import { checkAuth, unauthorizedResponse } from '../../../lib/auth';
 
 export const prerender = false;
 
@@ -17,13 +17,9 @@ function slugify(text: string) {
         .replace(/-+$/, '');            // Trim - from end of text
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
-    const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
-    if (ADMIN_PASSWORD) {
-        const { getAuthToken } = await import('../../../lib/auth');
-        const expectedToken = getAuthToken(ADMIN_PASSWORD);
-        const cookieToken = cookies.get('gh_admin_auth')?.value;
-        if (cookieToken !== expectedToken) return unauthorizedResponse();
+export const POST: APIRoute = async ({ request }) => {
+    if (!checkAuth(request)) {
+        return unauthorizedResponse();
     }
 
     try {

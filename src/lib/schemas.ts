@@ -9,6 +9,7 @@ export const BaseItemSchema = z.object({
     isActive: z.boolean().default(true),
     tgMessageId: z.string().nullable().optional(),
     tgImage: z.string().optional(),
+    tgText: z.string().optional(),
 });
 
 // --- Auth Schemas ---

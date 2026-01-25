@@ -21,16 +21,16 @@
   },
   "sections": [
     {
+      "id": "popular",
+      "label": "Популярное",
+      "icon": "ri-fire-fill",
+      "enabled": true
+    },
+    {
       "id": "currency",
       "label": "Обмен валюты",
       "icon": "ri-exchange-dollar-line",
       "enabled": true
-    },
-    {
-      "id": "popular",
-      "label": "Популярное",
-      "icon": "ri-fire-fill",
-      "enabled": false
     },
     {
       "id": "services",

@@ -100,7 +100,9 @@
       "Дома на сваях",
       "Рыба 'Ухо слона'"
     ],
-    "schedule": "По набору групп",
+    "schedule": [
+      "По набору групп"
+    ],
     "details": "",
     "isPopular": false,
     "isActive": true,
@@ -110,7 +112,9 @@
       "Гид",
       "Обед и дегустации"
     ],
-    "categoryId": "nature"
+    "categoryId": "nature",
+    "tgMessageId": "",
+    "tgImage": ""
   },
   {
     "id": "mount-taku",
@@ -153,9 +157,11 @@
       "Китайский квартал",
       "Рынок Бен Тхань"
     ],
-    "schedule": "По набору групп",
+    "schedule": [
+      "По набору групп"
+    ],
     "details": "",
-    "isPopular": false,
+    "isPopular": true,
     "isActive": true,
     "included": [
       "Трансфер (автобус/минивэн)",
@@ -163,7 +169,9 @@
       "Обед",
       "Билеты в музеи"
     ],
-    "categoryId": "history"
+    "categoryId": "history",
+    "tgMessageId": "",
+    "tgImage": ""
   },
   {
     "id": "dalat",
@@ -180,9 +188,11 @@
       "Монастырь Чук Лам",
       "Пагода из битого стекла"
     ],
-    "schedule": "Ежедневно",
+    "schedule": [
+      "Ежедневно"
+    ],
     "details": "",
-    "isPopular": true,
+    "isPopular": false,
     "isActive": true,
     "included": [
       "Трансфер",
@@ -190,7 +200,9 @@
       "Обед",
       "Все билеты и фуникулер"
     ],
-    "categoryId": "history"
+    "categoryId": "history",
+    "tgMessageId": "",
+    "tgImage": ""
   },
   {
     "id": "cu-chi",
@@ -235,16 +247,20 @@
       "Колесо обозрения",
       "Шоу фонтанов"
     ],
-    "schedule": "Ежедневно",
+    "schedule": [
+      "Ежедневно"
+    ],
     "details": "",
-    "isPopular": true,
+    "isPopular": false,
     "isActive": true,
     "included": [
       "Трансфер из Муйне",
       "Единый входной билет (всё включено)",
       "Канатная дорога/Катер"
     ],
-    "categoryId": "islands"
+    "categoryId": "islands",
+    "tgMessageId": "",
+    "tgImage": ""
   },
   {
     "id": "nya-phu",

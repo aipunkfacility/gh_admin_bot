@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getItem, saveItem, deleteItem } from '../../../lib/data-store';
 import { checkAuth, unauthorizedResponse } from '../../../lib/auth';
-import { TransportSchema, ExcursionSchema, AccommodationSchema } from '../../../lib/schemas';
+import { TransportSchema, ExcursionSchema, AccommodationSchema, ServiceSchema, PostSchema } from '../../../lib/schemas';
 import { z } from 'zod';
 
 // Helper to validate ID and collection name
@@ -11,6 +11,8 @@ const SCHEMAS: Record<string, z.ZodTypeAny> = {
     'transport-items': TransportSchema,
     'excursions': ExcursionSchema,
     'accommodations': AccommodationSchema,
+    'services': ServiceSchema,
+    'posts': PostSchema,
     // Add other collections here if needed
 };
 

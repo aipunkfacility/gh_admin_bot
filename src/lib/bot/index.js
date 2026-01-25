@@ -214,7 +214,6 @@ async function showTransportList(ctx, page, categoryId) {
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
-            const imageUrl = getFullImageUrl(item.image);
             const caption = `🏍 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.useCases || '')}\n\n💰 ${escapeMarkdown(item.pricePerDay || 'уточняйте')}/день`;
 
             const keyboard = [
@@ -222,18 +221,10 @@ async function showTransportList(ctx, page, categoryId) {
                 [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
             ];
 
-            try {
-                await ctx.replyWithPhoto(imageUrl, {
-                    caption,
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: keyboard },
-                });
-            } catch {
-                await ctx.reply(caption, {
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: keyboard },
-                });
-            }
+            await ctx.reply(caption, {
+                parse_mode: 'Markdown',
+                reply_markup: { inline_keyboard: keyboard },
+            });
         }
 
         // Навигация (Новая система!)
@@ -277,7 +268,7 @@ bot.action(/^transport_detail_(.+)$/, wrapHandler('transport_detail', async (ctx
         const text = formatTransportCard(item);
 
         if (item.image) {
-            const imageUrl = getFullImageUrl(item.image);
+            const imageUrl = getFullImageUrl(item.tgImage || item.image);
             const buttons = [
                 [{ text: '✅ Забронировать', callback_data: `book_transport_${item.id}` }],
                 [{ text: '◀️ Назад к списку', callback_data: 'transport_page_1' }],
@@ -382,7 +373,6 @@ async function showExcursionsList(ctx, page, categoryId) {
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
-            const imageUrl = getFullImageUrl(item.image);
             const caption = `🌴 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.shortDescription || '')}\n\n💰 ${escapeMarkdown(item.priceFrom || 'уточняйте')}`;
 
             const keyboard = [
@@ -390,18 +380,10 @@ async function showExcursionsList(ctx, page, categoryId) {
                 [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
             ];
 
-            try {
-                await ctx.replyWithPhoto(imageUrl, {
-                    caption,
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: keyboard },
-                });
-            } catch {
-                await ctx.reply(caption, {
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: keyboard },
-                });
-            }
+            await ctx.reply(caption, {
+                parse_mode: 'Markdown',
+                reply_markup: { inline_keyboard: keyboard },
+            });
         }
 
         // Навигация (Новая система!)
@@ -443,7 +425,7 @@ bot.action(/^excursion_detail_(.+)$/, wrapHandler('excursion_detail', async (ctx
         const text = formatExcursionCard(item);
 
         if (item.image) {
-            const imageUrl = getFullImageUrl(item.image);
+            const imageUrl = getFullImageUrl(item.tgImage || item.image);
             const buttons = [
                 [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
                 [{ text: '◀️ Назад к списку', callback_data: 'excursions_page_1' }],
@@ -505,7 +487,6 @@ async function showAccommodationsList(ctx, page) {
         await ctx.reply(`🏨 Жилье (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
-            const imageUrl = getFullImageUrl(item.image);
             const caption = `🏨 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.slogan || '')}\n\n📍 ${escapeMarkdown(item.address || '')}`;
 
             const keyboard = [
@@ -513,18 +494,10 @@ async function showAccommodationsList(ctx, page) {
                 [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
             ];
 
-            try {
-                await ctx.replyWithPhoto(imageUrl, {
-                    caption,
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: keyboard },
-                });
-            } catch {
-                await ctx.reply(caption, {
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: keyboard },
-                });
-            }
+            await ctx.reply(caption, {
+                parse_mode: 'Markdown',
+                reply_markup: { inline_keyboard: keyboard },
+            });
         }
 
         // Навигация (Новая система!)
@@ -563,7 +536,7 @@ bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', as
         }
 
         const text = formatAccommodationCard(item);
-        const imageUrl = getFullImageUrl(item.image);
+        const imageUrl = getFullImageUrl(item.tgImage || item.image);
         const buttons = [
             [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
             [{ text: '◀️ Назад к списку', callback_data: 'accommodations_page_1' }],
@@ -587,7 +560,8 @@ bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
         return ctx.reply('❌ Эта услуга временно недоступна.');
     }
 
-    await ctx.reply(`🛂 *Визаран*
+    const imageUrl = getFullImageUrl(service.tgImage || service.image);
+    const text = `🛂 *Визаран*
 
 Поможем с оформлением визаранов во Вьетнаме.
 
@@ -600,15 +574,14 @@ bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
 • Выезд: 02:30
 • Возвращение: 16:00–17:00
 
-Для бронирования нажмите кнопку ниже!`, {
-        parse_mode: 'Markdown',
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: '✅ Забронировать', callback_data: 'book_visarun' }],
-                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-            ],
-        },
-    });
+Для бронирования нажмите кнопку ниже!`;
+
+    const buttons = [
+        [{ text: '✅ Забронировать', callback_data: 'book_visarun' }],
+        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+    ];
+
+    await replyWithImageFallback(ctx, imageUrl, text, buttons);
 }));
 
 // Трансфер
@@ -620,7 +593,8 @@ bot.action('transfer_info', wrapHandler('transfer_info', async (ctx) => {
         return ctx.reply('❌ Эта услуга временно недоступна.');
     }
 
-    await ctx.reply(`🚖 *Трасфер*
+    const imageUrl = getFullImageUrl(service.tgImage || service.image);
+    const text = `🚖 *Трасфер*
 
 Организуем трансферы по всему Вьетнаму.
 
@@ -635,15 +609,14 @@ bot.action('transfer_info', wrapHandler('transfer_info', async (ctx) => {
 • Аэропорт Хошимин (SGN)
 • Нячанг / Камрань
 
-Для бронирования нажмите кнопку ниже!`, {
-        parse_mode: 'Markdown',
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: '✅ Забронировать', callback_data: 'book_transfer' }],
-                [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
-            ],
-        },
-    });
+Для бронирования нажмите кнопку ниже!`;
+
+    const buttons = [
+        [{ text: '✅ Забронировать', callback_data: 'book_transfer' }],
+        [{ text: '🏠 Главное меню', callback_data: 'back_to_start' }],
+    ];
+
+    await replyWithImageFallback(ctx, imageUrl, text, buttons);
 }));
 
 // Контакты

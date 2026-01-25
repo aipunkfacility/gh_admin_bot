@@ -60,6 +60,20 @@ export interface SiteMeta {
   contacts?: SiteContacts;
 }
 
+export interface Category extends BaseItem {
+  title: string;
+  slug: string;
+  icon?: string;
+}
+
+export interface TransportCategory extends Category {
+  badgeTitle?: string;
+}
+
+export interface ExcursionCategory extends Category {
+  description?: string;
+}
+
 export type CollectionName = 'excursions' | 'transport-items' | 'accommodations' | 'services' | 'site-meta';
 
 export type CollectionItem = Excursion | TransportItem | Accommodation | Service;

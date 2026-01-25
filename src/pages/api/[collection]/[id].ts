@@ -79,7 +79,8 @@ export const POST: APIRoute = async ({ request, params }) => {
             body.id = Date.now().toString();
         }
 
-        const savedItem = await saveItem(`${collection}.json`, body);
+        // Use strict generic for saveItem if possible, or simple object with id
+        const savedItem = await saveItem<typeof body>(`${collection}.json`, body);
         return new Response(JSON.stringify(savedItem), { status: 200 });
 
     } catch (e: unknown) {

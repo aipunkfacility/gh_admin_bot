@@ -31,9 +31,11 @@ const collectionNames = {
     'site-meta': 'Настройки',
     'excursion-categories': 'Категории туров',
     'transport-categories': 'Категории транспорта'
-};
+} as const;
 
-const collectionIcons = {
+type CollectionKey = keyof typeof collectionNames;
+
+const collectionIcons: Record<string, string> = {
     'excursions': '<i class="ri-caravan-fill text-action"></i>',
     'transport-items': '<i class="ri-roadster-fill text-action"></i>',
     'accommodations': '<i class="ri-hotel-fill text-action"></i>',
@@ -43,17 +45,33 @@ const collectionIcons = {
     'transport-categories': '<i class="ri-list-settings-fill text-action"></i>'
 };
 
-const title = collectionNames[collection] || collection;
-const icon = collectionIcons[collection] || '<i class="ri-folder-fill"></i>';
+const title = collection && collection in collectionNames ? collectionNames[collection as CollectionKey] : collection;
+const icon = (collection && collectionIcons[collection]) || '<i class="ri-folder-fill"></i>';
 
-const items = await getCollection(`${collection}.json`);
+interface BaseItem {
+    id: string;
+    isActive?: boolean;
+    categoryId?: string;
+    title?: string;
+    name?: string;
+    isPopular?: boolean;
+    image?: string;
+    slug?: string;
+}
+
+interface GroupedCategory extends BaseItem {
+    items: BaseItem[];
+    slug: string;
+}
+
+const items = await getCollection<BaseItem[]>(`${collection}.json`);
 const isArray = Array.isArray(items);
-const activeCount = isArray ? items.filter(i => i.isActive).length : 0;
+const activeCount = isArray ? items.filter((i: BaseItem) => i.isActive).length : 0;
 
 // Группировка для транспорта
-let groupedItems = null;
+let groupedItems: GroupedCategory[] | null = null;
 
-const transportTitlesMap = {
+const transportTitlesMap: Record<string, string> = {
     'standard': 'Стандарт',
     'comfort': 'Комфорт',
     'maxi': 'Макси-скутеры',
@@ -62,36 +80,43 @@ const transportTitlesMap = {
 };
 
 if (collection === 'transport-items' && isArray) {
-    const categories = await getCollection('transport-categories.json');
-    groupedItems = categories.map(cat => ({
+    const categories = await getCollection<BaseItem[]>('transport-categories.json');
+    groupedItems = categories.map((cat: BaseItem) => ({
         ...cat,
-        title: transportTitlesMap[cat.slug] || cat.title,
-        items: items.filter(i => i.categoryId === cat.id)
+        items: items.filter((i: BaseItem) => i.categoryId === cat.id),
+        slug: cat.slug || ''
+    })).map(cat => ({
+        ...cat,
+        title: (cat.slug && transportTitlesMap[cat.slug]) || cat.title || cat.slug
     }));
+    
     // Добавляем байки без категорий, если есть
-    const uncategorizedItems = items.filter(i => !i.categoryId || !categories.find(c => c.id === i.categoryId));
+    const uncategorizedItems = items.filter((i: BaseItem) => !i.categoryId || !categories.find((c: BaseItem) => c.id === i.categoryId));
     if (uncategorizedItems.length > 0) {
         groupedItems.push({
             id: 'uncategorized',
             title: 'Без категории',
-            items: uncategorizedItems
+            items: uncategorizedItems,
+            slug: 'uncategorized'
         });
     }
 }
 
 // Группировка для экскурсий
 if (collection === 'excursions' && isArray) {
-    const categories = await getCollection('excursion-categories.json');
-    groupedItems = categories.map(cat => ({
+    const categories = await getCollection<BaseItem[]>('excursion-categories.json');
+    groupedItems = categories.map((cat: BaseItem) => ({
         ...cat,
-        items: items.filter(i => i.categoryId === cat.id)
+        items: items.filter((i: BaseItem) => i.categoryId === cat.id),
+        slug: cat.slug || ''
     }));
-    const uncategorizedItems = items.filter(i => !i.categoryId || !categories.find(c => c.id === i.categoryId));
+    const uncategorizedItems = items.filter((i: BaseItem) => !i.categoryId || !categories.find((c: BaseItem) => c.id === i.categoryId));
     if (uncategorizedItems.length > 0) {
         groupedItems.push({
             id: 'uncategorized',
             title: 'Без категории',
-            items: uncategorizedItems
+            items: uncategorizedItems,
+            slug: 'uncategorized'
         });
     }
 }

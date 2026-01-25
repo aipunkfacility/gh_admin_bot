@@ -1,6 +1,7 @@
 ---
 import ServiceCard from '../components/ServiceCard.astro';
 import TransportCard from '../components/TransportCard.astro';
+import type { Category } from '../lib/schemas';
 
 interface Item {
   type?: string;
@@ -10,11 +11,10 @@ interface Item {
   details?: string;
   priceFrom?: string;
   duration?: string;
-}
-
-interface Category {
-  id: string;
-  title: string;
+  // Transport specific (partial)
+  categoryId?: string;
+  pricePerDay?: string;
+  useCases?: string;
 }
 
 interface Props {
@@ -35,9 +35,11 @@ const { items, categories } = Astro.props;
       {items.map(item => {
         if (item.type === 'transport') {
           return (
-            <TransportCard 
+            <TransportCard
               {...item}
               categories={categories}
+              categoryId={item.categoryId || ''}
+              pricePerDay={item.pricePerDay || ''}
             />
           );
         } else {

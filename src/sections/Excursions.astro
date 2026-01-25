@@ -1,21 +1,14 @@
 ---
 import ServiceCard from '../components/ServiceCard.astro';
 import { getCollection } from '../lib/data-store';
+import type { Excursion } from '../lib/schemas';
 
-interface Excursion {
+interface Category {
   id: string;
-  categoryId?: string;
   title: string;
-  image?: string;
-  shortDescription?: string;
-  details?: string;
-  priceFrom?: string;
-  duration?: string;
+  slug: string;
+  icon?: string;
   isActive: boolean;
-  isPopular?: boolean;
-  highlights?: string[];
-  schedule?: string[];
-  included?: string[];
 }
 
 interface Props {
@@ -23,14 +16,14 @@ interface Props {
 }
 
 const { excursions } = Astro.props;
-const allCategories = await getCollection('excursion-categories.json') || [];
-const categories = allCategories.filter(c => c.isActive !== false);
+const allCategories = await getCollection<Category[]>('excursion-categories.json') || [];
+const categories = allCategories.filter((c: Category) => c.isActive !== false);
 
-const activeExcursions = excursions.filter(e => e.isActive !== false);
+const activeExcursions = excursions.filter((e: Excursion) => e.isActive !== false);
 
-const groupedExcursions = categories.map(cat => ({
+const groupedExcursions = categories.map((cat: Category) => ({
   ...cat,
-  items: activeExcursions.filter(e => e.categoryId === cat.id)
+  items: activeExcursions.filter((e: Excursion) => e.categoryId === cat.id)
 })).filter(group => group.items.length > 0);
 
 // Добавляем без категории, если есть - УБРАНО ПО ТРЕБОВАНИЮ

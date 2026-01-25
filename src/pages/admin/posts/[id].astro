@@ -178,7 +178,7 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
     <input type="file" id="fileInput" accept="image/*" class="hidden" />
 
     <script define:vars={{ initialItem: item, isCreate }}>
-        let currentItem = initialItem;
+        const currentItem = initialItem;
         
         // --- Elements ---
         const fileInput = document.getElementById('fileInput');
@@ -200,7 +200,7 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
         
         uploadBtn?.addEventListener('click', triggerUpload);
         
-        removeImgBtn?.addEventListener('click', (e) => {
+        removeImgBtn?.addEventListener('click', () => {
             updateImage('');
         });
 
@@ -308,7 +308,7 @@ const pageTitle = isCreate ? 'Новый пост' : 'Редактировани
                  } else {
                      window.showToast('Ошибка сохранения', 'error');
                  }
-             } catch (err) {
+             } catch {
                  window.showToast('Ошибка сети', 'error');
              } finally {
                  headerSaveBtn.disabled = false;

@@ -225,14 +225,14 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
     </style>
 
     <script define:vars={{ collection, id, isCreate, isSiteMeta }}>
-        const form = document.getElementById('editForm') as HTMLFormElement;
-        const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
-        const submitText = document.getElementById('submitText') as HTMLElement;
+        const form = document.getElementById('editForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
         
-        function showToast(message: string, type = 'success') {
-            const toast = document.getElementById('toast') as HTMLElement;
-            const container = document.getElementById('toast-container') as HTMLElement;
-            const msg = document.getElementById('toast-message') as HTMLElement;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const container = document.getElementById('toast-container');
+            const msg = document.getElementById('toast-message');
             
             msg.textContent = message;
             if (container) {
@@ -250,7 +250,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
             }, 3000);
         }
         
-        const normalizeSrc = (src: string) => {
+        const normalizeSrc = (src) => {
             if (!src) return '';
             if (src.startsWith('http') || src.startsWith('/')) return src;
             if (src.startsWith('./')) return src.replace('./', '/');
@@ -258,11 +258,11 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
         };
 
         document.querySelectorAll('.image-path-input').forEach(input => {
-            input.addEventListener('input', (e: Event) => {
-                const trg = e.target as HTMLInputElement;
-                const parent = trg.closest('.space-y-4') as HTMLElement;
-                const preview = parent.querySelector('.preview-container') as HTMLElement;
-                const img = preview.querySelector('img') as HTMLImageElement;
+            input.addEventListener('input', (e) => {
+                const trg = e.target;
+                const parent = trg.closest('.space-y-4');
+                const preview = parent.querySelector('.preview-container');
+                const img = preview.querySelector('img');
                 if (trg.value) {
                     img.src = normalizeSrc(trg.value);
                     preview.style.display = 'block';
@@ -274,10 +274,10 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
 
         document.querySelectorAll('.upload-trigger-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const parentDiv = btn.closest('.space-y-4') as HTMLElement;
-                const textInput = parentDiv.querySelector('input[type="text"]') as HTMLInputElement;
-                const previewContainer = parentDiv.querySelector('.preview-container') as HTMLElement;
-                const imgPreview = previewContainer.querySelector('img') as HTMLImageElement;
+                const parentDiv = btn.closest('.space-y-4');
+                const textInput = parentDiv.querySelector('input[type="text"]');
+                const previewContainer = parentDiv.querySelector('.preview-container');
+                const imgPreview = previewContainer.querySelector('img');
                 
                 const fileInput = document.createElement('input');
                 fileInput.type = 'file';
@@ -297,7 +297,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                     
                     const originalHTML = btn.innerHTML;
                     btn.innerHTML = '⏳';
-                    (btn as HTMLButtonElement).disabled = true;
+                    btn.disabled = true;
                     
                     try {
                         const res = await fetch('/api/upload', {
@@ -318,27 +318,27 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                         showToast('Ошибка сети при загрузке', 'error');
                     } finally {
                         btn.innerHTML = originalHTML;
-                        (btn as HTMLButtonElement).disabled = false;
+                        btn.disabled = false;
                         document.body.removeChild(fileInput);
                     }
                 };
             });
         });
 
-        form.addEventListener('submit', async (e: Event) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             submitBtn.disabled = true;
             submitText.textContent = 'Сохранение...';
             
             const formData = new FormData(form);
-            const data: Record<string, unknown> = {};
+            const data = {};
 
             for (const [key, value] of formData.entries()) {
                 if (key.includes('.')) {
                     const [parent, child] = key.split('.');
                     if (!data[parent]) data[parent] = {};
-                    (data[parent] as Record<string, unknown>)[child] = value;
+                    data[parent][child] = value;
                 } else {
                     data[key] = value;
                 }
@@ -346,28 +346,28 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
 
             const checkboxes = form.querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(cb => {
-                const input = cb as HTMLInputElement;
+                const input = cb;
                 const name = input.name;
                 const checked = input.checked;
                 if (name.includes('.')) {
                     const [parent, child] = name.split('.');
                     if (!data[parent]) data[parent] = {};
-                    (data[parent] as Record<string, unknown>)[child] = checked;
+                    data[parent][child] = checked;
                 } else {
                     data[name] = checked;
                 }
             });
             
-            let url: string;
+            let url;
             if (isSiteMeta) {
                 url = `/api/${collection}/settings`;
             } else {
                 if (!isCreate) {
                     data.id = id;
                 } else if (!data.id) {
-                    data.id = (data.slug as string || String(Date.now()));
+                    data.id = (data.slug || String(Date.now()));
                 }
-                url = `/api/${collection}/${data.id as string}`;
+                url = `/api/${collection}/${data.id}`;
             }
 
             try {
@@ -380,7 +380,7 @@ const pageTitle = isSiteMeta ? 'Настройки сайта' : (isCreate ? `Н
                 if (res.ok) {
                     showToast('Успешно сохранено!');
                     setTimeout(() => {
-                        window.location.href = `/admin/${collection as string}`;
+                        window.location.href = `/admin/${collection}`;
                     }, 1000);
                 } else {
                     showToast('Ошибка сохранения', 'error');

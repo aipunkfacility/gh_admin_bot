@@ -88,8 +88,7 @@ const sections = (siteMeta.sections as Section[]) || defaultSections;
         if (!section.enabled) return null;
         
         if (section.id === 'popular' && popularItems.length > 0) {
-            {/* @ts-expect-error - Internal component prop mix */}
-            return <Popular items={popularItems} categories={transportCategories} />;
+            return <Popular items={popularItems as any} categories={transportCategories} />;
         }
         if (section.id === 'excursions' && activeExcursions.length > 0) {
             return <Excursions excursions={activeExcursions} />;

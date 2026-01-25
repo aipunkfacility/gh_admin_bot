@@ -18,15 +18,29 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ error: 'TELEGRAM_CHANNEL_ID not configured' }), { status: 500 });
         }
 
+        interface SyncItem {
+            id: string;
+            text?: string;
+            image?: string;
+            tgImage?: string;
+            tgMessageId?: string;
+            [key: string]: unknown;
+        }
+
         // Загружаем элементы
-        const items = await readJsonFile(`${collection}.json`) as Array<Record<string, unknown>>;
+        const items = (await readJsonFile(`${collection}.json`)) as SyncItem[];
+        // Handle if readJsonFile returns unknown/any, ensure it is array
+        if (!Array.isArray(items)) {
+            throw new Error('Invalid collection data');
+        }
+
         const itemIndex = items.findIndex((i) => i.id === id);
 
         if (itemIndex === -1) {
             return new Response(JSON.stringify({ error: 'Item not found' }), { status: 404 });
         }
 
-        const item = items[itemIndex] as Record<string, unknown>; // Cast for convenience
+        const item = items[itemIndex];
 
         // 1. Готовим текст
         let caption = '';

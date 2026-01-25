@@ -9,6 +9,11 @@ export const PUT: APIRoute = async ({ request, params }) => {
 
     try {
         const { collection } = params;
+
+        if (!collection) {
+            return new Response(JSON.stringify({ error: 'No collection specified' }), { status: 400 });
+        }
+
         const body = await request.json();
         const { order } = body;
 
@@ -16,13 +21,14 @@ export const PUT: APIRoute = async ({ request, params }) => {
             return new Response(JSON.stringify({ error: 'Invalid data' }), { status: 400 });
         }
 
-        const items = await getCollection(`${collection}.json`) as Array<{ id: string;[key: string]: unknown }>;
+        interface SortableItem { id: string;[key: string]: unknown }
+        const items = await getCollection<SortableItem[]>(`${collection}.json`);
 
         const itemMap = new Map(items.map(item => [item.id, item]));
 
-        const newItems: Array<{ id: string;[key: string]: unknown }> = order
+        const newItems: SortableItem[] = order
             .map((id: string) => itemMap.get(id))
-            .filter((item): item is { id: string;[key: string]: unknown } => item !== undefined);
+            .filter((item): item is SortableItem => item !== undefined);
 
         // Keep items not in order array at the end
         items.forEach(item => {

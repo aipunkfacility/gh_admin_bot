@@ -43,7 +43,7 @@ const sections = siteMeta.sections || defaultSections;
                 </div>
 
                 <div id="sections-list" class="space-y-3">
-                    {sections.map((section, _index) => (
+                    {sections.map((section: any, _index: number) => (
                         <div 
                             class="section-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-action/30 transition-all group"
                             data-id={section.id}
@@ -102,7 +102,7 @@ const sections = siteMeta.sections || defaultSections;
                     </div>
 
                     <div id="excursions-list" class="space-y-3" data-collection="excursion-categories">
-                        {excursionCategories.map((cat) => (
+                        {excursionCategories.map((cat: any) => (
                             <div 
                                 class="category-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-action/30 transition-all group"
                                 data-id={cat.id}
@@ -160,7 +160,7 @@ const sections = siteMeta.sections || defaultSections;
                     </div>
 
                     <div id="transport-list" class="space-y-3" data-collection="transport-categories">
-                        {transportCategories.map((cat) => (
+                        {transportCategories.map((cat: any) => (
                             <div 
                                 class="category-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-brand/30 transition-all group"
                                 data-id={cat.id}
@@ -360,6 +360,7 @@ const sections = siteMeta.sections || defaultSections;
         script.onload = function() {
             // 1. Sections List
             const sectionsList = document.getElementById('sections-list');
+            // @ts-ignore - Sortable loaded from CDN
             new Sortable(sectionsList, {
                 handle: '.handle',
                 animation: 200,
@@ -369,15 +370,17 @@ const sections = siteMeta.sections || defaultSections;
             
             // 2. Excursion Categories List
             const excursionsList = document.getElementById('excursions-list');
+            // @ts-ignore - Sortable loaded from CDN
             new Sortable(excursionsList, {
                 handle: '.handle',
                 animation: 200,
                 ghostClass: 'opacity-50',
                 onEnd: () => saveCategoriesOrder('excursions-list')
             });
-
+ 
             // 3. Transport Categories List
             const transportList = document.getElementById('transport-list');
+            // @ts-ignore - Sortable loaded from CDN
             new Sortable(transportList, {
                 handle: '.handle',
                 animation: 200,
@@ -391,8 +394,9 @@ const sections = siteMeta.sections || defaultSections;
             });
             
             document.querySelectorAll('.category-toggle').forEach(toggle => {
-                toggle.addEventListener('change', function() {
-                    const listId = this.closest('[id$="-list"]').id;
+                toggle.addEventListener('change', (e) => {
+                    const htmlThis = e.currentTarget as HTMLElement;
+                    const listId = htmlThis.closest('[id$="-list"]')!.id;
                     saveCategoriesOrder(listId);
                 });
             });
@@ -401,15 +405,19 @@ const sections = siteMeta.sections || defaultSections;
         
         // --- Save Functions ---
 
+        // @ts-ignore - exists in AdminLayout
+        const showToast = (window as any).showToast;
+
         async function saveSectionsOrder() {
-            const sections = [];
+            const sections: any[] = [];
             document.querySelectorAll('.section-item').forEach(item => {
-                const id = item.dataset.id;
-                const toggle = item.querySelector('.section-toggle');
+                const htmlItem = item as HTMLElement;
+                const id = htmlItem.dataset.id;
+                const toggle = htmlItem.querySelector('.section-toggle') as HTMLInputElement;
                 sections.push({
                     id: id,
-                    label: item.dataset.label,
-                    icon: item.dataset.icon,
+                    label: htmlItem.dataset.label,
+                    icon: htmlItem.dataset.icon,
                     enabled: toggle.checked
                 });
             });
@@ -417,41 +425,34 @@ const sections = siteMeta.sections || defaultSections;
             await sendReorderRequest('sections', sections);
         }
 
-        async function saveCategoriesOrder(listId) {
+        async function saveCategoriesOrder(listId: string) {
             const container = document.getElementById(listId);
+            if (!container) return;
             const collectionName = container.dataset.collection;
-            const items = [];
+            const items: any[] = [];
 
             container.querySelectorAll('.category-item').forEach(item => {
-                const id = item.dataset.id;
-                const toggle = item.querySelector('.category-toggle');
+                const htmlItem = item as HTMLElement;
+                const id = htmlItem.dataset.id;
+                const toggle = htmlItem.querySelector('.category-toggle') as HTMLInputElement;
                 
-                // Reconstruct the full object as simple schema implies generic items
-                // But for reordering we mostly just need to preserve existing data + new order + active status
-                // Since our API overwrites the file, we should ideally send full objects.
-                // However, we don't have full objects in DOM. 
-                // TRICKY: The API expects full objects if we overwrite.
-                // SOLUTION: We should construct minimal objects with what we have, 
-                // BUT this might accept data loss for fields not in DOM (like useCases etc if they were in categories? No, categories are simple).
-                // Let's assume categories only have id, title, slug, icon/badge, isActive.
-                
-                const obj = {
+                const obj: any = {
                     id: id,
-                    title: item.dataset.title,
-                    slug: item.dataset.slug,
+                    title: htmlItem.dataset.title,
+                    slug: htmlItem.dataset.slug,
                     isActive: toggle.checked
                 };
                 
-                if (item.dataset.icon) obj.icon = item.dataset.icon;
-                if (item.dataset.badge) obj.badgeTitle = item.dataset.badge;
+                if (htmlItem.dataset.icon) obj.icon = htmlItem.dataset.icon;
+                if (htmlItem.dataset.badge) obj.badgeTitle = htmlItem.dataset.badge;
                 
                 items.push(obj);
             });
 
-            await sendReorderRequest(collectionName, items);
+            await sendReorderRequest(collectionName!, items);
         }
 
-        async function sendReorderRequest(collection, items) {
+        async function sendReorderRequest(collection: string, items: any[]) {
             try {
                 const res = await fetch('/api/categories/reorder', {
                     method: 'POST',
@@ -460,13 +461,13 @@ const sections = siteMeta.sections || defaultSections;
                 });
                 
                 if (res.ok) {
-                    showToast('Сохранено', 'success');
+                    showToast?.('Сохранено', 'success');
                 } else {
-                    showToast('Ошибка сохранения', 'error');
+                    showToast?.('Ошибка сохранения', 'error');
                 }
             } catch (err) {
                 console.error(err);
-                showToast('Ошибка сети', 'error');
+                showToast?.('Ошибка сети', 'error');
             }
         }
     </script>

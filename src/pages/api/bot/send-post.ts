@@ -35,7 +35,17 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Get Post Data
-        const post = await getItem('posts.json', postId);
+        interface PostItem {
+            id: string;
+            text?: string;
+            image?: string;
+            status?: string;
+            sentAt?: string;
+            tgMessageId?: string;
+            [key: string]: unknown;
+        }
+
+        const post = await getItem<PostItem>('posts.json', postId);
         if (!post) {
             return new Response(JSON.stringify({ error: 'Post not found' }), { status: 404 });
         }
@@ -91,8 +101,9 @@ export const POST: APIRoute = async ({ request }) => {
 
         return new Response(JSON.stringify({ success: true, post: updatedPost }), { status: 200 });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Send Post Error:', error);
-        return new Response(JSON.stringify({ error: error.message || 'Failed to send post' }), { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Failed to send post';
+        return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
     }
 };

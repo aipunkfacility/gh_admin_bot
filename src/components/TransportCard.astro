@@ -1,12 +1,6 @@
 ---
 import { formatServiceDetails } from '../js/utils.js';
-
-interface Category {
-  id: string;
-  slug: string;
-  title: string;
-  badgeTitle?: string;
-}
+import type { Category } from '../lib/schemas';
 
 interface Props {
   title: string;

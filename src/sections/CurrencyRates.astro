@@ -155,7 +155,9 @@ const formatNumber = (num: number) => {
             if (isNaN(amount)) amount = 0;
             
             const result = Math.floor(amount * currentRate);
-            resultDisplay.textContent = new Intl.NumberFormat('ru-RU').format(result);
+            if (resultDisplay) {
+                resultDisplay.textContent = new Intl.NumberFormat('ru-RU').format(result);
+            }
         }
     }
 

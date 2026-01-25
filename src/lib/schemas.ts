@@ -277,3 +277,13 @@ export type Accommodation = z.infer<typeof AccommodationSchema>;
 export type Excursion = z.infer<typeof ExcursionSchema>;
 export type Post = z.infer<typeof PostSchema>;
 export type Service = z.infer<typeof ServiceSchema>;
+
+export type Category = {
+    id: string;
+    title: string;
+    slug: string;
+    icon?: string;
+    badgeTitle?: string;
+    isActive: boolean; // or boolean | undefined depending on schema default
+}; // Manually defined or inferred from one of the category schemas
+

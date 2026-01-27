@@ -47,7 +47,22 @@ async function testConnection() {
             console.error('   Details:', error.details);
         } else {
             console.log(`✅ Connection SUCCESS in ${duration}ms`);
-            console.log(`   Items count: ${count}`);
+            console.log(`   Items Total: ${count}`);
+
+            console.log('\n--- TRANSPORT ITEMS ---');
+            data.forEach(item => {
+                console.log(`   [${item.id}] ${item.title} (Cat: ${item.categoryId || item.category_id}, Active: ${item.isActive || item.is_active})`);
+            });
+
+            // Check Categories too
+            const { data: cats, error: errCat } = await supabase.from('transport_categories').select('*');
+            console.log('\n--- CATEGORIES ---');
+            if (cats) {
+                cats.forEach(c => console.log(`   [${c.id}] ${c.title} (Active: ${c.isActive || c.is_active})`));
+            } else {
+                console.log('   Error fetching categories:', errCat?.message);
+            }
+
         }
     } catch (err) {
         console.error('❌ CRITICAL NETWORK ERROR');

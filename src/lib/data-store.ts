@@ -321,14 +321,38 @@ export async function saveItem(collectionName: string, item: any) {
       updated_at: new Date().toISOString()
     };
 
+    // 1. Determine the REAL Primary Key (UUID)
+    let realId = item._uuid;
 
-    // 1. Try to find the REAL ID (UUID)
-    let realId = item._uuid; // Often passed from frontend if we sent it
+    // Fallback: If no _uuid provided, try to find it by slug in Supabase
+    if (!realId && item.slug) {
+      console.log(`🔍 [DataStore] Searching for UUID by slug: ${item.slug}`);
+      const { data: existing } = await supabaseAdmin // Changed to supabaseAdmin
+        .from(table)
+        .select('id')
+        .eq('slug', item.slug)
+        .single();
+
+      if (existing) {
+        realId = existing.id;
+        console.log(`✅ [DataStore] Found UUID: ${realId}`);
+      }
+    }
+
+    // Final check for UUID format if id was passed directly
     if (!realId && id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
       realId = id;
     }
 
-    // 2. Identify Slug
+    if (realId) {
+      payload.id = realId;
+    } else {
+      // If it's a create operation, let Supabase generate UUID if 'id' is not a UUID
+      if (id && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        payload.slug = id;
+        delete payload.id; // Let Supabase gen UUID
+      }
+    }
     // If id is NOT a UUID, it's likely a slug
     let realSlug = slug;
     if (!realSlug && id && id !== realId) {

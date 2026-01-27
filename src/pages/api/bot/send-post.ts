@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
             [key: string]: unknown;
         }
 
-        const post = await getItem<PostItem>('posts.json', postId);
+        const post = await getItem('posts.json', postId) as PostItem;
         if (!post) {
             return new Response(JSON.stringify({ error: 'Post not found' }), { status: 404 });
         }

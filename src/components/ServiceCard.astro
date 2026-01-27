@@ -4,16 +4,16 @@ import { formatServiceDetails } from '../js/utils.js';
 
 interface Props {
   title: string;
-  image?: string;
-  shortDescription?: string;
-  details?: string;
-  priceFrom?: string;
-  duration?: string;
-  features?: string[];
-  included?: string[];
-  requirements?: string[];
-  schedule?: string | string[];
-  highlights?: string[];
+  image?: string | null;
+  shortDescription?: string | null;
+  details?: string | null;
+  priceFrom?: string | null;
+  duration?: string | null;
+  features?: string[] | null;
+  included?: string[] | null;
+  requirements?: string[] | null;
+  schedule?: string | string[] | null;
+  highlights?: string[] | null;
 }
 
 const { title, image, shortDescription, details, priceFrom, duration, features, included, requirements, schedule, highlights } = Astro.props;

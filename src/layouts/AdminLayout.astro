@@ -214,10 +214,12 @@ import '../styles/global.css';
         <!-- Toast Container -->
         <div id="toast-container" class="toast-container"></div>
 
-        <script>
+        <script is:inline>
             // Global Toast Function
-            window.showToast = function(message, type = 'success') {
+            window['showToast'] = function(message, type = 'success') {
                 const container = document.getElementById('toast-container');
+                if (!container) return;
+                
                 const toast = document.createElement('div');
                 toast.className = `toast ${type}`;
                 
@@ -240,7 +242,7 @@ import '../styles/global.css';
             };
             
             // Global Confirm Function (returns Promise)
-            window.showConfirm = function(message, title = 'Подтверждение') {
+            window['showConfirm'] = function(message, title = 'Подтверждение') {
                 return new Promise((resolve) => {
                     const modal = document.createElement('div');
                     modal.className = 'confirm-modal';
@@ -257,15 +259,21 @@ import '../styles/global.css';
                     
                     document.body.appendChild(modal);
                     
-                    modal.querySelector('.cancel-btn').onclick = () => {
-                        modal.remove();
-                        resolve(false);
-                    };
+                    const cancelBtn = modal.querySelector('.cancel-btn');
+                    if (cancelBtn) {
+                        cancelBtn.onclick = () => {
+                            modal.remove();
+                            resolve(false);
+                        };
+                    }
                     
-                    modal.querySelector('.confirm-btn').onclick = () => {
-                        modal.remove();
-                        resolve(true);
-                    };
+                    const confirmBtn = modal.querySelector('.confirm-btn');
+                    if (confirmBtn) {
+                        confirmBtn.onclick = () => {
+                            modal.remove();
+                            resolve(true);
+                        };
+                    }
                     
                     modal.onclick = (e) => {
                         if (e.target === modal) {
@@ -281,21 +289,28 @@ import '../styles/global.css';
             const sidebar = document.querySelector('aside');
             
             logoutBtn?.addEventListener('click', async () => {
-                const confirmed = await showConfirm('Вы точно хотите выйти из админ-панели?', 'Выход');
-                if (!confirmed) return;
+                const showConfirm = window['showConfirm'];
+                if (showConfirm) {
+                    const confirmed = await showConfirm('Вы точно хотите выйти из админ-панели?', 'Выход');
+                    if (!confirmed) return;
+                }
+                
                 try {
                     await fetch('/api/auth?action=logout', { method: 'POST' });
                     window.location.href = '/admin/login';
                 } catch (e) {
                     console.error('Logout failed', e);
-                    showToast('Ошибка выхода', 'error');
+                    const showToast = window['showToast'];
+                    if (showToast) showToast('Ошибка выхода', 'error');
                 }
             });
 
             menuBtn?.addEventListener('click', () => {
-                sidebar.classList.toggle('hidden');
-                if (!sidebar.classList.contains('hidden')) {
-                    sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-full', 'bg-[#2D5F3E]');
+                if (sidebar) {
+                    sidebar.classList.toggle('hidden');
+                    if (!sidebar.classList.contains('hidden')) {
+                        sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-full', 'bg-[#2D5F3E]');
+                    }
                 }
             });
 
@@ -303,7 +318,7 @@ import '../styles/global.css';
             const currentPath = window.location.pathname;
             document.querySelectorAll('nav a').forEach(link => {
                 const href = link.getAttribute('href');
-                if (href === currentPath || (href !== '/admin' && currentPath.startsWith(href))) {
+                if (href && (href === currentPath || (href !== '/admin' && currentPath.startsWith(href)))) {
                     link.classList.add('active');
                 }
             });

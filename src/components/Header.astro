@@ -1,19 +1,20 @@
 ---
 import { getCollection } from '../lib/data-store';
+import type { Category } from '../lib/schemas';
 
 interface Props {
-  sections?: Array<{id: string; label: string; icon: string; enabled: boolean}>;
+  sections?: Array<{id: string; title: string; icon: string; isActive: boolean}>;
 }
 
 const { sections = [] } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL;
 
 // Fetch categories for dropdowns
-const allExcursionCats = (await getCollection('excursion-categories.json')) || [];
-const allTransportCats = (await getCollection('transport-categories.json')) || [];
+const allExcursionCats = (await getCollection<Category[]>('excursion-categories.json')) || [];
+const allTransportCats = (await getCollection<Category[]>('transport-categories.json')) || [];
 
-const excursionCats = allExcursionCats.filter(c => c.isActive !== false);
-const transportCats = allTransportCats.filter(c => c.isActive !== false);
+const excursionCats = allExcursionCats.filter((c: Category) => c.isActive !== false);
+const transportCats = allTransportCats.filter((c: Category) => c.isActive !== false);
 
 // Маппинг ID разделов на якоря и названия
 const sectionLabels: Record<string, string> = {
@@ -27,7 +28,7 @@ const sectionLabels: Record<string, string> = {
 };
 
 // Фильтруем только включенные разделы
-const enabledSections = sections.filter(s => s.enabled);
+const enabledSections = sections.filter(s => s.isActive);
 ---
 
 <header class="bg-white py-3 shadow-sm sticky top-0 z-50">
@@ -45,7 +46,7 @@ const enabledSections = sections.filter(s => s.enabled);
     <!-- Central Nav (Desktop) -->
     <nav class="hidden lg:flex items-center justify-center gap-1 xl:gap-2 flex-1 px-2">
       {enabledSections.map(section => {
-        const label = section.label || sectionLabels[section.id] || section.id;
+        const label = section.title || sectionLabels[section.id] || section.id;
         
         // Dropdown for Excursions
         if (section.id === 'excursions' && excursionCats.length > 0) {
@@ -57,7 +58,7 @@ const enabledSections = sections.filter(s => s.enabled);
                     </a>
                     <div class="absolute top-full left-0 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
                         <div class="bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden py-1">
-                            {excursionCats.map(cat => (
+                            {excursionCats.map((cat: Category) => (
                                 <a href={`#excursion-${cat.slug}`} class="block px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-orange-50 hover:text-action transition-colors flex items-center gap-2">
                                     <i class={`${cat.icon || 'ri-map-pin-line'} text-action opacity-70`}></i>
                                     {cat.title}
@@ -79,7 +80,7 @@ const enabledSections = sections.filter(s => s.enabled);
                     </a>
                     <div class="absolute top-full left-0 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
                         <div class="bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden py-1">
-                            {transportCats.map(cat => (
+                            {transportCats.map((cat: Category) => (
                                 <a href={`#transport-${cat.slug}`} class="block px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-green-50 hover:text-brand transition-colors flex items-center gap-2">
                                      <i class="ri-motorbike-line text-brand opacity-70"></i>
                                     {cat.title}
@@ -118,7 +119,7 @@ const enabledSections = sections.filter(s => s.enabled);
   <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-100 bg-white absolute w-full left-0 shadow-lg max-h-[80vh] overflow-y-auto">
     <div class="px-6 py-4 flex flex-col gap-2">
       {enabledSections.map(section => {
-         const label = section.label || sectionLabels[section.id] || section.id;
+         const label = section.title || sectionLabels[section.id] || section.id;
          
          if (section.id === 'excursions' && excursionCats.length > 0) {
              return (
@@ -128,7 +129,7 @@ const enabledSections = sections.filter(s => s.enabled);
                         <i class="ri-arrow-down-s-line transition-transform duration-300"></i>
                      </button>
                      <div class="hidden pl-4 space-y-1 bg-slate-50/50 rounded-xl mb-2 overflow-hidden transition-all">
-                        {excursionCats.map(cat => (
+                        {excursionCats.map((cat: Category) => (
                             <a href={`#excursion-${cat.slug}`} class="block px-3 py-2 text-sm font-semibold text-slate-500 hover:text-action mobile-link">
                                 • {cat.title}
                             </a>
@@ -146,7 +147,7 @@ const enabledSections = sections.filter(s => s.enabled);
                         <i class="ri-arrow-down-s-line transition-transform duration-300"></i>
                      </button>
                      <div class="hidden pl-4 space-y-1 bg-slate-50/50 rounded-xl mb-2 overflow-hidden transition-all">
-                        {transportCats.map(cat => (
+                        {transportCats.map((cat: Category) => (
                             <a href={`#transport-${cat.slug}`} class="block px-3 py-2 text-sm font-semibold text-slate-500 hover:text-brand mobile-link">
                                 • {cat.title}
                             </a>

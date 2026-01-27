@@ -1,15 +1,7 @@
 ---
 import ServiceCard from '../components/ServiceCard.astro';
 import { getCollection } from '../lib/data-store';
-import type { Excursion } from '../lib/schemas';
-
-interface Category {
-  id: string;
-  title: string;
-  slug: string;
-  icon?: string;
-  isActive: boolean;
-}
+import type { Excursion, Category } from '../lib/schemas';
 
 interface Props {
   excursions: Excursion[];
@@ -21,9 +13,14 @@ const categories = allCategories.filter((c: Category) => c.isActive !== false);
 
 const activeExcursions = excursions.filter((e: Excursion) => e.isActive !== false);
 
-const groupedExcursions = categories.map((cat: Category) => ({
+interface GroupedCategory extends Category {
+  items: Excursion[];
+}
+
+const groupedExcursions: GroupedCategory[] = categories.map((cat: Category) => ({
   ...cat,
-  items: activeExcursions.filter((e: Excursion) => e.categoryId === cat.id)
+  // Fix: data-store maps id -> slug. We need original ID for matching.
+  items: activeExcursions.filter((e: Excursion) => e.categoryId === (cat._uuid || cat.id))
 })).filter(group => group.items.length > 0);
 
 // Добавляем без категории, если есть - УБРАНО ПО ТРЕБОВАНИЮ
@@ -45,7 +42,7 @@ const groupedExcursions = categories.map((cat: Category) => ({
     </div>
 
     <div class="space-y-20">
-      {groupedExcursions.map(group => (
+      {groupedExcursions.map((group: GroupedCategory) => (
         <div id={`excursion-${group.slug}`} class="category-block">
           <div class="flex items-center gap-6 mb-10 overflow-hidden">
              <div class="flex items-center gap-3 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 shadow-sm flex-shrink-0">
@@ -56,7 +53,7 @@ const groupedExcursions = categories.map((cat: Category) => ({
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-            {group.items.map(excursion => (
+            {group.items.map((excursion: Excursion) => (
               <ServiceCard 
                 title={excursion.title}
                 image={excursion.image}

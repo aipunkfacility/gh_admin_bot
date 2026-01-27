@@ -3,13 +3,15 @@ import { z } from 'zod';
 // --- Shared Schemas ---
 export const BaseItemSchema = z.object({
     id: z.string(),
+    _uuid: z.string().optional(), // Allow passing real UUID for secure updates
+    slug: z.string().optional(), // Allow slug passthrough
     title: z.string(),
-    image: z.string().optional(),
-    details: z.string().optional(),
+    image: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
     isActive: z.boolean().default(true),
     tgMessageId: z.string().nullable().optional(),
-    tgImage: z.string().optional(),
-    tgText: z.string().optional(),
+    tgImage: z.string().nullable().optional(),
+    tgText: z.string().nullable().optional(),
 });
 
 // --- Auth Schemas ---
@@ -21,35 +23,36 @@ export const LoginSchema = z.object({
 
 export const TransportSchema = BaseItemSchema.extend({
     categoryId: z.string(),
-    useCases: z.string().optional(), // "short description"
-    pricePerDay: z.string().optional(),
-    pricePerMonth: z.string().optional(),
-    deposit: z.string().optional(),
-    benefits: z.array(z.string()).optional(),
-    specs: z.array(z.string()).optional(),
-    features: z.array(z.string()).optional(),
+    useCases: z.string().nullable().optional(), // "short description"
+    pricePerDay: z.string().nullable().optional(),
+    pricePerMonth: z.string().nullable().optional(),
+    deposit: z.string().nullable().optional(),
+    benefits: z.array(z.string()).nullable().optional(),
+    specs: z.array(z.string()).nullable().optional(),
+    features: z.array(z.string()).nullable().optional(),
     isPopular: z.boolean().optional(),
 });
 
 export const AccommodationSchema = BaseItemSchema.extend({
-    slogan: z.string().optional(),
-    address: z.string().optional(),
-    priceStart: z.string().optional(),
-    territoryDescription: z.string().optional(),
-    roomFeatures: z.array(z.string()).optional(),
-    atmosphere: z.string().optional(),
-    locationDescription: z.string().optional(),
+    slogan: z.string().nullable().optional(),
+    address: z.string().nullable().optional(),
+    priceStart: z.string().nullable().optional(),
+    territoryDescription: z.string().nullable().optional(),
+    roomFeatures: z.array(z.string()).nullable().optional(),
+    atmosphere: z.string().nullable().optional(),
+    locationDescription: z.string().nullable().optional(),
+    isPopular: z.boolean().optional(),
 });
 
 export const ExcursionSchema = BaseItemSchema.extend({
     categoryId: z.string(),
-    shortDescription: z.string().optional(),
-    priceFrom: z.string().optional(),
-    duration: z.string().optional(),
+    shortDescription: z.string().nullable().optional(),
+    priceFrom: z.string().nullable().optional(),
+    duration: z.string().nullable().optional(),
     isPopular: z.boolean().optional(),
-    schedule: z.array(z.string()).optional(),
-    included: z.array(z.string()).optional(),
-    highlights: z.array(z.string()).optional(),
+    schedule: z.array(z.string()).nullable().optional(),
+    included: z.array(z.string()).nullable().optional(),
+    highlights: z.array(z.string()).nullable().optional(),
 });
 
 export const PostSchema = z.object({
@@ -67,13 +70,13 @@ export const PostSchema = z.object({
 
 
 export const ServiceSchema = BaseItemSchema.extend({
-    shortDescription: z.string().optional(),
-    priceFrom: z.string().optional(),
-    schedule: z.string().optional(),
-    details: z.string().optional(),
-    features: z.array(z.string()).optional(),
-    included: z.array(z.string()).optional(),
-    requirements: z.array(z.string()).optional(),
+    shortDescription: z.string().nullable().optional(),
+    priceFrom: z.string().nullable().optional(),
+    schedule: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    features: z.array(z.string()).nullable().optional(),
+    included: z.array(z.string()).nullable().optional(),
+    requirements: z.array(z.string()).nullable().optional(),
     type: z.string().default('service'),
     isPopular: z.boolean().optional(),
 });
@@ -281,9 +284,11 @@ export type Service = z.infer<typeof ServiceSchema>;
 
 export type Category = {
     id: string;
+    _uuid?: string; // Derived from data-store normalization
     title: string;
     slug: string;
     icon?: string;
+    description?: string;
     badgeTitle?: string;
     isActive: boolean; // or boolean | undefined depending on schema default
 }; // Manually defined or inferred from one of the category schemas

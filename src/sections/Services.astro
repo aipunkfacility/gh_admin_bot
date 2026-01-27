@@ -1,14 +1,6 @@
 ---
 import ServiceCard from '../components/ServiceCard.astro';
-
-interface Service {
-  id: string;
-  title: string;
-  image?: string;
-  shortDescription?: string;
-  details?: string;
-  isActive: boolean;
-}
+import type { Service } from '../lib/schemas';
 
 interface Props {
   services: Service[];

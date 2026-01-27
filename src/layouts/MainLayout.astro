@@ -13,7 +13,7 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
-  sections?: Array<{id: string; label: string; icon: string; enabled: boolean}>;
+  sections?: Array<{id: string; title: string; icon: string; isActive: boolean}>;
 }
 
 const { title, description, image, sections = [] } = Astro.props;

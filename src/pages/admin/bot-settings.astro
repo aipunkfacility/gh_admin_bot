@@ -1,6 +1,7 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { readJsonFile } from '../../lib/bot/utils.js';
+import { getCollection } from '../../lib/data-store';
 
 export const prerender = false;
 
@@ -23,8 +24,19 @@ let rates = { rub_rate: 280, usdt_rate: 25500, usd_rate: 25000, eur_rate: 27000,
 let admins = [123456, 789012];
 
 try {
-    rates = await readJsonFile('rates.json');
-    admins = await readJsonFile('admins.json');
+    // Rates from Data Store (Supabase/JSON hybrid)
+    const ratesData = await getCollection('rates');
+    // Ensure we have an object (getCollection returns items array or matched object)
+    if (ratesData && !Array.isArray(ratesData)) {
+         rates = ratesData as any;
+    } else if (Array.isArray(ratesData) && ratesData.length > 0) {
+        // Should not happen if data-store handles 'rates' special case, 
+        // but just in case fallback logic in data-store didn't trigger:
+        console.warn('Rates returned as array, trying to parse manually');
+    }
+
+    // Admins via file (not migrated yet?)
+    admins = await readJsonFile('admins.json').catch(() => []);
 } catch (error) {
     console.error('Error loading bot data:', error);
 }

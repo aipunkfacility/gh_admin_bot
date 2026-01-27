@@ -67,6 +67,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         if (schema) {
             const result = schema.safeParse(body);
             if (!result.success) {
+                console.error(`❌ Validation failed for ${collection}:`, JSON.stringify(result.error.errors, null, 2));
                 return new Response(JSON.stringify({
                     error: 'Validation failed',
                     details: result.error.errors
@@ -82,7 +83,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         }
 
         // Use strict generic for saveItem if possible, or simple object with id
-        const savedItem = await saveItem<typeof body>(`${collection}.json`, body);
+        const savedItem = await saveItem(`${collection}.json`, body);
         return new Response(JSON.stringify(savedItem), { status: 200 });
 
     } catch (e: unknown) {

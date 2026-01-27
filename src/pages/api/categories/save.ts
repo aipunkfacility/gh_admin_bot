@@ -41,7 +41,9 @@ export const POST: APIRoute = async ({ request }) => {
             item.slug = slugify(item.title);
         }
 
-        await saveItem(`${collection}.json`, item);
+        // remove .json if present in collection name just in case
+        const collectionName = collection.replace('.json', '');
+        await saveItem(collectionName, item);
 
         return new Response(JSON.stringify({ success: true, item }), { status: 200 });
     } catch (error: unknown) {

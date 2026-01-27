@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
     formatNumber,
     validateNumberInput,
@@ -37,7 +37,7 @@ describe('bot/utils.js', () => {
         const items = [1, 2, 3, 4, 5, 6, 7];
 
         it('should return correct slice for first page', () => {
-            const res = paginate(items, 1, 3);
+            const res = paginate(items, 1, 3) as any;
             expect(res.items).toEqual([1, 2, 3]);
             expect(res.currentPage).toBe(1);
             expect(res.totalPages).toBe(3);
@@ -46,7 +46,7 @@ describe('bot/utils.js', () => {
         });
 
         it('should return correct slice for last page', () => {
-            const res = paginate(items, 3, 3);
+            const res = paginate(items, 3, 3) as any;
             expect(res.items).toEqual([7]);
             expect(res.currentPage).toBe(3);
             expect(res.hasNext).toBe(false);
@@ -62,8 +62,8 @@ describe('bot/utils.js', () => {
         });
 
         it('should handle null or undefined', () => {
-            expect(escapeMarkdown(null)).toBe('');
-            expect(escapeMarkdown(undefined)).toBe('');
+            expect(escapeMarkdown(null as any)).toBe('');
+            expect(escapeMarkdown(undefined as any)).toBe('');
         });
     });
 

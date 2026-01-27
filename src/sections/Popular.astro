@@ -6,15 +6,15 @@ import type { Category } from '../lib/schemas';
 interface Item {
   type?: string;
   title: string;
-  image?: string;
-  shortDescription?: string;
-  details?: string;
-  priceFrom?: string;
-  duration?: string;
+  image?: string | null;
+  shortDescription?: string | null;
+  details?: string | null;
+  priceFrom?: string | null;
+  duration?: string | null;
   // Transport specific (partial)
-  categoryId?: string;
-  pricePerDay?: string;
-  useCases?: string;
+  categoryId?: string; 
+  pricePerDay?: string | null;
+  useCases?: string | null;
 }
 
 interface Props {

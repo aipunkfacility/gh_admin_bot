@@ -2,22 +2,15 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getCollection } from '../../lib/data-store';
 
-const siteMeta = await getCollection('site-meta.json');
-const transportCategories = await getCollection('transport-categories.json');
-const excursionCategories = await getCollection('excursion-categories.json');
+// Load categories and sections from Data Store (Supabase)
+const sections = await getCollection('sections');
+const transportCategories = await getCollection('transport-categories');
+const excursionCategories = await getCollection('excursion-categories');
 
-// Дефолтные разделы если sections не существует
-const defaultSections = [
-    { id: 'popular', label: 'Популярное', icon: 'ri-fire-fill', enabled: true },
-    { id: 'excursions', label: 'Экскурсии', icon: 'ri-caravan-fill', enabled: true },
-    { id: 'transport', label: 'Транспорт', icon: 'ri-roadster-fill', enabled: true },
-    { id: 'accommodations', label: 'Жильё', icon: 'ri-hotel-fill', enabled: true },
-    { id: 'services', label: 'Услуги', icon: 'ri-customer-service-2-fill', enabled: true },
-    { id: 'currency', label: 'Курсы валют', icon: 'ri-exchange-dollar-line', enabled: false },
-    { id: 'contacts', label: 'Контакты', icon: 'ri-map-pin-fill', enabled: true },
-];
-
-const sections = siteMeta.sections || defaultSections;
+// Fallback logic in case DB is somehow empty (though seed should fix it)
+if (!sections || sections.length === 0) {
+    console.warn('⚠️ No sections found in DB. Please run seed script or add manually.');
+}
 ---
 
 <AdminLayout title="Разделы главной">
@@ -47,7 +40,7 @@ const sections = siteMeta.sections || defaultSections;
                         <div 
                             class="section-item bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-action/30 transition-all group"
                             data-id={section.id}
-                            data-label={section.label}
+                            data-label={section.title} 
                             data-icon={section.icon}
                         >
                             <div class="handle flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-300 group-hover:bg-slate-100 group-hover:text-slate-500 transition-colors">
@@ -56,16 +49,16 @@ const sections = siteMeta.sections || defaultSections;
                             
                             <div class="flex items-center gap-4 flex-1">
                                 <div class="w-10 h-10 rounded-xl bg-action/5 group-hover:bg-action/10 flex items-center justify-center text-action text-xl transition-colors">
-                                    <i class={section.icon}></i>
+                                    <i class={section.icon || 'ri-layout-grid-line'}></i>
                                 </div>
-                                <span class="font-bold text-dark text-base">{section.label}</span>
+                                <span class="font-bold text-dark text-base">{section.title}</span>
                             </div>
                             
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input 
                                     type="checkbox" 
                                     class="sr-only peer section-toggle" 
-                                    checked={section.enabled}
+                                    checked={section.isActive}
                                     data-id={section.id}
                                 />
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-action"></div>
@@ -416,9 +409,9 @@ const sections = siteMeta.sections || defaultSections;
                 const toggle = htmlItem.querySelector('.section-toggle') as HTMLInputElement;
                 sections.push({
                     id: id,
-                    label: htmlItem.dataset.label,
+                    title: htmlItem.dataset.label, // mapped to data-label in render
                     icon: htmlItem.dataset.icon,
-                    enabled: toggle.checked
+                    isActive: toggle.checked
                 });
             });
             

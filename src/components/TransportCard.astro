@@ -5,15 +5,15 @@ import type { Category } from '../lib/schemas';
 
 interface Props {
   title: string;
-  image?: string;
+  image?: string | null;
   categoryId: string;
-  useCases?: string;
-  details?: string;
-  benefits?: string[];
-  specs?: string[];
-  pricePerDay?: string;
+  useCases?: string | null;
+  details?: string | null;
+  benefits?: string[] | null;
+  specs?: string[] | null;
+  pricePerDay?: string | null;
   categories: Category[];
-  features?: string[];
+  features?: string[] | null;
 }
 
 const { title, image, categoryId, useCases, details, benefits, specs, features, pricePerDay, categories } = Astro.props;

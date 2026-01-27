@@ -3,14 +3,14 @@ import { formatServiceDetails } from '../js/utils.js';
 
 interface Props {
   title: string;
-  image?: string;
-  slogan?: string;
-  territoryDescription?: string;
-  address?: string;
-  roomFeatures?: string[];
-  atmosphere?: string;
-  locationDescription?: string;
-  details?: string;
+  image?: string | null;
+  slogan?: string | null;
+  territoryDescription?: string | null;
+  address?: string | null;
+  roomFeatures?: string[] | null;
+  atmosphere?: string | null;
+  locationDescription?: string | null;
+  details?: string | null;
 }
 
 const { title, image, slogan, territoryDescription, roomFeatures, atmosphere, locationDescription, address, details } = Astro.props;

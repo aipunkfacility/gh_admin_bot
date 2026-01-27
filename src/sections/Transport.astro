@@ -1,29 +1,6 @@
 ---
 import TransportCard from '../components/TransportCard.astro';
-
-interface Category {
-  id: string;
-  slug: string;
-  title: string;
-  description?: string;
-  icon?: string;
-  isActive: boolean;
-}
-
-interface TransportItem {
-  id: string;
-  categoryId: string;
-  title: string;
-  image?: string;
-  useCases?: string;
-  details?: string;
-  benefits?: string[];
-  specs?: string[];
-  isActive: boolean;
-  isPopular?: boolean;
-  pricePerDay?: string;
-  features?: string[];
-}
+import type { TransportItem, Category } from '../lib/schemas';
 
 interface Props {
   categories: Category[];

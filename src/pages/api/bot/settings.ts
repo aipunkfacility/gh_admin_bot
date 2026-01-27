@@ -24,9 +24,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     try {
         const data = await request.json();
         const { type, payload } = data;
+        const { saveItem } = await import('../../../lib/data-store');
 
         if (type === 'rates') {
-            await writeJsonFile('rates.json', payload);
+            // Payload is { rub_rate: 280, ... }
+            // We need to save each one.
+            const updates = [
+                { id: 'RUB', rate: payload.rub_rate },
+                { id: 'USDT', rate: payload.usdt_rate },
+                { id: 'USD', rate: payload.usd_rate },
+                { id: 'EUR', rate: payload.eur_rate },
+                { id: 'CNY', rate: payload.cny_rate }
+            ];
+
+            // Parallel save
+            await Promise.all(updates.map(u => saveItem('rates', u)));
+
+            // Also keep legacy file updated? 
+            // Ideally no, but for safety in transition we could.
+            // But writeJsonFile is legacy. Let's trust data-store (which writes to file if Supabase off).
+
             return new Response(JSON.stringify({ success: true }), { status: 200 });
         }
 

@@ -1,19 +1,6 @@
 ---
 import AccommodationCard from '../components/AccommodationCard.astro';
-
-interface Accommodation {
-  id: string;
-  title: string;
-  image?: string;
-  slogan?: string;
-  territoryDescription?: string;
-  address?: string;
-  details?: string;
-  isActive: boolean;
-  roomFeatures?: string[];
-  atmosphere?: string;
-  locationDescription?: string;
-}
+import type { Accommodation } from '../lib/schemas';
 
 interface Props {
   accommodations: Accommodation[];

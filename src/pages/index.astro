@@ -9,40 +9,33 @@ import Accommodations from '../sections/Accommodations.astro';
 import Contacts from '../sections/Contacts.astro';
 import CurrencyRates from '../sections/CurrencyRates.astro';
 
-import { getCollection, getItem } from '../lib/data-store';
-import type { Excursion, TransportItem, Accommodation, Service, TransportCategory } from '../lib/types';
+import { getCollection, getSiteMeta } from '../lib/data-store';
+import type { Excursion, TransportItem, Accommodation, Service, Category } from '../lib/schemas';
+// TransportCategory is effectively Category now
 
-interface Section {
-    id: string;
-    enabled: boolean;
-}
 
-interface CommonItem {
-    id: string;
-    isPopular?: boolean;
-    isActive?: boolean;
-    [key: string]: unknown;
-}
 
 // Загрузка данных параллельно
 const [
-    siteMetaResult,
+    siteMeta,
     excursionsRaw,
     transportRaw,
     accommodationsRaw,
     servicesRaw,
-    allTransportCategories
+    allTransportCategories,
+    sectionsRaw
 ] = await Promise.all([
-    getItem('site-meta.json', 'site-meta'),
+    getSiteMeta(),
     getCollection('excursions.json'),
     getCollection('transport-items.json'),
     getCollection('accommodations.json'),
     getCollection('services.json'),
-    getCollection('transport-categories.json')
+    getCollection('transport-categories.json'),
+    getCollection('sections') // New Sections Table
 ]);
 
-const siteMeta = (siteMetaResult || {}) as Record<string, unknown>;
-const transportCategories = (((allTransportCategories || []) as CommonItem[]).filter(c => c.isActive !== false)) as unknown as TransportCategory[];
+const siteMetaObj = (siteMeta || {}) as Record<string, unknown>;
+const transportCategories = ((((allTransportCategories || []) as any[]).filter(c => c.isActive !== false)) as unknown as Category[]);
 
 const excursions = (excursionsRaw || []) as Excursion[];
 const transport = (transportRaw || []) as TransportItem[];
@@ -62,30 +55,33 @@ const activeTransport = transport.filter(i => i.isActive !== false);
 const activeAccommodations = accommodations.filter(i => i.isActive !== false);
 const activeServices = services.filter(i => i.isActive !== false);
 
-const defaultSections: Section[] = [
-    { id: 'popular', enabled: true },
-    { id: 'excursions', enabled: true },
-    { id: 'transport', enabled: true },
-    { id: 'accommodations', enabled: true },
-    { id: 'services', enabled: true },
-    { id: 'contacts', enabled: true },
+const defaultSections: any[] = [
+    { id: 'popular', isActive: true },
+    { id: 'excursions', isActive: true },
+    { id: 'transport', isActive: true },
+    { id: 'accommodations', isActive: true },
+    { id: 'services', isActive: true },
+    { id: 'contacts', isActive: true },
 ];
 
-const sections = (siteMeta.sections as Section[]) || defaultSections;
+// Use sections from DB or fallback
+const sections = (sectionsRaw && (sectionsRaw as any[]).length > 0) 
+    ? (sectionsRaw as any[]) 
+    : defaultSections;
 ---
 
 <MainLayout 
-    title={(siteMeta.mainTitle as string) || "Green Hill Tours"} 
-    description={(siteMeta.mainSubtitle as string) || "Экскурсии и аренда транспорта в Муйне"}
-    sections={sections as unknown as Array<{id: string; label: string; icon: string; enabled: boolean}>}
+    title={(siteMetaObj.mainTitle as string) || "Green Hill Tours"} 
+    description={(siteMetaObj.mainSubtitle as string) || "Экскурсии и аренда транспорта в Муйне"}
+    sections={sections as any}
 >
     <Hero 
-        mainTitle={(siteMeta.mainTitle as string) || "Green Hill Tours"}
-        mainSubtitle={(siteMeta.mainSubtitle as string) || "Лучшие экскурсии и аренда транспорта в Муйне"}
+        mainTitle={(siteMetaObj.mainTitle as string) || "Green Hill Tours"}
+        mainSubtitle={(siteMetaObj.mainSubtitle as string) || "Лучшие экскурсии и аренда транспорта в Муйне"}
     />
 
     {sections.map((section) => {
-        if (!section.enabled) return null;
+        if (!section.isActive) return null;
         
         if (section.id === 'popular' && popularItems.length > 0) {
             return <Popular items={popularItems as any} categories={transportCategories} />;
@@ -94,7 +90,7 @@ const sections = (siteMeta.sections as Section[]) || defaultSections;
             return <Excursions excursions={activeExcursions} />;
         }
         if (section.id === 'transport' && activeTransport.length > 0) {
-             {/* @ts-expect-error - Category casting */}
+             {/* Category casting */}
             return <Transport categories={transportCategories} transportItems={activeTransport} />;
         }
         if (section.id === 'services' && activeServices.length > 0) {
@@ -104,8 +100,8 @@ const sections = (siteMeta.sections as Section[]) || defaultSections;
             return <Accommodations accommodations={activeAccommodations} />;
         }
         if (section.id === 'contacts') {
-             {/* @ts-expect-error - SiteMeta casting */}
-            return <Contacts siteMeta={siteMeta} />;
+            {/* SiteMeta casting */}
+            return <Contacts siteMeta={siteMetaObj} />;
         }
         if (section.id === 'currency') {
             return <CurrencyRates />;

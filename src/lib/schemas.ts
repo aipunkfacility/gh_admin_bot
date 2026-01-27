@@ -25,8 +25,6 @@ export const TransportSchema = BaseItemSchema.extend({
     categoryId: z.string(),
     useCases: z.string().nullable().optional(), // "short description"
     pricePerDay: z.string().nullable().optional(),
-    pricePerMonth: z.string().nullable().optional(),
-    deposit: z.string().nullable().optional(),
     benefits: z.array(z.string()).nullable().optional(),
     specs: z.array(z.string()).nullable().optional(),
     features: z.array(z.string()).nullable().optional(),
@@ -36,7 +34,6 @@ export const TransportSchema = BaseItemSchema.extend({
 export const AccommodationSchema = BaseItemSchema.extend({
     slogan: z.string().nullable().optional(),
     address: z.string().nullable().optional(),
-    priceStart: z.string().nullable().optional(),
     territoryDescription: z.string().nullable().optional(),
     roomFeatures: z.array(z.string()).nullable().optional(),
     atmosphere: z.string().nullable().optional(),

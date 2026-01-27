@@ -49,18 +49,17 @@ async function testConnection() {
             console.log(`✅ Connection SUCCESS in ${duration}ms`);
             console.log(`   Items Total: ${count}`);
 
-            console.log('\n--- TRANSPORT ITEMS ---');
-            data.forEach(item => {
-                console.log(`   [${item.id}] ${item.title} (Cat: ${item.categoryId || item.category_id}, Active: ${item.isActive || item.is_active})`);
-            });
+            console.log('\n--- DATA INSPECTOR ---');
+            if (data && data.length > 0) {
+                const item = data[0];
+                const keys = Object.keys(item);
+                console.log('👉 FOUND COLUMNS (KEYS):');
+                console.log(JSON.stringify(keys, null, 2));
 
-            // Check Categories too
-            const { data: cats, error: errCat } = await supabase.from('transport_categories').select('*');
-            console.log('\n--- CATEGORIES ---');
-            if (cats) {
-                cats.forEach(c => console.log(`   [${c.id}] ${c.title} (Active: ${c.isActive || c.is_active})`));
+                console.log('👉 SAMPLE ITEM:');
+                console.log(JSON.stringify(item, null, 2));
             } else {
-                console.log('   Error fetching categories:', errCat?.message);
+                console.log('⚠️ No items found to inspect.');
             }
 
             // 3. CHECK SCHEMA (Columns)

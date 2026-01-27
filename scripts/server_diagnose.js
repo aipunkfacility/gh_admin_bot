@@ -63,6 +63,22 @@ async function testConnection() {
                 console.log('   Error fetching categories:', errCat?.message);
             }
 
+            // 3. CHECK SCHEMA (Columns)
+            console.log('\n--- TABLE SCHEMA (transport_items) ---');
+            // Hacky way to get columns if we don't have direct access to information_schema via API easily (without extensive RLS)
+            // But we are ADMIN.
+            // Let's try to RPC or just use an empty insert to see error? 
+            // Better: select * limit 0 and look at keys? No.
+            // Use information_schema query if possible? not usually exposed via postgrest.
+            // But we can check the KEYS of the returned data object above!
+            if (data && data.length > 0) {
+                const sample = data[0];
+                console.log('Existing Columns in Data:', Object.keys(sample).join(', '));
+
+                // Check if 'tgText' is there
+                console.log(`Has 'tgText' column? ${'tgText' in sample || 'tg_text' in sample ? 'YES' : 'NO'}`);
+            }
+
         }
     } catch (err) {
         console.error('❌ CRITICAL NETWORK ERROR');

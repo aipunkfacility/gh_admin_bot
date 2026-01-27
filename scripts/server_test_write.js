@@ -3,7 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+import fs from 'fs';
+
+// 1. Load .env manually to be 100% sure
+const envPath = path.join(process.cwd(), '.env');
+console.log(`[WriteTest] Loading .env from: ${envPath}`);
+
+if (!fs.existsSync(envPath)) {
+    console.error('❌ .env file NOT FOUND!');
+    process.exit(1);
+}
+
+dotenv.config({ path: envPath });
 
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

@@ -13,8 +13,6 @@ import { getCollection, getSiteMeta } from '../lib/data-store';
 import type { Excursion, TransportItem, Accommodation, Service, Category } from '../lib/schemas';
 // TransportCategory is effectively Category now
 
-const IS_SUPABASE = true; // Matching data-store hardcode
-
 
 
 
@@ -78,7 +76,6 @@ const sections = (sectionsRaw && (sectionsRaw as any[]).length > 0)
     description={(siteMetaObj.mainSubtitle as string) || "Экскурсии и аренда транспорта в Муйне"}
     sections={sections as any}
 >
-    <meta name="x-debug-data-source" content={IS_SUPABASE ? "SUPABASE" : "JSON"} slot="head" />
     <Hero 
         mainTitle={(siteMetaObj.mainTitle as string) || "Green Hill Tours"}
         mainSubtitle={(siteMetaObj.mainSubtitle as string) || "Лучшие экскурсии и аренда транспорта в Муйне"}

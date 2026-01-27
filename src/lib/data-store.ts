@@ -5,8 +5,9 @@ import path from 'path';
 import type { PostgrestError } from '@supabase/supabase-js';
 
 // 🚦 Feature Flag: Переключатель между JSON и Supabase
-const USE_SUPABASE = true; // 🚨 HARDCODED FOR PROD
-console.error(`🔌 [DataStore] FORCE ENABLED. USE_SUPABASE=${USE_SUPABASE}`);
+// 🚦 Feature Flag: Переключатель между JSON и Supabase
+const USE_SUPABASE = getEnv('USE_SUPABASE') === 'true';
+console.log(`🔌 [DataStore] Initialized. USE_SUPABASE=${USE_SUPABASE} (Value: ${getEnv('USE_SUPABASE')})`);
 
 // Путь к папке с данными (для фоллбэка)
 const DATA_DIR = path.join(process.cwd(), 'public', 'data');

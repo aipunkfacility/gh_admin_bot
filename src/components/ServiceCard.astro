@@ -1,12 +1,9 @@
 ---
 import { Image } from 'astro:assets';
-import { formatServiceDetails } from '../js/utils.js';
-
 interface Props {
   title: string;
   image?: string | null;
   shortDescription?: string | null;
-  details?: string | null;
   priceFrom?: string | null;
   duration?: string | null;
   features?: string[] | null;
@@ -16,9 +13,8 @@ interface Props {
   highlights?: string[] | null;
 }
 
-const { title, image, shortDescription, details, priceFrom, duration, features, included, requirements, schedule, highlights } = Astro.props;
-const formattedDetails = formatServiceDetails(details);
-const hasDetails = !!(formattedDetails || features?.length || included?.length || requirements?.length || schedule || highlights?.length);
+const { title, image, shortDescription, priceFrom, duration, features, included, requirements, schedule, highlights } = Astro.props;
+const hasDetails = !!(features?.length || included?.length || requirements?.length || schedule || highlights?.length);
 const message = `Хочу заказать: ${title}`;
 const safeMessage = message.replace(/'/g, "\\'");
 ---
@@ -110,9 +106,7 @@ const safeMessage = message.replace(/'/g, "\\'");
           </div>
           
           {/* Fallback for raw details if structured data is missing but details exists */}
-          {formattedDetails && (!features?.length && !included?.length) && (
-            <div class="prose prose-sm max-w-none prose-p:text-slate-600 prose-headings:text-dark prose-strong:text-dark" set:html={formattedDetails}></div>
-          )}
+
           
         </div>
       </div>

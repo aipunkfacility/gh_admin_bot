@@ -8,7 +8,7 @@ interface Item {
   title: string;
   image?: string | null;
   shortDescription?: string | null;
-  details?: string | null;
+
   priceFrom?: string | null;
   duration?: string | null;
   // Transport specific (partial)
@@ -48,7 +48,7 @@ const { items, categories } = Astro.props;
               title={item.title}
               image={item.image}
               shortDescription={item.shortDescription}
-              details={item.details}
+
               priceFrom={item.priceFrom}
               duration={item.duration}
             />

@@ -11,7 +11,7 @@ export interface Excursion extends BaseItem {
   priceFrom?: string;
   duration?: string;
   image?: string;
-  details?: string;
+
 }
 
 export interface TransportItem extends BaseItem {
@@ -21,7 +21,7 @@ export interface TransportItem extends BaseItem {
   useCases?: string;
   benefits?: string[];
   specs?: string[];
-  details?: string;
+
   image?: string;
 }
 
@@ -32,7 +32,7 @@ export interface Accommodation extends BaseItem {
   slogan?: string;
   territoryDescription?: string;
   roomFeatures?: string[];
-  details?: string;
+
   atmosphere?: string;
   locationDescription?: string;
   address?: string;
@@ -43,8 +43,8 @@ export interface Service extends BaseItem {
   title: string;
   slug: string;
   shortDescription?: string;
-  details?: string;
-  type: 'visa' | 'transfer' | 'exchange' | string;
+
+
   image?: string;
 }
 

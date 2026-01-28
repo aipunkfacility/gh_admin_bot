@@ -490,9 +490,8 @@ export function formatServiceCard(item) {
     text += `${escapeMarkdown(item.shortDescription)}\n\n`;
   }
 
-  if (item.details) {
-    text += `${escapeMarkdown(item.details)}\n\n`;
-  }
+
+
 
   if (item.features?.length) {
     text += `✅ *Особенности:*\n`;

@@ -1,5 +1,5 @@
 ---
-import { formatServiceDetails } from '../js/utils.js';
+
 
 interface Props {
   title: string;
@@ -10,12 +10,11 @@ interface Props {
   roomFeatures?: string[] | null;
   atmosphere?: string | null;
   locationDescription?: string | null;
-  details?: string | null;
+
 }
 
-const { title, image, slogan, territoryDescription, roomFeatures, atmosphere, locationDescription, address, details } = Astro.props;
-const formattedDetails = formatServiceDetails(details);
-const hasDetails = !!(formattedDetails || territoryDescription || address || roomFeatures?.length || atmosphere || locationDescription);
+const { title, image, slogan, territoryDescription, roomFeatures, atmosphere, locationDescription, address } = Astro.props;
+const hasDetails = !!(territoryDescription || address || roomFeatures?.length || atmosphere || locationDescription);
 const message = `Хочу узнать цены на: ${title}`;
 const safeMessage = message.replace(/'/g, "\\'");
 ---
@@ -93,9 +92,7 @@ const safeMessage = message.replace(/'/g, "\\'");
               )}
           </div>
 
-          {formattedDetails && (
-             <div class="prose prose-sm max-w-none prose-p:text-slate-600 prose-headings:text-dark prose-strong:text-dark prose-li:text-slate-600" set:html={formattedDetails}></div>
-          )}
+
         </div>
       </div>
     )}

@@ -7,11 +7,11 @@ export const BaseItemSchema = z.object({
     slug: z.string().optional(), // Allow slug passthrough
     title: z.string(),
     image: z.string().nullable().optional(),
-    details: z.string().nullable().optional(),
+
     isActive: z.boolean().default(true),
     tgMessageId: z.string().nullable().optional(),
     tgImage: z.string().nullable().optional(),
-    tgText: z.string().nullable().optional(),
+
 });
 
 // --- Auth Schemas ---
@@ -55,10 +55,10 @@ export const ExcursionSchema = BaseItemSchema.extend({
 export const PostSchema = z.object({
     id: z.string(),
     title: z.string().optional(), // Admin-only title
-    text: z.string().min(1, "Текст поста обязателен"),
+    text: z.string().nullable().optional(),
     image: z.string().optional(),
     createdAt: z.string().optional(),
-    sentAt: z.string().optional(),
+    sentAt: z.string().nullable().optional(),
     status: z.enum(['draft', 'sent']).default('draft'),
     tgMessageId: z.string().nullable().optional(),
 });
@@ -70,11 +70,11 @@ export const ServiceSchema = BaseItemSchema.extend({
     shortDescription: z.string().nullable().optional(),
     priceFrom: z.string().nullable().optional(),
     schedule: z.string().nullable().optional(),
-    details: z.string().nullable().optional(),
+
     features: z.array(z.string()).nullable().optional(),
     included: z.array(z.string()).nullable().optional(),
     requirements: z.array(z.string()).nullable().optional(),
-    type: z.string().default('service'),
+
     isPopular: z.boolean().optional(),
 });
 
@@ -159,7 +159,7 @@ export const schemas: Record<string, SchemaMetadata> = {
             { name: 'schedule', label: 'Расписание', type: 'array' },
             { name: 'included', label: 'Включено', type: 'array' },
             { name: 'highlights', label: 'Что увидим', type: 'array' },
-            { name: 'details', label: 'Детальное описание', type: 'textarea' },
+
             ...tgFields
         ]
     },
@@ -188,7 +188,7 @@ export const schemas: Record<string, SchemaMetadata> = {
             { name: 'image', label: 'Фото', type: 'image' },
             { name: 'shortDescription', label: 'Краткое описание', type: 'textarea' },
             { name: 'priceFrom', label: 'Цена от', type: 'text', colSpan: 1 },
-            { name: 'details', label: 'Детали (Полное описание)', type: 'textarea' },
+
             { name: 'features', label: 'Особенности', type: 'array' },
             { name: 'requirements', label: 'Требования', type: 'array' },
             { name: 'isActive', label: 'Активно', type: 'checkbox', default: true, colSpan: 1 },

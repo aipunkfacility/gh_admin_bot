@@ -1,6 +1,5 @@
 ---
 import { Image } from 'astro:assets';
-import { formatServiceDetails } from '../js/utils.js';
 import type { Category } from '../lib/schemas';
 
 interface Props {
@@ -8,7 +7,6 @@ interface Props {
   image?: string | null;
   categoryId: string;
   useCases?: string | null;
-  details?: string | null;
   benefits?: string[] | null;
   specs?: string[] | null;
   pricePerDay?: string | null;
@@ -16,10 +14,9 @@ interface Props {
   features?: string[] | null;
 }
 
-const { title, image, categoryId, useCases, details, benefits, specs, features, pricePerDay, categories } = Astro.props;
-const formattedDetails = formatServiceDetails(details);
+const { title, image, categoryId, useCases, benefits, specs, features, pricePerDay, categories } = Astro.props;
 const category = categories.find(c => c.id === categoryId);
-const hasDetails = !!(formattedDetails || benefits?.length || specs?.length || features?.length);
+const hasDetails = !!(benefits?.length || specs?.length || features?.length);
 const message = `Хочу забронировать: ${title}`;
 const safeMessage = message.replace(/'/g, "\\'");
 
@@ -110,9 +107,7 @@ function getCategoryColor(slug: string) {
               )}
           </div>
           
-           {formattedDetails && (!features?.length) && (
-            <div class="prose prose-sm max-w-none prose-p:text-slate-600 prose-headings:text-dark prose-strong:text-dark" set:html={formattedDetails}></div>
-          )}
+
 
         </div>
       </div>

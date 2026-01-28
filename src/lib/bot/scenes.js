@@ -1,5 +1,5 @@
 import { Scenes } from 'telegraf';
-import { readJsonFile } from './utils.js';
+import { getCollection } from './utils.js';
 import { formatNumber, validateNumberInput, wrapHandler } from './utils.js';
 import { showMainMenu } from './menu.js';
 
@@ -11,7 +11,7 @@ const exchangeWizard = new Scenes.WizardScene(
 
     // ===== ШАГ 1: Вывод курсов и выбор валюты =====
     wrapHandler('exchange_step1', async (ctx) => {
-        const rates = await readJsonFile('rates.json');
+        const rates = await getCollection('rates');
 
         const message = `💱 КУРС ВАЛЮТ НА СЕГОДНЯ:
 
@@ -107,7 +107,7 @@ const exchangeWizard = new Scenes.WizardScene(
             return ctx.scene.leave();
         }
 
-        const rates = await readJsonFile('rates.json');
+        const rates = await getCollection('rates');
         const rate = rates[currency.key];
         const result = amount * rate;
 
@@ -186,12 +186,13 @@ const feedbackWizard = new Scenes.WizardScene(
 ${feedbackText}`;
 
         try {
-            // Отправка админам
-            let admins = [];
-            try {
-                admins = await readJsonFile('admins.json');
-            } catch {
-                if (process.env.TELEGRAM_CHANNEL_ID) admins = [process.env.TELEGRAM_CHANNEL_ID];
+            // Отправка админам 
+            const adminEnv = process.env.TELEGRAM_ADMIN_IDS || '';
+            const admins = adminEnv.split(',').map(id => id.trim()).filter(Boolean);
+
+            // Fallback
+            if (admins.length === 0 && process.env.TELEGRAM_CHANNEL_ID) {
+                admins.push(process.env.TELEGRAM_CHANNEL_ID);
             }
 
             for (const adminId of admins) {

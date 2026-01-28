@@ -10,7 +10,7 @@ dotenv.config({ path: envPath });
 import { Telegraf, session } from 'telegraf';
 import { stage } from './scenes.js';
 import {
-    readJsonFile,
+    getCollection,
     getFullImageUrl,
     paginate,
     formatExcursionCard,
@@ -89,7 +89,7 @@ bot.action('cat_transport', wrapHandler('cat_transport', async (ctx) => {
     ctx.session.transportCategory = null;
 
     try {
-        const categories = await readJsonFile('transport-categories.json');
+        const categories = await getCollection('transport_categories');
 
         await ctx.reply('🏍 Выберите категорию транспорта:', {
             reply_markup: {
@@ -134,7 +134,7 @@ bot.action(/^transport_page_(\d+)$/, wrapHandler('transport_page', async (ctx) =
 
 async function showTransportList(ctx, page, categoryId) {
     try {
-        let items = await readJsonFile('transport-items.json');
+        let items = await getCollection('transport_items');
         // Строгая проверка на активность
         items = items.filter(i => i.isActive === true);
 
@@ -157,7 +157,7 @@ async function showTransportList(ctx, page, categoryId) {
         const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
 
         const categoryName = categoryId
-            ? (await readJsonFile('transport-categories.json')).find(c => c.id === categoryId)?.title || 'Транспорт'
+            ? (await getCollection('transport_categories')).find(c => c.id === categoryId)?.title || 'Транспорт'
             : '🏍 Весь транспорт';
 
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
@@ -215,7 +215,7 @@ bot.action(/^transport_detail_(.+)$/, wrapHandler('transport_detail', async (ctx
     }
 
     try {
-        const items = await readJsonFile('transport-items.json');
+        const items = await getCollection('transport_items');
         const item = items.find(i => i.id === itemId);
 
         if (!item || item.isActive === false) {
@@ -258,7 +258,7 @@ bot.action('cat_excursions', wrapHandler('cat_excursions', async (ctx) => {
     ctx.session.excursionCategory = null;
 
     try {
-        const categories = await readJsonFile('excursion-categories.json');
+        const categories = await getCollection('excursion_categories');
 
         await ctx.reply('🌴 Выберите категорию экскурсий:', {
             reply_markup: {
@@ -303,7 +303,7 @@ bot.action(/^excursions_page_(\d+)$/, wrapHandler('excursions_page', async (ctx)
 
 async function showExcursionsList(ctx, page, categoryId) {
     try {
-        let items = await readJsonFile('excursions.json');
+        let items = await getCollection('excursions');
         items = items.filter(i => i.isActive === true);
 
         if (categoryId) {
@@ -325,7 +325,7 @@ async function showExcursionsList(ctx, page, categoryId) {
         const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
 
         const categoryName = categoryId
-            ? (await readJsonFile('excursion-categories.json')).find(c => c.id === categoryId)?.title || 'Экскурсии'
+            ? (await getCollection('excursion_categories')).find(c => c.id === categoryId)?.title || 'Экскурсии'
             : '🌴 Все экскурсии';
 
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
@@ -370,7 +370,7 @@ bot.action(/^excursion_detail_(.+)$/, wrapHandler('excursion_detail', async (ctx
     }
 
     try {
-        const items = await readJsonFile('excursions.json');
+        const items = await getCollection('excursions');
         const item = items.find(i => i.id === itemId);
 
         if (!item || item.isActive === false) {
@@ -424,7 +424,7 @@ bot.action(/^accommodations_page_(\d+)$/, wrapHandler('accommodations_page', asy
 
 async function showAccommodationsList(ctx, page) {
     try {
-        let items = await readJsonFile('accommodations.json');
+        let items = await getCollection('accommodations');
         items = items.filter(i => i.isActive === true);
 
         if (!items || items.length === 0) {
@@ -481,7 +481,7 @@ bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', as
     }
 
     try {
-        const items = await readJsonFile('accommodations.json');
+        const items = await getCollection('accommodations');
         const item = items.find(i => i.id === itemId);
 
         if (!item || item.isActive === false) {
@@ -507,7 +507,7 @@ bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', as
 
 // Визаран
 bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
-    const services = await readJsonFile('services.json');
+    const services = await getCollection('services');
     const service = services.find(s => s.id === 'visa-run-cambodia');
 
     if (!service || !service.isActive) {
@@ -540,7 +540,7 @@ bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
 
 // Трансфер
 bot.action('transfer_info', wrapHandler('transfer_info', async (ctx) => {
-    const services = await readJsonFile('services.json');
+    const services = await getCollection('services');
     const service = services.find(s => s.id === 'transfer-airport-muine');
 
     if (!service || !service.isActive) {
@@ -593,7 +593,7 @@ bot.action('contacts', wrapHandler('contacts', async (ctx) => {
 
 // Калькулятор валют
 bot.action('calc_exchange', wrapHandler('calc_exchange', async (ctx) => {
-    const services = await readJsonFile('services.json');
+    const services = await getCollection('services');
     const service = services.find(s => s.id === 'money-exchange');
 
     if (!service || !service.isActive) {
@@ -629,19 +629,18 @@ bot.action('book_exchange', wrapHandler('book_exchange', async (ctx) => {
 Свяжитесь с клиентом для подтверждения!`;
 
     try {
-        let admins = [];
-        try {
-            admins = await readJsonFile('admins.json');
-        } catch (err) {
-            logger.warn('admins.json not found, using fallback', { error: err.message });
-            const fallbackAdmin = process.env.TELEGRAM_CHANNEL_ID;
-            if (fallbackAdmin) {
-                admins = [fallbackAdmin];
-            }
+        // Получаем админов из .env
+        const adminEnv = process.env.TELEGRAM_ADMIN_IDS || '';
+        const admins = adminEnv.split(',').map(id => id.trim()).filter(Boolean);
+
+        if (admins.length === 0) {
+            logger.warn('No admins configured (TELEGRAM_ADMIN_IDS missing)');
+            // Fallback (если переменная пуста, используем channel ID)
+            if (process.env.TELEGRAM_CHANNEL_ID) admins.push(process.env.TELEGRAM_CHANNEL_ID);
         }
 
         if (admins.length === 0) {
-            logger.warn('No admins configured for notifications');
+            logger.warn('No admins found even after fallback');
             await ctx.reply('⚠️ Заявка не может быть отправлена. Свяжитесь с поддержкой.');
             return;
         }
@@ -716,11 +715,11 @@ bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, wrapHandler('book_
     let itemName = itemId;
     try {
         const files = {
-            transport: 'transport-items.json',
-            excursion: 'excursions.json',
-            accommodation: 'accommodations.json',
+            transport: 'transport_items',
+            excursion: 'excursions',
+            accommodation: 'accommodations',
         };
-        const items = await readJsonFile(files[type]);
+        const items = await getCollection(files[type]);
         const item = items.find(i => i.id === itemId);
         if (item) {
             if (item.isActive === false) {
@@ -746,7 +745,9 @@ bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, wrapHandler('book_
 
 async function sendBookingNotification(ctx, bookingMessage) {
     try {
-        const admins = await readJsonFile('admins.json');
+        // Получаем админов из .env
+        const adminEnv = process.env.TELEGRAM_ADMIN_IDS || '';
+        const admins = adminEnv.split(',').map(id => id.trim()).filter(Boolean);
 
         for (const adminId of admins) {
             try {

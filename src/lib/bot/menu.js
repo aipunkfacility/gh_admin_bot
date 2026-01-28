@@ -1,4 +1,4 @@
-import { readJsonFile } from './utils.js';
+import { getCollection } from './utils.js';
 import { logger } from '../logger.js';
 
 /**
@@ -7,8 +7,8 @@ import { logger } from '../logger.js';
  */
 export async function showMainMenu(ctx) {
     try {
-        const meta = await readJsonFile('site-meta.json');
-        const services = await readJsonFile('services.json');
+        const meta = await getCollection('site_meta');
+        const services = await getCollection('services');
 
         const isServiceActive = (id) => services.find(s => s.id === id)?.isActive;
         const isSectionEnabled = (id) => meta.sections?.find(s => s.id === id)?.enabled ?? true;

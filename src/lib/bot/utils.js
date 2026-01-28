@@ -108,129 +108,99 @@ function normalizeItem(item) {
 }
 
 /**
- * Читает данные (из JSON или Supabase)
- * @param {string} filepath - Имя файла (например 'transport-items.json')
- * @returns {Promise<any>} Данные
+ * Получает данные коллекции из Supabase
+ * @param {string} collectionName - Имя коллекции (например 'transport-items', 'excursions')
+ * @returns {Promise<any[]>} Массив данных
  */
-export async function readJsonFile(filepath) {
-  // 1. Supabase Mode
+export async function getCollection(collectionName) {
   const db = getSupabase();
-  if (db && process.env.USE_SUPABASE === 'true') {
-    const table = getTableName(filepath);
-
-    try {
-      // Special case: site-meta
-      if (table === 'site_meta') {
-        const { data, error } = await db
-          .from('site_meta')
-          .select('data')
-          .eq('key', 'main')
-          .single();
-
-        if (error) throw error;
-        return data?.data || {};
-      }
-
-      // General case
-      let query = db.from(table).select('*');
-
-      const { data, error } = await query;
-
-      // Basic sorting removed (done in JS)
-
-
-      // 2.5 Strict Sorting (JS Side)
-      let sortedData = data || [];
-      if (table !== 'rates' && table !== 'site_meta') {
-        sortedData = [...(data || [])].sort((a, b) => {
-          // Sort by order if available
-          if (a.order !== undefined && b.order !== undefined && a.order !== null && b.order !== null) {
-            if (a.order !== b.order) return a.order - b.order;
-          }
-          // Sort by createdAt or updatedAt as secondary
-          const dateA = new Date(a.createdAt || a.created_at || 0).getTime();
-          const dateB = new Date(b.createdAt || b.created_at || 0).getTime();
-          if (dateA !== dateB) return dateB - dateA;
-
-          return 0;
-        });
-      }
-
-
-      // Special handling for excursions: map category UUIDs to slugs
-      if (table === 'excursions' && sortedData) {
-        try {
-          const { data: cats, error: catError } = await db.from('excursion_categories').select('id, slug');
-          if (catError) console.error('Error fetching cats:', catError);
-          if (cats) {
-            const slugMap = {};
-            cats.forEach(c => {
-              if (c.slug) slugMap[c.id] = c.slug;
-            });
-
-            sortedData.forEach(item => {
-              const catId = item.categoryId;
-              if (catId && slugMap[catId]) {
-                item.category_slug = slugMap[catId];
-              }
-            });
-          }
-        } catch (mapErr) {
-          console.warn('⚠️ [Bot] Failed to map excursion categories:', mapErr.message);
-        }
-      }
-
-
-      if (error) {
-        // Fallback if table doesn't exist (yet)
-        if (error.code === '42P01' || error.code === 'PGRST205') {
-          console.warn(`⚠️ Table ${table} not found, falling back to file.`);
-        } else {
-          console.error(`❌ Supabase Error (${table}):`, error.message);
-          throw error;
-        }
-      } else {
-        // Normalize and returning
-        if (table === 'rates') {
-          const ratesObject = {};
-          (sortedData || []).forEach((item) => {
-            const key = `${item.currency.toLowerCase()}_rate`;
-            ratesObject[key] = Number(item.rate);
-          });
-          return ratesObject;
-        }
-
-        return sortedData.map(normalizeItem);
-      }
-
-    } catch (err) {
-      // Fallback to JSON is handled below if we didn't return
-      if (err.code !== '42P01' && err.code !== 'PGRST205') { // If it's not "table missing", log it
-        console.error(`⚠️ Error reading from DB for ${filepath}:`, err.message);
-      }
-    }
+  if (!db) {
+    console.error('❌ [Bot] Supabase not initialized. Cannot fetch', collectionName);
+    return [];
   }
 
-  // 2. File Mode (Fallback)
-  const fs = await import('fs/promises');
-  const path = await import('path');
+  // Нормализация имени таблицы
+  let table = collectionName;
+  if (table.endsWith('.json')) table = table.slice(0, -5);
 
-  const fullPath = path.join(process.cwd(), 'public', 'data', filepath);
-  const data = await fs.readFile(fullPath, 'utf-8');
-  return JSON.parse(data);
+  // Маппинг имен (совместимость с именами файлов)
+  const mapping = {
+    'excursion-items': 'excursions',
+    'excursion-categories': 'excursion_categories',
+    'accommodation-items': 'accommodations',
+    'transport-items': 'transport_items',
+    'transport-categories': 'transport_categories',
+    'site-meta': 'site_meta'
+  };
+
+  if (mapping[table]) table = mapping[table];
+  if (table.includes('-')) table = table.replace(/-/g, '_');
+
+  try {
+    // Особый случай: site_meta (это key-value store, нам нужен ключ 'main')
+    if (table === 'site_meta') {
+      const { data, error } = await db
+        .from('site_meta')
+        .select('data')
+        .eq('key', 'main')
+        .single();
+
+      if (error) throw error;
+      return data?.data || {};
+    }
+
+    // Обычный случай: список
+    const { data, error } = await db.from(table).select('*');
+
+    if (error) {
+      // Если таблицы нет, пробуем вернуть пустой список, чтобы не крашить бота
+      if (error.code === '42P01') {
+        console.warn(`⚠️ [Bot] Table ${table} not found in DB.`);
+        return [];
+      }
+      throw error;
+    }
+
+    // Сортировка JS-side (надежнее для mixed types)
+    let sortedData = data || [];
+    if (table !== 'rates') {
+      sortedData.sort((a, b) => {
+        // Order (Asc)
+        if (a.order != null && b.order != null) return a.order - b.order;
+        // CreatedAt (Desc)
+        const dateA = new Date(a.createdAt || a.created_at || 0).getTime();
+        const dateB = new Date(b.createdAt || b.created_at || 0).getTime();
+        return dateB - dateA;
+      });
+    }
+
+    // Нормализация (camelCase, id=slug)
+    if (table === 'rates') {
+      // Форматируем рейты как объект { usd_rate: ... }
+      const ratesObject = {};
+      sortedData.forEach(item => {
+        const key = `${item.currency.toLowerCase()}_rate`;
+        ratesObject[key] = Number(item.rate);
+      });
+      return ratesObject;
+    }
+
+    return sortedData.map(normalizeItem);
+
+  } catch (err) {
+    console.error(`❌ [Bot] Error fetching ${collectionName}:`, err.message);
+    return [];
+  }
 }
 
 /**
- * Записывает JSON файл
- * @param {string} filepath - Путь к файлу относительно public/data
- * @param {any} data - Данные для записи
+ * @deprecated Legacy alias for getCollection to prevent immediate breaks during migration.
+ * @param {string} filepath 
  */
-export async function writeJsonFile(filepath, data) {
-  const fs = await import('fs/promises');
-  const path = await import('path');
-
-  const fullPath = path.join(process.cwd(), 'public', 'data', filepath);
-  await fs.writeFile(fullPath, JSON.stringify(data, null, 2), 'utf-8');
+export async function readJsonFile(filepath) {
+  // Логируем использование старого метода, чтобы потом вычистить
+  // console.warn('[Deprecation] readJsonFile called for', filepath);
+  return getCollection(filepath);
 }
 
 // ========== ПАГИНАЦИЯ ==========

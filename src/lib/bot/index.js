@@ -20,7 +20,8 @@ import {
     replyWithImageFallback,
     validateItemId,
     wrapHandler,
-    buildPaginationKeyboard
+    buildPaginationKeyboard,
+    getAdminIds
 } from './utils.js';
 import { showMainMenu } from './menu.js';
 import { logger } from '../logger.js';
@@ -664,13 +665,11 @@ bot.action('book_exchange', wrapHandler('book_exchange', async (ctx) => {
 Свяжитесь с клиентом для подтверждения!`;
 
     try {
-        // Получаем админов из .env
-        const adminEnv = process.env.TELEGRAM_ADMIN_IDS || '';
-        const admins = adminEnv.split(',').map(id => id.trim()).filter(Boolean);
+        const admins = await getAdminIds();
 
         if (admins.length === 0) {
-            logger.warn('No admins configured (TELEGRAM_ADMIN_IDS missing)');
-            // Fallback (если переменная пуста, используем channel ID)
+            logger.warn('No admins configured (TELEGRAM_ADMIN_IDS or DB meta missing)');
+            // Fallback (если список пуст, используем channel ID)
             if (process.env.TELEGRAM_CHANNEL_ID) admins.push(process.env.TELEGRAM_CHANNEL_ID);
         }
 
@@ -780,9 +779,7 @@ bot.action(/^book_(transport|excursion|accommodation)_(.+)$/, wrapHandler('book_
 
 async function sendBookingNotification(ctx, bookingMessage) {
     try {
-        // Получаем админов из .env
-        const adminEnv = process.env.TELEGRAM_ADMIN_IDS || '';
-        const admins = adminEnv.split(',').map(id => id.trim()).filter(Boolean);
+        const admins = await getAdminIds();
 
         for (const adminId of admins) {
             try {

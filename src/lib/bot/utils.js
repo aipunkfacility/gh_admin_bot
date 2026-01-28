@@ -450,21 +450,18 @@ export function wrapHandler(name, handler) {
 }
 
 /**
- * Проверяет, является ли пользователь администратором
- * @param {number} userId - ID пользователя Telegram
- * @returns {Promise<boolean>}
+ * Возвращает полный список ID администраторов (из .env и БД)
+ * @returns {Promise<number[]>}
  */
-export async function isAdmin(userId) {
+export async function getAdminIds() {
   try {
-    // 1. Проверка через .env (Мастер-админы)
+    // 1. Из .env (Мастер-админы)
     const envAdminIds = (process.env.TELEGRAM_ADMIN_IDS || '').split(',')
       .map(id => parseInt(id.trim()))
       .filter(id => !isNaN(id));
 
-    if (envAdminIds.includes(userId)) return true;
-
-    // 2. Проверка через Базу Данных (Дополнительные админы)
-    // Используем getCollection('site-meta') для получения всех ключей и поиска 'bot_admins'
+    // 2. Из Базы Данных (Дополнительные админы)
+    let dbAdminIds = [];
     const db = getSupabase();
     if (db) {
       const { data, error } = await db
@@ -474,16 +471,26 @@ export async function isAdmin(userId) {
         .single();
 
       if (!error && data?.data && Array.isArray(data.data)) {
-        const dbAdminIds = data.data.map(id => parseInt(id)).filter(id => !isNaN(id));
-        if (dbAdminIds.includes(userId)) return true;
+        dbAdminIds = data.data.map(id => parseInt(id)).filter(id => !isNaN(id));
       }
     }
 
-    return false;
+    // Объединяем и удаляем дубликаты
+    return [...new Set([...envAdminIds, ...dbAdminIds])];
   } catch (error) {
-    console.error('❌ [Bot] Error in isAdmin check:', error.message);
-    return false;
+    console.error('❌ [Bot] Error fetching admin IDs:', error.message);
+    return [];
   }
+}
+
+/**
+ * Проверяет, является ли пользователь администратором
+ * @param {number} userId - ID пользователя Telegram
+ * @returns {Promise<boolean>}
+ */
+export async function isAdmin(userId) {
+  const adminIds = await getAdminIds();
+  return adminIds.includes(Number(userId));
 }
 
 /**

@@ -76,7 +76,7 @@ if (collection === 'transport-items' && isArray) {
     groupedItems = categories.map((cat: BaseItem) => {
         // Match by UUID or Slug
         const filteredItems = items.filter((i: BaseItem) => 
-            i.categoryId === cat.id || (cat.slug && i.categoryId === cat.slug)
+            i.categoryId === cat.id || i.categoryId === (cat as any)._uuid
         );
         return {
             ...cat,
@@ -88,7 +88,7 @@ if (collection === 'transport-items' && isArray) {
     // Добавляем байки без категорий, если есть
     const uncategorizedItems = items.filter((i: BaseItem) => {
         if (!i.categoryId) return true;
-        return !categories.find((c: BaseItem) => c.id === i.categoryId || (c.slug && i.categoryId === c.slug));
+        return !categories.find((c: BaseItem) => c.id === i.categoryId || (c as any)._uuid === i.categoryId);
     });
     if (uncategorizedItems.length > 0) {
         groupedItems.push({
@@ -106,7 +106,7 @@ if (collection === 'excursions' && isArray) {
     groupedItems = categories.map((cat: BaseItem) => {
         // Match by UUID or Slug
         const filteredItems = items.filter((i: BaseItem) => 
-            i.categoryId === cat.id || (cat.slug && i.categoryId === cat.slug)
+            i.categoryId === cat.id || i.categoryId === (cat as any)._uuid
         );
         return {
             ...cat,
@@ -116,7 +116,7 @@ if (collection === 'excursions' && isArray) {
     });
     const uncategorizedItems = items.filter((i: BaseItem) => {
         if (!i.categoryId) return true;
-        return !categories.find((c: BaseItem) => c.id === i.categoryId || (c.slug && i.categoryId === c.slug));
+        return !categories.find((c: BaseItem) => c.id === i.categoryId || (c as any)._uuid === i.categoryId);
     });
     if (uncategorizedItems.length > 0) {
         groupedItems.push({

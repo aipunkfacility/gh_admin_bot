@@ -44,11 +44,11 @@ const accommodations = (accommodationsRaw || []) as Accommodation[];
 const services = (servicesRaw || []) as Service[];
 
 // Популярные элементы
-const popularItems: Array<Excursion | (TransportItem & { type: string }) | Accommodation | Service> = [
-    ...excursions.filter(i => i.isPopular && i.isActive !== false),
+const popularItems: Array<any> = [
+    ...excursions.filter(i => i.isPopular && i.isActive !== false).map(i => ({...i, type: 'excursion'})),
     ...transport.filter(i => i.isPopular && i.isActive !== false).map(i => ({...i, type: 'transport'})),
-    ...accommodations.filter(i => i.isPopular && i.isActive !== false),
-    ...services.filter(i => i.isPopular && i.isActive !== false),
+    ...accommodations.filter(i => i.isPopular && i.isActive !== false).map(i => ({...i, type: 'accommodation'})),
+    ...services.filter(i => i.isPopular && i.isActive !== false).map(i => ({...i, type: 'service'})),
 ];
 
 const activeExcursions = excursions.filter(i => i.isActive !== false);

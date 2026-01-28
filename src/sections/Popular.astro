@@ -1,20 +1,11 @@
----
 import ServiceCard from '../components/ServiceCard.astro';
 import TransportCard from '../components/TransportCard.astro';
+import AccommodationCard from '../components/AccommodationCard.astro';
 import type { Category } from '../lib/schemas';
 
 interface Item {
-  type?: string;
-  title: string;
-  image?: string | null;
-  shortDescription?: string | null;
-
-  priceFrom?: string | null;
-  duration?: string | null;
-  // Transport specific (partial)
-  categoryId?: string; 
-  pricePerDay?: string | null;
-  useCases?: string | null;
+  type: string;
+  [key: string]: any;
 }
 
 interface Props {
@@ -38,19 +29,18 @@ const { items, categories } = Astro.props;
             <TransportCard
               {...item}
               categories={categories}
-              categoryId={item.categoryId || ''}
-              pricePerDay={item.pricePerDay || ''}
+            />
+          );
+        } else if (item.type === 'accommodation') {
+          return (
+            <AccommodationCard 
+              {...item}
             />
           );
         } else {
           return (
             <ServiceCard 
-              title={item.title}
-              image={item.image}
-              shortDescription={item.shortDescription}
-
-              priceFrom={item.priceFrom}
-              duration={item.duration}
+              {...item}
             />
           );
         }

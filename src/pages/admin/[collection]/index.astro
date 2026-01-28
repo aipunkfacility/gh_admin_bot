@@ -71,27 +71,25 @@ const activeCount = isArray ? items.filter((i: BaseItem) => i.isActive).length :
 // Группировка для транспорта
 let groupedItems: GroupedCategory[] | null = null;
 
-const transportTitlesMap: Record<string, string> = {
-    'standard': 'Стандарт',
-    'comfort': 'Комфорт',
-    'maxi': 'Макси-скутеры',
-    'moto': 'Мотоциклы',
-    'car': 'Автомобили'
-};
-
 if (collection === 'transport-items' && isArray) {
     const categories = await getCollection<BaseItem[]>('transport-categories.json');
-    groupedItems = categories.map((cat: BaseItem) => ({
-        ...cat,
-        items: items.filter((i: BaseItem) => i.categoryId === cat.id),
-        slug: cat.slug || ''
-    })).map(cat => ({
-        ...cat,
-        title: (cat.slug && transportTitlesMap[cat.slug]) || cat.title || cat.slug
-    }));
+    groupedItems = categories.map((cat: BaseItem) => {
+        // Match by UUID or Slug
+        const filteredItems = items.filter((i: BaseItem) => 
+            i.categoryId === cat.id || (cat.slug && i.categoryId === cat.slug)
+        );
+        return {
+            ...cat,
+            items: filteredItems,
+            slug: cat.slug || ''
+        };
+    });
     
     // Добавляем байки без категорий, если есть
-    const uncategorizedItems = items.filter((i: BaseItem) => !i.categoryId || !categories.find((c: BaseItem) => c.id === i.categoryId));
+    const uncategorizedItems = items.filter((i: BaseItem) => {
+        if (!i.categoryId) return true;
+        return !categories.find((c: BaseItem) => c.id === i.categoryId || (c.slug && i.categoryId === c.slug));
+    });
     if (uncategorizedItems.length > 0) {
         groupedItems.push({
             id: 'uncategorized',
@@ -105,12 +103,21 @@ if (collection === 'transport-items' && isArray) {
 // Группировка для экскурсий
 if (collection === 'excursions' && isArray) {
     const categories = await getCollection<BaseItem[]>('excursion-categories.json');
-    groupedItems = categories.map((cat: BaseItem) => ({
-        ...cat,
-        items: items.filter((i: BaseItem) => i.categoryId === cat.id),
-        slug: cat.slug || ''
-    }));
-    const uncategorizedItems = items.filter((i: BaseItem) => !i.categoryId || !categories.find((c: BaseItem) => c.id === i.categoryId));
+    groupedItems = categories.map((cat: BaseItem) => {
+        // Match by UUID or Slug
+        const filteredItems = items.filter((i: BaseItem) => 
+            i.categoryId === cat.id || (cat.slug && i.categoryId === cat.slug)
+        );
+        return {
+            ...cat,
+            items: filteredItems,
+            slug: cat.slug || ''
+        };
+    });
+    const uncategorizedItems = items.filter((i: BaseItem) => {
+        if (!i.categoryId) return true;
+        return !categories.find((c: BaseItem) => c.id === i.categoryId || (c.slug && i.categoryId === c.slug));
+    });
     if (uncategorizedItems.length > 0) {
         groupedItems.push({
             id: 'uncategorized',

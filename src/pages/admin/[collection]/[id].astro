@@ -58,6 +58,29 @@ if (!isCreate && id && collection) {
     });
 }
 
+// --- Dynamic Categories for Selection ---
+if (collection === 'excursions' || collection === 'transport-items') {
+    const catCollection = collection === 'excursions' ? 'excursion-categories' : 'transport-categories';
+    try {
+        const categories = await getCollection(catCollection);
+        const categoryField = schema.fields.find(f => f.name === 'categoryId');
+        if (categoryField && Array.isArray(categories)) {
+            categoryField.options = categories.map(cat => ({
+                value: cat.slug || cat.id,
+                label: cat.title
+            }));
+            // Add UUID as fallback for existing data that might be UUID-based
+            categories.forEach(cat => {
+                if (cat.id && cat.id !== cat.slug) {
+                    (categoryField.options as any).push({ value: cat.id, label: `${cat.title} (UUID)` });
+                }
+            });
+        }
+    } catch (e) {
+        console.error('Error fetching dynamic categories:', e);
+    }
+}
+
 // Helper to get nested value (e.g. contacts.telegram)
 const getValue = (obj: any, path: string): any => {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);

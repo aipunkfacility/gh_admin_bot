@@ -303,11 +303,26 @@ bot.action(/^excursions_page_(\d+)$/, wrapHandler('excursions_page', async (ctx)
 
 async function showExcursionsList(ctx, page, categoryId) {
     try {
+        console.log(`🔍 [Debug] showExcursionsList called. Page: ${page}, CategoryId: ${categoryId}`);
+
         let items = await getCollection('excursions');
-        items = items.filter(i => i.isActive === true);
+        console.log(`🔍 [Debug] Total excursions fetched: ${items.length}`);
+
+        items = items.filter(i => {
+            // Loose check for true (handle 1, 'true', etc if needed, but usually boolean in Supabase)
+            return i.isActive === true;
+        });
+        console.log(`🔍 [Debug] Active excursions: ${items.length}`);
 
         if (categoryId) {
-            items = items.filter(i => i.categoryId === categoryId);
+            items = items.filter(i => {
+                const match = i.categoryId === categoryId;
+                if (!match && items.length < 5) { // Log mismatch for first few only to avoid spam
+                    console.log(`   [Mismatch] Item: ${i.title}, ItemCat: ${i.categoryId} != RequestCat: ${categoryId}`);
+                }
+                return match;
+            });
+            console.log(`🔍 [Debug] Filtered by category ${categoryId}: ${items.length}`);
         }
 
         if (!items || items.length === 0) {
@@ -322,6 +337,8 @@ async function showExcursionsList(ctx, page, categoryId) {
             return;
         }
 
+        // ... rest of function
+
         const { items: pageItems, currentPage, totalPages, hasNext, hasPrev } = paginate(items, page, 3);
 
         const categoryName = categoryId
@@ -331,6 +348,7 @@ async function showExcursionsList(ctx, page, categoryId) {
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
+            // ... item rendering
             const imageUrl = getFullImageUrl(item.tgImage || item.image);
             const caption = `🌴 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.shortDescription || '')}\n\n💰 ${escapeMarkdown(item.priceFrom || 'уточняйте')}`;
 
@@ -342,7 +360,6 @@ async function showExcursionsList(ctx, page, categoryId) {
             await replyWithImageFallback(ctx, imageUrl, caption, keyboard);
         }
 
-        // Навигация (Новая система!)
         const navButtons = buildPaginationKeyboard('excursions', { currentPage, totalPages, hasNext, hasPrev }, [
             { text: '◀️ Назад к категориям', callback_data: 'cat_excursions' },
             { text: '🏠 Главное меню', callback_data: 'back_to_start' }
@@ -353,7 +370,7 @@ async function showExcursionsList(ctx, page, categoryId) {
         });
 
     } catch (error) {
-        logger.error('Error loading excursions', { error: error.message });
+        logger.error('Error loading excursions', { error: error.message, stack: error.stack });
         await ctx.reply('❌ Ошибка загрузки экскурсий.');
     }
 }

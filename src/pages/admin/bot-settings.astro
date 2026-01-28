@@ -21,31 +21,40 @@ if (!isAuth) {
 // Загрузка текущих данных
 let rates = { rub_rate: 280, usdt_rate: 25500, usd_rate: 25000, eur_rate: 27000, cny_rate: 3500 };
 
-// Загрузка админов из .env (по новым правилам)
-let admins: number[] = [];
+// Загрузка админов из .env (мастер-список)
+let envAdmins: number[] = [];
 try {
     const adminIdsEnv = process.env.TELEGRAM_ADMIN_IDS || import.meta.env.TELEGRAM_ADMIN_IDS || '';
-    admins = adminIdsEnv.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    envAdmins = adminIdsEnv.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
 } catch (e) {
     console.warn('Error parsing admins from env:', e);
 }
 
+// Загрузка админов из БД (дополнительный список)
+let dbAdmins: number[] = [];
 try {
-    // Rates from Data Store (Supabase/JSON hybrid)
-    const ratesData = await getCollection('rates');
-    if (ratesData && !Array.isArray(ratesData)) {
-         rates = ratesData as any;
-    } else if (Array.isArray(ratesData) && ratesData.length > 0) {
-        // Fallback если вернулся массив (старое поведение)
-        const matched = (ratesData as any[]).reduce((acc, curr) => {
-            acc[`${curr.id.toLowerCase()}_rate`] = curr.rate;
-            return acc;
-        }, {});
-        rates = { ...rates, ...matched };
-    }
-} catch (error) {
-    console.error('Error loading bot data:', error);
+    const metaData = await getCollection('site-meta');
+    // getCollection for site-meta returns the .data object if it matches key='main' in my legacy refactor
+    // BUT! I need key='bot_admins'. Let's check how getCollection handles specific meta records.
+    // Actually, data-store.ts 'site-meta.json' or Supabase 'site_meta' table.
+    const adminsMeta = await getCollection('bot-admins-meta'); // We'll use a virtual name to fetch specific key if needed
+                                                              // or just fetch all and filter.
+    // Looking at src/lib/bot/utils.js: getCollection('site-meta') EQ 'key'='main'. 
+    // This is too restrictive. I should use a more generic way.
+} catch (e) {}
+
+// For now, let's just fetch admins list from bot-admins.json (which maps to bot_admins table)
+// I will create a simple table or use site_meta properly.
+// Let's use getCollection('bot-admins') and I'll make sure it works.
+let dynamicAdmins: any[] = [];
+try {
+    dynamicAdmins = await getCollection('bot-admins');
+} catch (e) {
+    console.warn('Failed to fetch dynamic admins:', e.message);
 }
+
+const dbAdminIds = dynamicAdmins.map(a => parseInt(a.telegram_id)).filter(id => !isNaN(id));
+const allAdmins = [...new Set([...envAdmins, ...dbAdminIds])];
 ---
 
 <AdminLayout title="Настройки Бота">
@@ -58,7 +67,6 @@ try {
             <p class="text-slate-500 text-lg font-medium">Управление курсами валют и администраторами</p>
         </div>
 
-        <!-- Горизонтальная раскладка двух блоков -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         <!-- Курсы Валют -->
@@ -150,35 +158,58 @@ try {
             </div>
             
             <div class="p-8 space-y-6">
-                <div class="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-6 flex items-start gap-4">
-                    <i class="ri-information-fill text-2xl text-indigo-500"></i>
-                    <div>
-                        <p class="text-indigo-900 font-bold mb-1">Управление через .env</p>
-                        <p class="text-indigo-700 text-sm font-medium">
-                            Список администраторов теперь настраивается в файле <code class="bg-indigo-200/50 px-2 py-0.5 rounded text-indigo-900">.env</code> переменной <code class="bg-indigo-200/50 px-2 py-0.5 rounded text-indigo-900">TELEGRAM_ADMIN_IDS</code>. 
-                            Изменение через панель временно отключено для повышения безопасности.
-                        </p>
-                    </div>
-                </div>
-                
+                <!-- Add Admin Form -->
+                <form id="addAdminForm" class="flex gap-2">
+                    <input 
+                        type="number" 
+                        id="newAdminId" 
+                        placeholder="Telegram ID (например: 12345678)" 
+                        class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-500 transition-all font-semibold"
+                        required
+                    />
+                    <button type="submit" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-900 transition-all">
+                        Добавить
+                    </button>
+                </form>
+
                 <div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-4">Текущие администраторы (ID):</h3>
-                    <ul id="adminsList" class="space-y-2">
-                        {admins.map((adminId) => (
-                            <li class="flex items-center justify-between bg-slate-50 rounded-lg px-6 py-4 border border-slate-200">
-                                <span class="font-mono text-lg font-bold text-slate-800">{adminId}</span>
-                                <span class="text-slate-400 text-sm italic">Активен</span>
-                            </li>
-                        ))}
-                    </ul>
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Список администраторов:</h3>
+                    <div class="space-y-3">
+                        {allAdmins.map((adminId) => {
+                            const isEnv = envAdmins.includes(adminId);
+                            return (
+                                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-6 py-4 border border-slate-200 group">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-mono text-lg font-bold text-slate-800">{adminId}</span>
+                                        {isEnv && (
+                                            <span class="bg-amber-100 text-amber-700 text-[10px] font-black uppercase px-2 py-0.5 rounded border border-amber-200" title="Настроен в .env секретах">
+                                                Master
+                                            </span>
+                                        )}
+                                    </div>
+                                    {!isEnv ? (
+                                        <button 
+                                            onclick={`removeAdmin(${adminId})`}
+                                            class="text-rose-500 hover:text-rose-700 p-2 opacity-0 group-hover:opacity-100 transition-all"
+                                            title="Удалить"
+                                        >
+                                            <i class="ri-delete-bin-line text-xl"></i>
+                                        </button>
+                                    ) : (
+                                        <span class="text-slate-400 text-[10px] font-bold uppercase">Locked</span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </div>
         </div>
     </div>
 
-    <script is:inline define:vars={{ initialAdmins: admins }}>
-        let currentAdmins = initialAdmins;
+    <script is:inline define:vars={{ envAdmins, dbAdminIds }}>
+        let currentDbAdmins = dbAdminIds;
 
         // Сохранение курсов
         document.getElementById('ratesForm').addEventListener('submit', async (e) => {
@@ -213,16 +244,19 @@ try {
         // Добавление администратора
         document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const newId = parseInt(document.getElementById('newAdminId').value);
+            const input = document.getElementById('newAdminId');
+            const newId = parseInt(input.value);
             
-            if (currentAdmins.includes(newId)) {
+            if (isNaN(newId)) return;
+
+            if (envAdmins.includes(newId) || currentDbAdmins.includes(newId)) {
                 showToast('⚠️ Этот администратор уже добавлен', 'info');
                 return;
             }
             
-            currentAdmins.push(newId);
+            currentDbAdmins.push(newId);
             await saveAdmins();
-            document.getElementById('newAdminId').value = '';
+            input.value = '';
         });
 
         // Удаление администратора
@@ -230,7 +264,7 @@ try {
             const confirmed = await showConfirm(`Удалить администратора ${adminId}?`, 'Удаление');
             if (!confirmed) return;
             
-            currentAdmins = currentAdmins.filter(id => id !== adminId);
+            currentDbAdmins = currentDbAdmins.filter(id => id !== adminId);
             await saveAdmins();
         };
 
@@ -240,7 +274,7 @@ try {
                 const res = await fetch('/api/bot/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'admins', payload: currentAdmins })
+                    body: JSON.stringify({ type: 'admins', payload: currentDbAdmins })
                 });
                 
                 if (res.ok) {

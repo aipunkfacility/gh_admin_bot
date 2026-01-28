@@ -450,6 +450,43 @@ export function wrapHandler(name, handler) {
 }
 
 /**
+ * Проверяет, является ли пользователь администратором
+ * @param {number} userId - ID пользователя Telegram
+ * @returns {Promise<boolean>}
+ */
+export async function isAdmin(userId) {
+  try {
+    // 1. Проверка через .env (Мастер-админы)
+    const envAdminIds = (process.env.TELEGRAM_ADMIN_IDS || '').split(',')
+      .map(id => parseInt(id.trim()))
+      .filter(id => !isNaN(id));
+
+    if (envAdminIds.includes(userId)) return true;
+
+    // 2. Проверка через Базу Данных (Дополнительные админы)
+    // Используем getCollection('site-meta') для получения всех ключей и поиска 'bot_admins'
+    const db = getSupabase();
+    if (db) {
+      const { data, error } = await db
+        .from('site_meta')
+        .select('data')
+        .eq('key', 'bot_admins')
+        .single();
+
+      if (!error && data?.data && Array.isArray(data.data)) {
+        const dbAdminIds = data.data.map(id => parseInt(id)).filter(id => !isNaN(id));
+        if (dbAdminIds.includes(userId)) return true;
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.error('❌ [Bot] Error in isAdmin check:', error.message);
+    return false;
+  }
+}
+
+/**
  * Форматирует карточку услуги для Telegram
  * @param {Object} item - Объект услуги
  * @returns {string} Отформатированный текст
@@ -460,9 +497,6 @@ export function formatServiceCard(item) {
   if (item.shortDescription) {
     text += `${escapeMarkdown(item.shortDescription)}\n\n`;
   }
-
-
-
 
   if (item.features?.length) {
     text += `✅ *Особенности:*\n`;

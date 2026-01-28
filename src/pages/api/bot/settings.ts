@@ -42,8 +42,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
 
         if (type === 'admins') {
-            // Управление админами теперь через .env (TELEGRAM_ADMIN_IDS)
-            return new Response(JSON.stringify({ error: 'Управление администраторами перенесено в .env' }), { status: 400 });
+            // Payload is [123, 456, ...] - list of telegram IDs
+            await saveItem('site-meta', {
+                id: 'bot_admins',
+                data: payload // saving the array directly in the data field
+            });
+            return new Response(JSON.stringify({ success: true }), { status: 200 });
         }
 
         return new Response(JSON.stringify({ error: 'Invalid type' }), { status: 400 });

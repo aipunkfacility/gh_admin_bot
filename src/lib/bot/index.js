@@ -139,12 +139,20 @@ async function showTransportList(ctx, page, categoryId) {
         items = items.filter(i => i.isActive === true);
 
         if (categoryId) {
-            // categoryId is a Slug (due to normalizeItem). We need the UUID for filtering items.
-            const categories = await getCollection('transport_categories');
-            const category = categories.find(c => c.id === categoryId);
-            const filterId = category?.uuid || categoryId;
+            // Transport items use SLUG as categoryId in DB (unlike Excursions which use UUID)
+            // So we do NOT need to map to UUID here.
+            const filterId = categoryId;
 
-            items = items.filter(i => i.categoryId === filterId);
+            console.log(`🔍 [Debug Transport] ReqSlug: ${categoryId}, FoundUUID: ${filterId}`);
+
+            items = items.filter(i => {
+                const match = i.categoryId === filterId;
+                if (!match && items.length < 5) {
+                    console.log(`   [Mismatch Transport] Item: ${i.title}, ItemCat: ${i.categoryId} != Req: ${filterId}`);
+                }
+                return match;
+            });
+            console.log(`🔍 [Debug Transport] items found: ${items.length}`);
         }
 
         if (!items || items.length === 0) {

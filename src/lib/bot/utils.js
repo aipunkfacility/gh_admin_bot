@@ -96,6 +96,7 @@ function normalizeItem(item) {
   // Ensure ID stability (slug preferred if available for text IDs)
   // Admin panel often uses slugs as visual IDs, while Supabase uses UUIDs as Primary Keys.
   if (normalized.slug) {
+    normalized.uuid = normalized.id; // Preserve original UUID for FK lookups
     normalized.id = normalized.slug;
   }
 

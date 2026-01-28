@@ -139,7 +139,12 @@ async function showTransportList(ctx, page, categoryId) {
         items = items.filter(i => i.isActive === true);
 
         if (categoryId) {
-            items = items.filter(i => i.categoryId === categoryId);
+            // categoryId is a Slug (due to normalizeItem). We need the UUID for filtering items.
+            const categories = await getCollection('transport_categories');
+            const category = categories.find(c => c.id === categoryId);
+            const filterId = category?.uuid || categoryId;
+
+            items = items.filter(i => i.categoryId === filterId);
         }
 
         if (!items || items.length === 0) {
@@ -315,14 +320,19 @@ async function showExcursionsList(ctx, page, categoryId) {
         console.log(`🔍 [Debug] Active excursions: ${items.length}`);
 
         if (categoryId) {
+            // categoryId is a Slug (due to normalizeItem). We need the UUID for filtering items.
+            const categories = await getCollection('excursion_categories');
+            const category = categories.find(c => c.id === categoryId);
+            const filterId = category?.uuid || categoryId;
+
             items = items.filter(i => {
-                const match = i.categoryId === categoryId;
+                const match = i.categoryId === filterId;
                 if (!match && items.length < 5) { // Log mismatch for first few only to avoid spam
-                    console.log(`   [Mismatch] Item: ${i.title}, ItemCat: ${i.categoryId} != RequestCat: ${categoryId}`);
+                    console.log(`   [Mismatch] Item: ${i.title}, ItemCat: ${i.categoryId} != RequestCat: ${filterId} (Slug: ${categoryId})`);
                 }
                 return match;
             });
-            console.log(`🔍 [Debug] Filtered by category ${categoryId}: ${items.length}`);
+            console.log(`🔍 [Debug] Filtered by category ${categoryId} (UUID: ${filterId}): ${items.length}`);
         }
 
         if (!items || items.length === 0) {

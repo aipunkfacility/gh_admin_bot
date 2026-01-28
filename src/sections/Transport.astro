@@ -18,7 +18,7 @@ const activeCategories = categories.filter(c => c.isActive !== false);
     </h2>
 
     {activeCategories.map(category => {
-      const items = transportItems.filter(item => item.categoryId === category.id && item.isActive);
+      const items = transportItems.filter(item => item.categoryId === (category._uuid || category.id) && item.isActive);
       if (items.length === 0) return null;
 
       return (

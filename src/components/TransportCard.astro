@@ -15,7 +15,7 @@ interface Props {
 }
 
 const { title, image, categoryId, useCases, benefits, specs, features, pricePerDay, categories } = Astro.props;
-const category = categories.find(c => c.id === categoryId);
+const category = categories.find(c => c.id === categoryId || (c as any)._uuid === categoryId);
 const hasDetails = !!(benefits?.length || specs?.length || features?.length);
 const message = `Хочу забронировать: ${title}`;
 const safeMessage = message.replace(/'/g, "\\'");

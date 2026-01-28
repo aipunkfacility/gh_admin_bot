@@ -3,7 +3,20 @@ dist/
 .DS_Store
 *.log
 .env*
-.agent/
+
+# .agent/ Engine & Rules (Tracking)
+.agent/skills_data.json
+
+# Docs & History (Tracking)
+!docs/history/*.md
+!docs/CHANGELOG.md
+
+# Agent configs & workflows
+.agent/history/
+.agent/skills/
+
+# Root workflows folder (keep in git)
+!workflows/*.md
 .vscode/
 
 # Build caches

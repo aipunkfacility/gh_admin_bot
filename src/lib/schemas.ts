@@ -126,7 +126,7 @@ export const schemas: Record<string, SchemaMetadata> = {
         schema: TransportSchema,
         fields: [
             { name: 'title', label: 'Название', type: 'text', required: true },
-            { name: 'categoryId', label: 'Категория', type: 'select', options: ['standard', 'comfort', 'maxi', 'moto', 'car'], required: true, colSpan: 1 },
+            { name: 'categoryId', label: 'Категория', type: 'select', options: [], required: true, colSpan: 1 },
             { name: 'pricePerDay', label: 'Цена/день', type: 'text', colSpan: 1 },
             { name: 'isActive', label: 'Активно', type: 'checkbox', default: true, colSpan: 1 },
             { name: 'isPopular', label: 'Популярное', type: 'checkbox', colSpan: 1 },
@@ -144,11 +144,7 @@ export const schemas: Record<string, SchemaMetadata> = {
         fields: [
             { name: 'title', label: 'Название', type: 'text', required: true },
             {
-                name: 'categoryId', label: 'Категория', type: 'select', options: [
-                    { value: 'nature', label: 'Приключения и Природа' },
-                    { value: 'history', label: 'История и Города' },
-                    { value: 'islands', label: 'Острова и Парки' }
-                ], required: true, colSpan: 2
+                name: 'categoryId', label: 'Категория', type: 'select', options: [], required: true, colSpan: 2
             },
             { name: 'image', label: 'Фото', type: 'image' },
             { name: 'priceFrom', label: 'Цена от', type: 'text', colSpan: 1 },

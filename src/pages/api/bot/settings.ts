@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { writeJsonFile } from '../../../lib/bot/utils.js';
 import { checkAuth, unauthorizedResponse } from '../../../lib/auth';
+import { saveItem } from '../../../lib/data-store';
 
 export const prerender = false;
 
@@ -24,11 +24,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     try {
         const data = await request.json();
         const { type, payload } = data;
-        const { saveItem } = await import('../../../lib/data-store');
 
         if (type === 'rates') {
             // Payload is { rub_rate: 280, ... }
-            // We need to save each one.
             const updates = [
                 { id: 'RUB', rate: payload.rub_rate },
                 { id: 'USDT', rate: payload.usdt_rate },
@@ -40,16 +38,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             // Parallel save
             await Promise.all(updates.map(u => saveItem('rates', u)));
 
-            // Also keep legacy file updated? 
-            // Ideally no, but for safety in transition we could.
-            // But writeJsonFile is legacy. Let's trust data-store (which writes to file if Supabase off).
-
             return new Response(JSON.stringify({ success: true }), { status: 200 });
         }
 
         if (type === 'admins') {
-            await writeJsonFile('admins.json', payload);
-            return new Response(JSON.stringify({ success: true }), { status: 200 });
+            // Управление админами теперь через .env (TELEGRAM_ADMIN_IDS)
+            return new Response(JSON.stringify({ error: 'Управление администраторами перенесено в .env' }), { status: 400 });
         }
 
         return new Response(JSON.stringify({ error: 'Invalid type' }), { status: 400 });

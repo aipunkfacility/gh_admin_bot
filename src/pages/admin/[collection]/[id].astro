@@ -62,7 +62,10 @@ if (!isCreate && id && collection) {
 if (collection === 'excursions' || collection === 'transport-items') {
     const catCollection = collection === 'excursions' ? 'excursion-categories' : 'transport-categories';
     try {
+        console.log(`[AdminID] Fetching categories for ${collection} from ${catCollection}`);
         const categories = await getCollection(catCollection);
+        console.log(`[AdminID] Found ${Array.isArray(categories) ? categories.length : 'non-array'} categories`);
+        
         const categoryField = schema.fields.find(f => f.name === 'categoryId');
         if (categoryField && Array.isArray(categories)) {
             // Prioritize UUID (_uuid) for value to ensure DB integrity
@@ -70,6 +73,9 @@ if (collection === 'excursions' || collection === 'transport-items') {
                 value: cat._uuid || cat.id,
                 label: cat.title
             }));
+            console.log(`[AdminID] Updated field ${categoryField.name} with ${categoryField.options.length} options`);
+        } else {
+            console.warn(`[AdminID] categoryField not found or categories not an array. Field: ${!!categoryField}`);
         }
     } catch (e) {
         console.error('Error fetching dynamic categories:', e);

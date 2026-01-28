@@ -34,12 +34,184 @@ export function validateNumberInput(input) {
   return parseInt(cleaned, 10);
 }
 
+import { createClient } from '@supabase/supabase-js';
+
+// Инициализация Supabase клиента (ленивая)
+let supabase = null;
+
+function getSupabase() {
+  if (supabase) return supabase;
+
+  // Приоритет: Service Role Key (Admin) -> Anon Key (Public)
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+  if (process.env.USE_SUPABASE === 'true' && url && key) {
+    try {
+      supabase = createClient(url, key);
+      const isService = key === process.env.SUPABASE_SERVICE_ROLE_KEY;
+      console.log(`🔌 [Bot] Supabase Client Initialized (Lazy). Mode: ${isService ? 'Admin (Service Role)' : 'Public (Anon)'}`);
+    } catch (e) {
+      console.error('❌ [Bot] Failed to initialize Supabase:', e.message);
+    }
+  } else {
+    if (process.env.USE_SUPABASE === 'true') {
+      console.warn('⚠️ [Bot] USE_SUPABASE=true but URL or KEY is missing.');
+    }
+  }
+  return supabase;
+}
+
 /**
- * Читает JSON файл
- * @param {string} filepath - Путь к файлу относительно public/data
- * @returns {Promise<any>} Данные из JSON
+ * Преобразует имя файла в имя таблицы
+ */
+function getTableName(filename) {
+  let name = filename;
+  if (name.endsWith('.json')) name = name.slice(0, -5);
+
+  // Явный маппинг для несовпадающих имен таблиц
+  const mapping = {
+    'excursion-items': 'excursions',
+    'excursions': 'excursions',
+    'accommodation-items': 'accommodations',
+    'accommodations': 'accommodations',
+    'transport-items': 'transport_items'
+  };
+
+  if (mapping[name]) {
+    return mapping[name];
+  }
+
+  if (name.includes('-')) name = name.replace(/-/g, '_');
+  return name;
+}
+
+
+/**
+ * Нормализация данных из БД (snake_case -> camelCase) для совместимости
+ */
+function normalizeItem(item) {
+  const normalized = { ...item };
+
+  // Ensure ID stability (slug preferred if available for text IDs)
+  // Admin panel often uses slugs as visual IDs, while Supabase uses UUIDs as Primary Keys.
+  if (normalized.slug) {
+    normalized.id = normalized.slug;
+  }
+
+  // Backwards compatibility for fields that have specific names in the Bot logic
+  if (normalized.category_slug) {
+    normalized.categoryId = normalized.category_slug;
+  }
+
+  return normalized;
+}
+
+/**
+ * Читает данные (из JSON или Supabase)
+ * @param {string} filepath - Имя файла (например 'transport-items.json')
+ * @returns {Promise<any>} Данные
  */
 export async function readJsonFile(filepath) {
+  // 1. Supabase Mode
+  const db = getSupabase();
+  if (db && process.env.USE_SUPABASE === 'true') {
+    const table = getTableName(filepath);
+
+    try {
+      // Special case: site-meta
+      if (table === 'site_meta') {
+        const { data, error } = await db
+          .from('site_meta')
+          .select('data')
+          .eq('key', 'main')
+          .single();
+
+        if (error) throw error;
+        return data?.data || {};
+      }
+
+      // General case
+      let query = db.from(table).select('*');
+
+      const { data, error } = await query;
+
+      // Basic sorting removed (done in JS)
+
+
+      // 2.5 Strict Sorting (JS Side)
+      let sortedData = data || [];
+      if (table !== 'rates' && table !== 'site_meta') {
+        sortedData = [...(data || [])].sort((a, b) => {
+          // Sort by order if available
+          if (a.order !== undefined && b.order !== undefined && a.order !== null && b.order !== null) {
+            if (a.order !== b.order) return a.order - b.order;
+          }
+          // Sort by createdAt or updatedAt as secondary
+          const dateA = new Date(a.createdAt || a.created_at || 0).getTime();
+          const dateB = new Date(b.createdAt || b.created_at || 0).getTime();
+          if (dateA !== dateB) return dateB - dateA;
+
+          return 0;
+        });
+      }
+
+
+      // Special handling for excursions: map category UUIDs to slugs
+      if (table === 'excursions' && sortedData) {
+        try {
+          const { data: cats, error: catError } = await db.from('excursion_categories').select('id, slug');
+          if (catError) console.error('Error fetching cats:', catError);
+          if (cats) {
+            const slugMap = {};
+            cats.forEach(c => {
+              if (c.slug) slugMap[c.id] = c.slug;
+            });
+
+            sortedData.forEach(item => {
+              const catId = item.categoryId;
+              if (catId && slugMap[catId]) {
+                item.category_slug = slugMap[catId];
+              }
+            });
+          }
+        } catch (mapErr) {
+          console.warn('⚠️ [Bot] Failed to map excursion categories:', mapErr.message);
+        }
+      }
+
+
+      if (error) {
+        // Fallback if table doesn't exist (yet)
+        if (error.code === '42P01' || error.code === 'PGRST205') {
+          console.warn(`⚠️ Table ${table} not found, falling back to file.`);
+        } else {
+          console.error(`❌ Supabase Error (${table}):`, error.message);
+          throw error;
+        }
+      } else {
+        // Normalize and returning
+        if (table === 'rates') {
+          const ratesObject = {};
+          (sortedData || []).forEach((item) => {
+            const key = `${item.currency.toLowerCase()}_rate`;
+            ratesObject[key] = Number(item.rate);
+          });
+          return ratesObject;
+        }
+
+        return sortedData.map(normalizeItem);
+      }
+
+    } catch (err) {
+      // Fallback to JSON is handled below if we didn't return
+      if (err.code !== '42P01' && err.code !== 'PGRST205') { // If it's not "table missing", log it
+        console.error(`⚠️ Error reading from DB for ${filepath}:`, err.message);
+      }
+    }
+  }
+
+  // 2. File Mode (Fallback)
   const fs = await import('fs/promises');
   const path = await import('path');
 

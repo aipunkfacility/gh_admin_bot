@@ -11,24 +11,24 @@ interface Props {
 const { mainTitle, mainSubtitle } = Astro.props;
 ---
 
-<section id="hero" class="hero-section" style="min-height: calc(100vh - 80px);">
+<section id="hero" class="hero-section" style="height: calc(100vh - 64px);">
+
   <div class="hero-bg">
-    <div class="hero-bg-container">
-      <Image 
-        src={heroDesktop} 
-        alt={mainTitle}
-        class="hidden lg:block w-full h-full object-cover"
-        loading="eager"
-        fetchpriority="high"
-      />
-      <Image 
-        src={heroMobile} 
-        alt={mainTitle}
-        class="block lg:hidden w-full h-full object-cover"
-        loading="eager"
-        fetchpriority="high"
-      />
-    </div>
+    <Image 
+      src={heroDesktop} 
+      alt={mainTitle}
+      class="hidden lg:block w-full h-full object-cover"
+      loading="eager"
+      fetchpriority="high"
+    />
+
+    <Image 
+      src={heroMobile} 
+      alt={mainTitle}
+      class="block lg:hidden w-full h-full object-cover"
+      loading="eager"
+      fetchpriority="high"
+    />
     <div class="hero-overlay"></div>
   </div>
 

@@ -22,6 +22,7 @@ import {
     wrapHandler,
     buildPaginationKeyboard
 } from './utils.js';
+import { showMainMenu } from './menu.js';
 import { logger } from '../logger.js';
 import rateLimit from 'telegraf-ratelimit';
 
@@ -54,69 +55,7 @@ bot.use(rateLimit(limitConfig));
 bot.use(stage.middleware());
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-
-async function showMainMenu(ctx) {
-    try {
-        const meta = await readJsonFile('site-meta.json');
-        const services = await readJsonFile('services.json');
-
-        const isServiceActive = (id) => services.find(s => s.id === id)?.isActive;
-        const isSectionEnabled = (id) => meta.sections?.find(s => s.id === id)?.enabled ?? true;
-
-        const keyboard = [];
-
-        // Определяем все возможные кнопки
-        const buttons = {
-            // Services
-            'money-exchange': { text: '💰 Обмен валют', callback_data: 'calc_exchange', active: isServiceActive('money-exchange') },
-            'visa-run': { text: '🛂 Визаран', callback_data: 'visarun_info', active: isServiceActive('visa-run') },
-            'transfer': { text: '🚖 Трансфер', callback_data: 'transfer_info', active: isServiceActive('transfer') },
-
-            // Sections
-            'transport': { text: '🏍 Аренда байков', callback_data: 'cat_transport', active: isSectionEnabled('transport') },
-            'excursions': { text: '🌴 Экскурсии', callback_data: 'cat_excursions', active: isSectionEnabled('excursions') },
-            'accommodations': { text: '🏨 Жилье', callback_data: 'cat_accommodations', active: isSectionEnabled('accommodations') },
-            'contacts': { text: '📞 Контакты', callback_data: 'contacts', active: isSectionEnabled('contacts') },
-
-            // Static
-            'leave_feedback': { text: '📝 Оставить отзыв', callback_data: 'leave_feedback', active: true }
-        };
-
-        // Макет сетки (Grid Layout)
-        const layout = [
-            ['money-exchange', 'transport'],
-            ['transfer', 'visa-run'],
-            ['excursions', 'accommodations'],
-            ['contacts'],
-            ['leave_feedback']
-        ];
-
-        // Генерация клавиатуры по макету
-        for (const rowIds of layout) {
-            const row = [];
-            for (const id of rowIds) {
-                const btn = buttons[id];
-                if (btn && btn.active) {
-                    row.push({ text: btn.text, callback_data: btn.callback_data });
-                }
-            }
-            if (row.length > 0) keyboard.push(row);
-        }
-
-        const message = `👋 Добро пожаловать в Green Hill Tours!
-
-Выберите интересующий раздел:`;
-
-        await ctx.reply(message, {
-            reply_markup: {
-                inline_keyboard: keyboard,
-            },
-        });
-    } catch (error) {
-        logger.error('Error in showMainMenu', { error: error.message });
-        await ctx.reply('👋 Добро пожаловать!');
-    }
-}
+// showMainMenu moved to menu.js
 
 
 // ========== КОМАНДА /START ==========
@@ -392,6 +331,7 @@ async function showExcursionsList(ctx, page, categoryId) {
         await ctx.reply(`${categoryName} (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
+            const imageUrl = getFullImageUrl(item.tgImage || item.image);
             const caption = `🌴 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.shortDescription || '')}\n\n💰 ${escapeMarkdown(item.priceFrom || 'уточняйте')}`;
 
             const keyboard = [
@@ -399,10 +339,7 @@ async function showExcursionsList(ctx, page, categoryId) {
                 [{ text: '✅ Забронировать', callback_data: `book_excursion_${item.id}` }],
             ];
 
-            await ctx.reply(caption, {
-                parse_mode: 'Markdown',
-                reply_markup: { inline_keyboard: keyboard },
-            });
+            await replyWithImageFallback(ctx, imageUrl, caption, keyboard);
         }
 
         // Навигация (Новая система!)
@@ -506,6 +443,7 @@ async function showAccommodationsList(ctx, page) {
         await ctx.reply(`🏨 Жилье (${currentPage}/${totalPages}):`);
 
         for (const item of pageItems) {
+            const imageUrl = getFullImageUrl(item.image || item.tgImage);
             const caption = `🏨 *${escapeMarkdown(item.title)}*\n\n${escapeMarkdown(item.slogan || '')}\n\n📍 ${escapeMarkdown(item.address || '')}`;
 
             const keyboard = [
@@ -513,10 +451,7 @@ async function showAccommodationsList(ctx, page) {
                 [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
             ];
 
-            await ctx.reply(caption, {
-                parse_mode: 'Markdown',
-                reply_markup: { inline_keyboard: keyboard },
-            });
+            await replyWithImageFallback(ctx, imageUrl, caption, keyboard);
         }
 
         // Навигация (Новая система!)
@@ -555,7 +490,7 @@ bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', as
         }
 
         const text = formatAccommodationCard(item);
-        const imageUrl = getFullImageUrl(item.tgImage || item.image);
+        const imageUrl = getFullImageUrl(item.image || item.tgImage);
         const buttons = [
             [{ text: '✅ Забронировать', callback_data: `book_accommodation_${item.id}` }],
             [{ text: '◀️ Назад к списку', callback_data: 'accommodations_page_1' }],
@@ -573,7 +508,7 @@ bot.action(/^accommodation_detail_(.+)$/, wrapHandler('accommodation_detail', as
 // Визаран
 bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
     const services = await readJsonFile('services.json');
-    const service = services.find(s => s.id === 'visa-run');
+    const service = services.find(s => s.id === 'visa-run-cambodia');
 
     if (!service || !service.isActive) {
         return ctx.reply('❌ Эта услуга временно недоступна.');
@@ -606,7 +541,7 @@ bot.action('visarun_info', wrapHandler('visarun_info', async (ctx) => {
 // Трансфер
 bot.action('transfer_info', wrapHandler('transfer_info', async (ctx) => {
     const services = await readJsonFile('services.json');
-    const service = services.find(s => s.id === 'transfer');
+    const service = services.find(s => s.id === 'transfer-airport-muine');
 
     if (!service || !service.isActive) {
         return ctx.reply('❌ Эта услуга временно недоступна.');

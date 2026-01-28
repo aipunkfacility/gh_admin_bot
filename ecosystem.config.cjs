@@ -11,8 +11,13 @@ module.exports = {
             HOST: "127.0.0.1"
         },
         env_file: ".env"
-        // Note: We will rely on loading .env via dotenv in the app start
-        // OR we can specify env_file if PM2 version supports it.
-        // Safest way for standard PM2:
+    }, {
+        name: "greenhill-bot",
+        script: "./scripts/poll.js",
+        instances: 1,
+        env: {
+            NODE_ENV: "production"
+        },
+        env_file: ".env"
     }]
 }

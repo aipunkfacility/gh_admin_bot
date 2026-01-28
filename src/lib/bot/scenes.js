@@ -1,8 +1,10 @@
 import { Scenes } from 'telegraf';
 import { readJsonFile } from './utils.js';
 import { formatNumber, validateNumberInput, wrapHandler } from './utils.js';
+import { showMainMenu } from './menu.js';
 
 // ========== КАЛЬКУЛЯТОР ВАЛЮТ (WizardScene) ==========
+
 
 const exchangeWizard = new Scenes.WizardScene(
     'exchange_calculator',
@@ -52,7 +54,8 @@ const exchangeWizard = new Scenes.WizardScene(
             const action = ctx.callbackQuery.data;
 
             if (action === 'back_to_menu') {
-                return ctx.scene.leave();
+                await ctx.scene.leave();
+                return showMainMenu(ctx);
             }
 
             // Сохраняем выбранную валюту

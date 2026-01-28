@@ -26,12 +26,26 @@ function getTableName(collectionName: string): string {
     name = name.slice(0, -5);
   }
 
+  // Явный маппинг для несовпадающих имен таблиц
+  const mapping: Record<string, string> = {
+    'excursion-items': 'excursions',
+    'excursions': 'excursions',
+    'accommodation-items': 'accommodations',
+    'accommodations': 'accommodations',
+    'transport-items': 'transport_items'
+  };
+
+  if (mapping[name]) {
+    return mapping[name];
+  }
+
   if (name.includes('-')) {
     name = name.replace(/-/g, '_');
   }
 
   return name;
 }
+
 
 /**
  * Обработка ошибок
@@ -128,19 +142,8 @@ export async function getCollection<T = any>(name: string): Promise<T> {
     // 1. Формируем запрос
     let query = supabaseAdmin.from(table).select('*');
 
-    // Сортировка: применяем 'order' только если это не спец-таблицы без этой колонки
-    if (table !== 'rates' && table !== 'site_meta') {
-      query = query.order('order', { ascending: true });
-    }
-
-    // Всегда сортируем по дате создания вторично (кроме site_meta)
-    if (table !== 'site_meta') {
-      query = query.order('created_at', { ascending: false });
-    }
-
     const { data, error } = await query;
 
-    // 2. Зонтик безопасности (Fallback на файлы, если таблицы нет)
     if (error) {
       // 42703 = undefined_column, 42P01 = undefined_table
       // Если ошибка в колонке - это баг кода, а не отсутствие таблицы!
@@ -155,48 +158,49 @@ export async function getCollection<T = any>(name: string): Promise<T> {
         const content = await fs.readFile(filePath, 'utf-8');
         return JSON.parse(content);
       } else {
-        // Если ошибка другая (например, column does not exist) - мы должны ее видеть, но для стабильности вернем пустой массив или упадем
         handleSupabaseError(error, `getCollection(${name})`);
         return [] as unknown as T;
       }
     }
 
-    // 3. Специфичная логика для разных таблиц
-
-    // Site Meta - Singleton
-    if (table === 'site_meta' && data && data[0]) {
-      return data[0].data as unknown as T;
+    // 2.5 Strict Sorting (JS Side)
+    let sortedData = data || [];
+    if (table !== 'site_meta' && table !== 'rates') {
+      sortedData = [...(data || [])].sort((a, b) => {
+        if (a.order !== undefined && b.order !== undefined) {
+          if (a.order !== b.order) return a.order - b.order;
+        }
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
     }
 
-    // Rates - Array -> Object (для совместимости с компонентом)
+    // Site Meta - Singleton
+    if (table === 'site_meta' && sortedData && sortedData[0]) {
+      return sortedData[0].data as unknown as T;
+    }
+
+    // Rates - Array -> Object
     if (table === 'rates') {
       const ratesObject: Record<string, number> = {};
-      (data || []).forEach((item: any) => {
+      (sortedData || []).forEach((item: any) => {
         const key = `${item.currency.toLowerCase()}_rate`;
         ratesObject[key] = Number(item.rate);
       });
       return ratesObject as unknown as T;
     }
 
-    // Остальные таблицы - стандартный мапинг + нормализация
-    const normalizedItems = (data || []).map((item: any) => {
-      const normalized: any = { ...item };
-
-      // Normalize common snake_case to camelCase
-      if (normalized.is_active !== undefined && normalized.isActive === undefined) {
-        normalized.isActive = normalized.is_active;
-      }
-      if (normalized.badge_title !== undefined && normalized.badgeTitle === undefined) {
-        normalized.badgeTitle = normalized.badge_title;
-      }
-
-      // Ensure ID/UUID stability
+    // Остальные таблицы - стандартный мапинг
+    const normalizedItems = (sortedData || []).map((item: any) => {
       return {
-        ...normalized,
-        id: normalized.slug || normalized.id,
-        _uuid: normalized.id
+        ...item,
+        id: item.slug || item.id,
+        _uuid: item.id
       };
     });
+
+    return normalizedItems as unknown as T;
 
     return normalizedItems as unknown as T;
 
@@ -293,7 +297,7 @@ export async function saveItem(collectionName: string, item: any) {
         ...rest,
         currency: currencyKey, // Маппим ID в колонку currency
         rate: rest.rate,
-        updated_at: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       };
 
       const { data, error } = await supabaseAdmin
@@ -318,7 +322,7 @@ export async function saveItem(collectionName: string, item: any) {
     // Initialize payload
     const payload: any = {
       ...rest,
-      updated_at: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
 
     // 1. Determine the REAL Primary Key (UUID)

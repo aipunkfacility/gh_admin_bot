@@ -1,0 +1,74 @@
+[
+  {
+    "id": "f7ccf1ad-5136-43fe-b647-a7344af68e20",
+    "currency": "TEST_USD",
+    "rate": "999.99",
+    "buy_rate": null,
+    "sell_rate": null,
+    "bank_name": null,
+    "icon": null,
+    "is_active": true,
+    "updated_at": "2026-01-25T21:09:37.583+00:00",
+    "created_at": "2026-01-25T20:55:33.982938+00:00"
+  },
+  {
+    "id": "8a5acc4b-6774-412b-993e-86a05cd64989",
+    "currency": "USDT",
+    "rate": "25700",
+    "buy_rate": null,
+    "sell_rate": null,
+    "bank_name": null,
+    "icon": null,
+    "is_active": true,
+    "updated_at": "2026-01-27T15:21:04.804+00:00",
+    "created_at": "2026-01-25T20:33:34.235352+00:00"
+  },
+  {
+    "id": "3e33efd7-2c88-4c6e-9eb1-2f18fc0de3bb",
+    "currency": "USD",
+    "rate": "26050",
+    "buy_rate": null,
+    "sell_rate": null,
+    "bank_name": null,
+    "icon": null,
+    "is_active": true,
+    "updated_at": "2026-01-27T15:21:04.804+00:00",
+    "created_at": "2026-01-25T20:33:34.419829+00:00"
+  },
+  {
+    "id": "3875fd16-532f-4bce-b1ce-20c0aebfffc7",
+    "currency": "RUB",
+    "rate": "310",
+    "buy_rate": null,
+    "sell_rate": null,
+    "bank_name": null,
+    "icon": null,
+    "is_active": true,
+    "updated_at": "2026-01-27T15:21:04.804+00:00",
+    "created_at": "2026-01-25T20:33:34.041426+00:00"
+  },
+  {
+    "id": "d140e03f-7dba-4f73-a878-df55e3e0e23c",
+    "currency": "EUR",
+    "rate": "29800",
+    "buy_rate": null,
+    "sell_rate": null,
+    "bank_name": null,
+    "icon": null,
+    "is_active": true,
+    "updated_at": "2026-01-27T15:21:04.804+00:00",
+    "created_at": "2026-01-25T20:33:34.607211+00:00"
+  },
+  {
+    "id": "e44331d5-f694-485e-901c-975b0577b8db",
+    "currency": "CNY",
+    "rate": "3600",
+    "buy_rate": null,
+    "sell_rate": null,
+    "bank_name": null,
+    "icon": null,
+    "is_active": true,
+    "updated_at": "2026-01-27T15:21:04.804+00:00",
+    "created_at": "2026-01-25T20:33:34.79904+00:00"
+  }
+]

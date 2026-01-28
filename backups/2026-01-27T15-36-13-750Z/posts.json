@@ -1,0 +1,19 @@
+[
+  {
+    "id": "9990ccfe-aa19-4c5a-af10-60e551c387a4",
+    "slug": "1769259064104",
+    "title": "Откройте настоящий Вьетнам",
+    "content": null,
+    "image": "/images/posts/file-1769331826816-761423076.jpg",
+    "tg_text": null,
+    "is_active": true,
+    "created_at": "2026-01-25T20:33:33.840238+00:00",
+    "updated_at": "2026-01-25T20:33:33.087+00:00",
+    "order": 0,
+    "status": "draft",
+    "tgMessageId": "326",
+    "createdAt": null,
+    "sentAt": null,
+    "text": null
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "21ba6694-a39a-4dc2-a947-adfa353b9b61",
+    "slug": "moto",
+    "title": "Мотоциклы",
+    "badge_title": null,
+    "is_active": true,
+    "created_at": "2026-01-25T20:33:28.293503+00:00",
+    "order": 3,
+    "badgeTitle": "Механика",
+    "isActive": true,
+    "updated_at": "2026-01-27T15:11:38.656+00:00"
+  },
+  {
+    "id": "b9a97ebc-cf31-416b-96e3-ee9ce7da0252",
+    "slug": "car",
+    "title": "Автомобили",
+    "badge_title": null,
+    "is_active": true,
+    "created_at": "2026-01-25T20:33:28.511622+00:00",
+    "order": 4,
+    "badgeTitle": "Авто",
+    "isActive": true,
+    "updated_at": "2026-01-27T15:11:38.656+00:00"
+  },
+  {
+    "id": "2ac5a944-11d9-4324-916c-ddf79c066785",
+    "slug": "maxi",
+    "title": "Макси-скутеры",
+    "badge_title": null,
+    "is_active": true,
+    "created_at": "2026-01-25T20:33:28.091514+00:00",
+    "order": 2,
+    "badgeTitle": "Макси",
+    "isActive": true,
+    "updated_at": "2026-01-27T15:11:38.656+00:00"
+  },
+  {
+    "id": "20221998-468a-4843-893a-a60e33e7b3aa",
+    "slug": "comfort",
+    "title": "COMFORT",
+    "badge_title": null,
+    "is_active": true,
+    "created_at": "2026-01-25T20:33:27.853505+00:00",
+    "order": 1,
+    "badgeTitle": null,
+    "isActive": true,
+    "updated_at": "2026-01-27T15:11:38.656+00:00"
+  },
+  {
+    "id": "1f6f135f-02bd-4c6a-9a41-da58ea49591c",
+    "slug": "standard",
+    "title": "STANDARD",
+    "badge_title": null,
+    "is_active": true,
+    "created_at": "2026-01-25T20:33:27.558847+00:00",
+    "order": 0,
+    "badgeTitle": null,
+    "isActive": true,
+    "updated_at": "2026-01-27T15:11:38.656+00:00"
+  }
+]

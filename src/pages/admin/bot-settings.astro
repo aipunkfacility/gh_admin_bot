@@ -33,27 +33,13 @@ try {
 // Загрузка админов из БД (дополнительный список)
 let dbAdmins: number[] = [];
 try {
-    const metaData = await getCollection('site-meta');
-    // getCollection for site-meta returns the .data object if it matches key='main' in my legacy refactor
-    // BUT! I need key='bot_admins'. Let's check how getCollection handles specific meta records.
-    // Actually, data-store.ts 'site-meta.json' or Supabase 'site_meta' table.
-    const adminsMeta = await getCollection('bot-admins-meta'); // We'll use a virtual name to fetch specific key if needed
-                                                              // or just fetch all and filter.
-    // Looking at src/lib/bot/utils.js: getCollection('site-meta') EQ 'key'='main'. 
-    // This is too restrictive. I should use a more generic way.
-} catch (e) {}
-
-// For now, let's just fetch admins list from bot-admins.json (which maps to bot_admins table)
-// I will create a simple table or use site_meta properly.
-// Let's use getCollection('bot-admins') and I'll make sure it works.
-let dynamicAdmins: any[] = [];
-try {
-    dynamicAdmins = await getCollection('bot-admins');
+    const dbAdminsRaw = await getItem('site-meta', 'bot_admins');
+    dbAdmins = Array.isArray(dbAdminsRaw) ? dbAdminsRaw : [];
 } catch (e) {
     console.warn('Failed to fetch dynamic admins:', e.message);
 }
 
-const dbAdminIds = dynamicAdmins.map(a => parseInt(a.telegram_id)).filter(id => !isNaN(id));
+const dbAdminIds = dbAdmins.map(id => parseInt(id as any)).filter(id => !isNaN(id));
 const allAdmins = [...new Set([...envAdmins, ...dbAdminIds])];
 ---
 

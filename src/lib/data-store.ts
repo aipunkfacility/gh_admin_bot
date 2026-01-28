@@ -215,8 +215,22 @@ export async function getCollection<T = any>(name: string): Promise<T> {
 }
 
 export async function getItem(collectionName: string, id: string) {
-  // FIX: Site-meta - возвращает весь объект
+  // FIX: Site-meta - возвращает объект по ключу (id)
   if (collectionName.includes('site-meta')) {
+    if (USE_SUPABASE) {
+      const key = id && id !== 'main' ? id : 'main';
+      const { data, error } = await supabaseAdmin
+        .from('site_meta')
+        .select('data')
+        .eq('key', key)
+        .single();
+
+      // Don't throw if not found for meta, just return empty
+      if (error && error.code !== 'PGRST116') {
+        handleSupabaseError(error, `getItem(${collectionName}, ${id})`);
+      }
+      return data?.data || (key === 'main' ? {} : []);
+    }
     return await getSiteMeta();
   }
 
@@ -262,13 +276,13 @@ export async function getItem(collectionName: string, id: string) {
 //           ЗАПИСЬ ДАННЫХ (SAVE/UPSERT)
 // ==========================================
 
-export async function saveSiteMeta(data: any) {
+export async function saveSiteMeta(data: any, key: string = 'main') {
   if (USE_SUPABASE) {
     const { error } = await supabaseAdmin
       .from('site_meta')
-      .upsert({ key: 'main', data: data }, { onConflict: 'key' });
+      .upsert({ key, data: data }, { onConflict: 'key' });
 
-    handleSupabaseError(error, 'saveSiteMeta');
+    handleSupabaseError(error, `saveSiteMeta(${key})`);
     return true;
   } else {
     const filePath = path.join(DATA_DIR, 'site-meta.json');
@@ -284,7 +298,9 @@ export async function saveItem(collectionName: string, item: any) {
 
     // FIX: Special Logic for Site Meta (Singleton JSONB)
     if (table === 'site_meta' || collectionName.includes('site-meta')) {
-      return await saveSiteMeta(item);
+      const metaKey = id || 'main';
+      const metaData = item.data !== undefined ? item.data : rest;
+      return await saveSiteMeta(metaData, metaKey);
     }
 
     // FIX: Special Logic for Rates

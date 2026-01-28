@@ -3,7 +3,8 @@ const {
   title, 
   description = "Green Hill Tours - Premium Travel Experience in Vietnam", 
   image = "/images/og-default.jpg",
-  type = "website"
+  type = "website",
+  jsonLd = null
 } = Astro.props;
 
 const siteURL = new URL(Astro.url.pathname, Astro.site);
@@ -40,3 +41,7 @@ const imageURL = new URL(image, Astro.site);
 
 <!-- Sitemap Link -->
 <link rel="sitemap" href="/sitemap-index.xml" />
+
+{jsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+)}

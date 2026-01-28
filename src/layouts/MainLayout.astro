@@ -13,10 +13,11 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  jsonLd?: any;
   sections?: Array<{id: string; title: string; icon: string; isActive: boolean}>;
 }
 
-const { title, description, image, sections = [] } = Astro.props;
+const { title, description, image, jsonLd, sections = [] } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL;
 
 const siteMeta = await getItem('site-meta.json', 'settings') || {};
@@ -25,7 +26,7 @@ const siteMeta = await getItem('site-meta.json', 'settings') || {};
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <SEO title={title} description={description} image={image} />
+  <SEO title={title} description={description} image={image} jsonLd={jsonLd} />
   <!-- VERSION: 2026-01-28_V1 -->
 
 

@@ -29,6 +29,7 @@ export const TransportSchema = BaseItemSchema.extend({
     specs: z.array(z.string()).nullable().optional(),
     features: z.array(z.string()).nullable().optional(),
     isPopular: z.boolean().optional(),
+    metaDescription: z.string().nullable().optional(),
 });
 
 export const AccommodationSchema = BaseItemSchema.extend({
@@ -39,6 +40,7 @@ export const AccommodationSchema = BaseItemSchema.extend({
     atmosphere: z.string().nullable().optional(),
     locationDescription: z.string().nullable().optional(),
     isPopular: z.boolean().optional(),
+    metaDescription: z.string().nullable().optional(),
 });
 
 export const ExcursionSchema = BaseItemSchema.extend({
@@ -50,6 +52,7 @@ export const ExcursionSchema = BaseItemSchema.extend({
     schedule: z.array(z.string()).nullable().optional(),
     included: z.array(z.string()).nullable().optional(),
     highlights: z.array(z.string()).nullable().optional(),
+    metaDescription: z.string().nullable().optional(),
 });
 
 export const PostSchema = z.object({
@@ -76,6 +79,7 @@ export const ServiceSchema = BaseItemSchema.extend({
     requirements: z.array(z.string()).nullable().optional(),
 
     isPopular: z.boolean().optional(),
+    metaDescription: z.string().nullable().optional(),
 });
 
 // --- Telegram Fields Helper ---
@@ -135,6 +139,7 @@ export const schemas: Record<string, SchemaMetadata> = {
             { name: 'benefits', label: 'Преимущества', type: 'array' },
             { name: 'specs', label: 'Характеристики', type: 'array' },
             { name: 'features', label: 'Особенности', type: 'array' },
+            { name: 'metaDescription', label: 'SEO Meta Description', type: 'textarea', help: 'Техническое описание для поисковиков (150-160 символов)' },
             ...tgFields
         ]
     },
@@ -155,7 +160,7 @@ export const schemas: Record<string, SchemaMetadata> = {
             { name: 'schedule', label: 'Расписание', type: 'array' },
             { name: 'included', label: 'Включено', type: 'array' },
             { name: 'highlights', label: 'Что увидим', type: 'array' },
-
+            { name: 'metaDescription', label: 'SEO Meta Description', type: 'textarea', help: 'Техническое описание для поисковиков (150-160 символов)' },
             ...tgFields
         ]
     },
@@ -173,6 +178,7 @@ export const schemas: Record<string, SchemaMetadata> = {
             { name: 'roomFeatures', label: 'В номере', type: 'array' },
             { name: 'atmosphere', label: 'Атмосфера', type: 'textarea' },
             { name: 'locationDescription', label: 'О расположении', type: 'textarea' },
+            { name: 'metaDescription', label: 'SEO Meta Description', type: 'textarea', help: 'Техническое описание для поисковиков (150-160 символов)' },
             ...tgFields
         ]
     },
@@ -189,6 +195,7 @@ export const schemas: Record<string, SchemaMetadata> = {
             { name: 'requirements', label: 'Требования', type: 'array' },
             { name: 'isActive', label: 'Активно', type: 'checkbox', default: true, colSpan: 1 },
             { name: 'isPopular', label: 'Популярное', type: 'checkbox', colSpan: 1 },
+            { name: 'metaDescription', label: 'SEO Meta Description', type: 'textarea', help: 'Техническое описание для поисковиков (150-160 символов)' },
             ...tgFields
         ]
     },

@@ -69,11 +69,39 @@ const defaultSections: any[] = [
 const sections = (sectionsRaw && (sectionsRaw as any[]).length > 0) 
     ? (sectionsRaw as any[]) 
     : defaultSections;
+// Сборка JSON-LD для SEO (Schema.org)
+const allItems = [
+    ...activeExcursions.map(i => ({ ...i, type: 'excursion' })),
+    ...activeTransport.map(i => ({ ...i, type: 'transport' })),
+    ...activeAccommodations.map(i => ({ ...i, type: 'accommodation' })),
+    ...activeServices.map(i => ({ ...i, type: 'service' }))
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": allItems.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "item": {
+      "@type": "Product",
+      "name": item.title,
+      "description": item.metaDescription || (item as any).shortDescription || (item as any).useCases || (item as any).slogan,
+      "image": item.image ? new URL(item.image, Astro.site).href : undefined,
+      "offers": {
+        "@type": "Offer",
+        "price": (item as any).priceFrom?.replace(/[^0-9]/g, '') || (item as any).pricePerDay?.replace(/[^0-9]/g, ''),
+        "priceCurrency": "USD"
+      }
+    }
+  }))
+};
 ---
 
 <MainLayout 
     title={(siteMetaObj.mainTitle as string) || "Green Hill Tours"} 
     description={(siteMetaObj.mainSubtitle as string) || "Экскурсии и аренда транспорта в Муйне"}
+    jsonLd={jsonLd}
     sections={sections as any}
 >
     <Hero 

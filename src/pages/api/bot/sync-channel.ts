@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import { bot } from '../../../lib/bot/index.js';
 import { checkAuth, unauthorizedResponse } from '../../../lib/auth';
-import { readJsonFile, writeJsonFile, getFullImageUrl, formatExcursionCard, formatTransportCard, formatAccommodationCard, formatServiceCard } from '../../../lib/bot/utils.js';
+import { getCollection, saveCollection } from '../../../lib/data-store';
+import { getFullImageUrl, formatExcursionCard, formatTransportCard, formatAccommodationCard, formatServiceCard } from '../../../lib/bot/utils.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -27,8 +28,8 @@ export const POST: APIRoute = async ({ request }) => {
             [key: string]: unknown;
         }
 
-        // Загружаем элементы
-        const items = (await readJsonFile(`${collection}.json`)) as SyncItem[];
+        // Загружаем элементы (используем data-store для поддержки Supabase/JSON)
+        const items = (await getCollection(collection as any)) as SyncItem[];
         // Handle if readJsonFile returns unknown/any, ensure it is array
         if (!Array.isArray(items)) {
             throw new Error('Invalid collection data');
@@ -135,7 +136,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         items[itemIndex] = item;
-        await writeJsonFile(`${collection}.json`, items);
+        await saveCollection(collection, items);
 
         return new Response(JSON.stringify({ success: true, message: successMessage, warning }), { status: 200 });
     } catch (error: unknown) {

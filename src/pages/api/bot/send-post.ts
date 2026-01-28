@@ -2,7 +2,6 @@ import type { APIRoute } from 'astro';
 import { Telegraf } from 'telegraf';
 import { checkAuth, unauthorizedResponse } from '../../../lib/auth';
 import { getItem, saveItem } from '../../../lib/data-store';
-import { readJsonFile } from '../../../lib/bot/utils.js';
 
 export const POST: APIRoute = async ({ request }) => {
     if (!checkAuth(request)) {
@@ -27,8 +26,9 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Get Channel ID from invalid source? No, getting from site meta
-        const meta = await readJsonFile('site-meta.json');
-        const channelId = meta.contacts?.telegramChannel;
+        // Get Channel ID from data-store (Supabase 'settings' table or JSON)
+        const meta = await getItem('settings', 'site-meta') as any;
+        const channelId = meta?.contacts?.telegramChannel;
 
         if (!channelId) {
             return new Response(JSON.stringify({ error: 'Telegram Channel ID not configured in Site Settings' }), { status: 400 });

@@ -160,6 +160,14 @@ const allAdmins = [...new Set([...envAdmins, ...dbAdminIds])];
             </div>
             
             <div class="p-8 space-y-6">
+                <div class="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-6 flex items-start gap-4">
+                    <i class="ri-information-fill text-2xl text-indigo-500"></i>
+                    <div>
+                        <p class="text-indigo-900 font-bold mb-1">Как найти Telegram ID?</p>
+                        <p class="text-indigo-700 text-sm font-medium">Напишите боту <code class="bg-indigo-200/50 px-2 py-0.5 rounded text-indigo-900">@userinfobot</code> в Telegram, и он покажет ваш идентификатор.</p>
+                    </div>
+                </div>
+
                 <!-- Add Admin Form -->
                 <form id="addAdminForm" class="flex gap-2">
                     <input 

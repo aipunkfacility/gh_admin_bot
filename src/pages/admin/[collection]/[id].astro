@@ -13,11 +13,6 @@ if (ADMIN_PASSWORD) {
     isAuth = cookies.get('gh_admin_auth')?.value === expectedToken;
 }
 
-    const { getAuthToken } = await import('../../../lib/auth');
-    const expectedToken = getAuthToken(ADMIN_PASSWORD);
-    isAuth = cookies.get('gh_admin_auth')?.value === expectedToken;
-}
-
 if (!isAuth) {
     return Astro.redirect('/admin/login');
 }

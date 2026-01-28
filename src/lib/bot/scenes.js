@@ -1,6 +1,5 @@
 import { Scenes } from 'telegraf';
-import { getCollection } from './utils.js';
-import { formatNumber, validateNumberInput, wrapHandler } from './utils.js';
+import { formatNumber, validateNumberInput, wrapHandler, getCollection, getAdminIds } from './utils.js';
 import { showMainMenu } from './menu.js';
 
 // ========== КАЛЬКУЛЯТОР ВАЛЮТ (WizardScene) ==========
@@ -187,8 +186,7 @@ ${feedbackText}`;
 
         try {
             // Отправка админам 
-            const adminEnv = process.env.TELEGRAM_ADMIN_IDS || '';
-            const admins = adminEnv.split(',').map(id => id.trim()).filter(Boolean);
+            const admins = await getAdminIds();
 
             // Fallback
             if (admins.length === 0 && process.env.TELEGRAM_CHANNEL_ID) {

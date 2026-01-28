@@ -5,9 +5,12 @@ import path from 'path';
 
 // Load .env in Node context if needed
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    try {
-        dotenv.config({ path: path.join(process.cwd(), '.env') });
-    } catch (e) { }
+    const envPath = path.join(process.cwd(), '.env');
+    const rootEnvPath = path.resolve(process.cwd(), '..', '.env'); // Fallback if running from a subdir
+
+    dotenv.config({ path: envPath });
+    // If running via pm2 from root, process.cwd is project root.
+    // console.log(`[EnvHelper] dotenv loaded from ${envPath}`);
 }
 
 export const getEnv = (key: string): string | undefined => {

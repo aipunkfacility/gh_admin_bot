@@ -1,6 +1,6 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getCollection } from '../../lib/data-store';
+import { getCollection, getItem } from '../../lib/data-store';
 
 export const prerender = false;
 
@@ -20,6 +20,22 @@ if (!isAuth) {
 
 // Загрузка текущих данных
 let rates = { rub_rate: 280, usdt_rate: 25500, usd_rate: 25000, eur_rate: 27000, cny_rate: 3500 };
+
+try {
+    const ratesData = await getCollection('rates');
+    if (ratesData && !Array.isArray(ratesData)) {
+         rates = ratesData as any;
+    } else if (Array.isArray(ratesData) && ratesData.length > 0) {
+        // Fallback если вернулся массив
+        const matched = (ratesData as any[]).reduce((acc, curr) => {
+            acc[`${curr.id.toLowerCase()}_rate`] = curr.rate;
+            return acc;
+        }, {});
+        rates = { ...rates, ...matched };
+    }
+} catch (error) {
+    console.error('Error loading rates:', error);
+}
 
 // Загрузка админов из .env (мастер-список)
 let envAdmins: number[] = [];
